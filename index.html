@@ -1017,7 +1017,6 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbwZEDYqhrhc02ps7Z6Cjbw0
 let logs = JSON.parse(localStorage.getItem('wl_logs') || 'null') || SEED;
 let nextId = Math.max(...logs.map(l=>l.id)) + 1;
 let currentStatus = 'Finish';
-let photos = [];
 let stream = null;
 
 // ─── SYNC HELPERS ────────────────────────────────────────────
@@ -1156,6 +1155,7 @@ function selectStatus(s) {
 // ─── CAMERA ─────────────────────────────────────────────────
 let facingMode = 'environment';
 let activeSec = null; // 'before' | 'after'
+let stream = null;
 const MAX_PHOTOS = 5;
 
 // photos object: { before: [...], after: [...] }
