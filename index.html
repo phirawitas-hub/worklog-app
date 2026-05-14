@@ -1,0 +1,1483 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Work Log — Inventory Team</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f13;
+    --surface: #18181f;
+    --surface2: #22222e;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.14);
+    --accent: #5b7fff;
+    --accent2: #7c5cfc;
+    --green: #22c97b;
+    --amber: #f5a623;
+    --red: #ff5555;
+    --text: #f0f0f8;
+    --text2: #9090a8;
+    --text3: #5a5a72;
+    --radius: 14px;
+    --radius-sm: 8px;
+    --mono: 'Space Mono', monospace;
+    --sans: 'Sarabun', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ─── Layout ─── */
+  .app { display: flex; flex-direction: column; min-height: 100vh; }
+
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(12px);
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--text);
+  }
+
+  .logo-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .header-right { display: flex; align-items: center; gap: 12px; }
+
+  .date-badge {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text2);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    border-radius: 20px;
+  }
+
+  /* ─── Nav tabs ─── */
+  .nav {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    padding: 0 24px;
+    gap: 4px;
+  }
+
+  .nav-tab {
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text2);
+    cursor: pointer;
+    border: none;
+    background: none;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    font-family: var(--sans);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .nav-tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  .nav-tab:hover:not(.active) { color: var(--text); }
+
+  /* ─── Main content ─── */
+  .main { flex: 1; padding: 24px; max-width: 900px; margin: 0 auto; width: 100%; }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ─── Stats row ─── */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+
+  .stat-card.blue::before { background: var(--accent); }
+  .stat-card.green::before { background: var(--green); }
+  .stat-card.amber::before { background: var(--amber); }
+  .stat-card.purple::before { background: var(--accent2); }
+
+  .stat-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; font-family: var(--mono); margin-bottom: 6px; }
+  .stat-value { font-size: 26px; font-weight: 700; font-family: var(--mono); line-height: 1; }
+  .stat-card.blue .stat-value { color: var(--accent); }
+  .stat-card.green .stat-value { color: var(--green); }
+  .stat-card.amber .stat-value { color: var(--amber); }
+  .stat-card.purple .stat-value { color: var(--accent2); }
+  .stat-sub { font-size: 12px; color: var(--text3); margin-top: 4px; }
+
+  /* ─── Form card ─── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+
+  .card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-family: var(--mono);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-title::before {
+    content: '';
+    width: 3px;
+    height: 14px;
+    background: var(--accent);
+    border-radius: 2px;
+    display: block;
+  }
+
+  /* ─── Form fields ─── */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .form-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+  .form-grid.full { grid-template-columns: 1fr; }
+
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field.span2 { grid-column: span 2; }
+
+  label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text2);
+    letter-spacing: 0.03em;
+  }
+
+  input, select, textarea {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    padding: 9px 12px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(91,127,255,0.12);
+  }
+
+  textarea { resize: vertical; min-height: 80px; }
+
+  select option { background: var(--surface2); }
+
+  /* ─── Status chips ─── */
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .chip {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    cursor: pointer;
+    border: 1px solid var(--border2);
+    color: var(--text2);
+    transition: all 0.15s;
+    font-family: var(--sans);
+    background: transparent;
+  }
+
+  .chip.selected-finish { background: rgba(34,201,123,0.15); border-color: var(--green); color: var(--green); }
+  .chip.selected-progress { background: rgba(91,127,255,0.15); border-color: var(--accent); color: var(--accent); }
+  .chip.selected-pending { background: rgba(245,166,35,0.15); border-color: var(--amber); color: var(--amber); }
+  .chip.selected-issue { background: rgba(255,85,85,0.15); border-color: var(--red); color: var(--red); }
+
+  /* ─── Camera section ─── */
+  .camera-zone {
+    border: 1.5px dashed var(--border2);
+    border-radius: var(--radius);
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .camera-zone:hover { border-color: var(--accent); background: rgba(91,127,255,0.04); }
+
+  .camera-icon {
+    font-size: 28px;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .camera-text { font-size: 13px; color: var(--text2); }
+  .camera-sub { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+  #videoEl {
+    width: 100%;
+    border-radius: var(--radius-sm);
+    display: none;
+    background: #000;
+    max-height: 280px;
+    object-fit: cover;
+  }
+
+  .photo-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .photo-thumb {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .photo-thumb img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .photo-remove {
+    position: absolute;
+    top: 4px; right: 4px;
+    background: rgba(0,0,0,0.7);
+    border: none;
+    color: white;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    line-height: 1;
+  }
+
+  .camera-controls {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    justify-content: center;
+  }
+
+  /* ─── Buttons ─── */
+  .btn {
+    padding: 10px 20px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+    font-family: var(--sans);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+  }
+  .btn-primary:hover { background: #4a6ff0; transform: translateY(-1px); }
+  .btn-primary:active { transform: translateY(0); }
+
+  .btn-success {
+    background: var(--green);
+    color: #051a0d;
+    font-weight: 700;
+  }
+  .btn-success:hover { background: #1db368; transform: translateY(-1px); }
+
+  .btn-ghost {
+    background: var(--surface2);
+    color: var(--text2);
+    border: 1px solid var(--border2);
+  }
+  .btn-ghost:hover { color: var(--text); border-color: var(--border2); }
+
+  .btn-danger {
+    background: rgba(255,85,85,0.15);
+    color: var(--red);
+    border: 1px solid rgba(255,85,85,0.3);
+  }
+
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+  .form-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ─── Log list ─── */
+  .filter-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .filter-bar input {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .log-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .log-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 14px;
+    align-items: start;
+  }
+
+  .log-item:hover {
+    border-color: var(--border2);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+
+  .log-avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: var(--mono);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .log-body { min-width: 0; }
+
+  .log-meta {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 4px;
+    flex-wrap: wrap;
+  }
+
+  .log-user { font-size: 13px; font-weight: 600; }
+  .log-time { font-size: 11px; color: var(--text3); font-family: var(--mono); }
+  .log-date { font-size: 11px; color: var(--text3); font-family: var(--mono); }
+
+  .log-work {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.5;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
+  .log-tags {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-family: var(--mono);
+  }
+
+  .tag-hour { background: rgba(91,127,255,0.15); color: var(--accent); }
+  .tag-qty { background: rgba(34,201,123,0.12); color: var(--green); }
+  .tag-photo { background: rgba(124,92,252,0.15); color: var(--accent2); }
+
+  .log-right { text-align: right; flex-shrink: 0; }
+
+  .status-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-family: var(--mono);
+    display: inline-block;
+  }
+
+  .status-Finish { background: rgba(34,201,123,0.15); color: var(--green); }
+  .status-InProgress { background: rgba(91,127,255,0.15); color: var(--accent); }
+  .status-Pending { background: rgba(245,166,35,0.15); color: var(--amber); }
+  .status-Issue { background: rgba(255,85,85,0.15); color: var(--red); }
+
+  .log-hours {
+    font-size: 20px;
+    font-weight: 700;
+    font-family: var(--mono);
+    color: var(--text);
+    margin-top: 4px;
+  }
+
+  .log-hours span { font-size: 11px; color: var(--text3); font-weight: 400; }
+
+  /* ─── Modal ─── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    max-width: 600px;
+    width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
+    padding: 24px;
+  }
+
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .modal-title { font-size: 16px; font-weight: 600; }
+
+  .modal-close {
+    background: none;
+    border: none;
+    color: var(--text3);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px;
+    line-height: 1;
+    transition: color 0.15s;
+  }
+
+  .modal-close:hover { color: var(--text); }
+
+  .detail-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+    align-items: flex-start;
+  }
+
+  .detail-label {
+    font-size: 12px;
+    color: var(--text3);
+    font-family: var(--mono);
+    width: 80px;
+    flex-shrink: 0;
+    padding-top: 2px;
+  }
+
+  .detail-val { font-size: 14px; color: var(--text); flex: 1; }
+
+  .modal-photos {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .modal-photo {
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    aspect-ratio: 1;
+    border: 1px solid var(--border);
+  }
+
+  .modal-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  /* ─── Empty state ─── */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text3);
+  }
+
+  .empty-icon { font-size: 48px; display: block; margin-bottom: 12px; }
+  .empty-title { font-size: 16px; color: var(--text2); margin-bottom: 6px; }
+  .empty-sub { font-size: 13px; }
+
+  /* ─── Toast ─── */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius-sm);
+    padding: 12px 18px;
+    font-size: 13px;
+    color: var(--text);
+    z-index: 300;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast .toast-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+
+  /* ─── User color map ─── */
+  .user-อัด { background: rgba(91,127,255,0.2); color: #7b9fff; }
+  .user-กุล { background: rgba(34,201,123,0.2); color: #3de090; }
+  .user-วิท { background: rgba(245,166,35,0.2); color: #f8bf55; }
+  .user-หมี { background: rgba(124,92,252,0.2); color: #a084fc; }
+  .user-อัน { background: rgba(255,85,85,0.2); color: #ff7b7b; }
+  .user-default { background: rgba(255,255,255,0.1); color: var(--text2); }
+
+  /* ─── Scrollbar ─── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+  /* ─── Photo sections (before/after) ─── */
+  .photo-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .photo-section-label {
+    font-size: 13px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-family: var(--mono);
+  }
+  .photo-section-label.before {
+    background: rgba(91,127,255,0.15);
+    color: var(--accent);
+    border: 1px solid rgba(91,127,255,0.3);
+  }
+  .photo-section-label.after {
+    background: rgba(34,201,123,0.15);
+    color: var(--green);
+    border: 1px solid rgba(34,201,123,0.3);
+  }
+  .photo-section-count {
+    font-size: 12px;
+    font-family: var(--mono);
+    color: var(--text3);
+  }
+
+  /* ─── Slot grid: 5 fixed slots ─── */
+  .slot-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+  }
+  .photo-slot {
+    aspect-ratio: 1;
+    border-radius: var(--radius-sm);
+    border: 1.5px dashed var(--border2);
+    background: var(--surface2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.18s;
+    position: relative;
+    overflow: hidden;
+    font-size: 11px;
+    color: var(--text3);
+    gap: 4px;
+  }
+  .photo-slot:hover:not(.filled) {
+    border-color: var(--accent);
+    background: rgba(91,127,255,0.07);
+    color: var(--text2);
+  }
+  .photo-slot.filled {
+    border: none;
+    cursor: pointer;
+  }
+  .photo-slot.filled img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .slot-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text3);
+  }
+  .slot-icon { font-size: 18px; }
+  .slot-remove {
+    position: absolute;
+    top: 3px; right: 3px;
+    background: rgba(0,0,0,0.65);
+    border: none;
+    color: #fff;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    font-size: 11px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    z-index: 2;
+  }
+  .slot-index {
+    position: absolute;
+    bottom: 3px; left: 4px;
+    background: rgba(0,0,0,0.55);
+    color: #fff;
+    font-size: 9px;
+    font-family: var(--mono);
+    padding: 1px 4px;
+    border-radius: 4px;
+  }
+
+  /* ─── cam-action-btn (kept minimal) ─── */
+  .cam-action-btn {
+    flex: 1;
+    background: var(--surface2);
+    border: 1.5px dashed var(--border2);
+    border-radius: var(--radius);
+    padding: 18px 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.18s;
+    color: var(--text2);
+    font-family: var(--sans);
+    display: block;
+  }
+  .cam-action-btn:hover {
+    border-color: var(--accent);
+    background: rgba(91,127,255,0.07);
+    color: var(--text);
+  }
+
+  /* ─── Responsive ─── */
+  @media (max-width: 640px) {
+    .stats { grid-template-columns: 1fr 1fr; }
+    .form-grid { grid-template-columns: 1fr; }
+    .form-grid.three { grid-template-columns: 1fr 1fr; }
+    .field.span2 { grid-column: span 1; }
+    .main { padding: 16px; }
+    header { padding: 0 16px; }
+    .nav { padding: 0 12px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- Header -->
+<header>
+  <div class="logo">
+    <div class="logo-dot"></div>
+    WORKLOG
+    <span style="color:var(--text3);font-weight:400">/ INVENTORY TEAM</span>
+  </div>
+  <div class="header-right">
+    <div class="date-badge" id="headerDate"></div>
+  </div>
+</header>
+
+<!-- Nav -->
+<nav class="nav">
+  <button class="nav-tab active" onclick="switchPage('add')" id="tab-add">
+    ＋ บันทึกงาน
+  </button>
+  <button class="nav-tab" onclick="switchPage('list')" id="tab-list">
+    ☰ รายการทั้งหมด
+  </button>
+  <button class="nav-tab" onclick="switchPage('summary')" id="tab-summary">
+    ◑ สรุปภาพรวม
+  </button>
+</nav>
+
+<!-- Main -->
+<div class="main">
+
+  <!-- ── ADD PAGE ── -->
+  <div class="page active" id="page-add">
+
+    <!-- Form -->
+    <div class="card">
+      <div class="card-title">ข้อมูลพื้นฐาน</div>
+      <div class="form-grid three">
+        <div class="field">
+          <label>วันที่</label>
+          <input type="date" id="fDate">
+        </div>
+        <div class="field">
+          <label>เวลาเริ่ม</label>
+          <input type="time" id="fStart">
+        </div>
+        <div class="field">
+          <label>เวลาสิ้นสุด</label>
+          <input type="time" id="fEnd">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">รายละเอียดงาน</div>
+      <div class="form-grid">
+        <div class="field">
+          <label>ผู้ปฏิบัติงาน</label>
+          <select id="fUser">
+            <option value="">— เลือกพนักงาน —</option>
+            <option value="อัด">อัด</option>
+            <option value="กุล">กุล</option>
+            <option value="วิท">วิท</option>
+            <option value="หมี">หมี</option>
+            <option value="อัน">อัน</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Location</label>
+          <input type="text" id="fLocation" placeholder="เช่น B-11, WH0000">
+        </div>
+        <div class="field span2">
+          <label>รายละเอียดการทำงาน</label>
+          <textarea id="fWork" placeholder="อธิบายงานที่ทำ..."></textarea>
+        </div>
+      </div>
+      <div class="form-grid three" style="margin-top:12px">
+        <div class="field">
+          <label>รายการ (Item)</label>
+          <input type="text" id="fItem" placeholder="SKU / รหัสสินค้า">
+        </div>
+        <div class="field">
+          <label>จำนวน Work</label>
+          <input type="number" id="fQtyWork" placeholder="0" min="0">
+        </div>
+        <div class="field">
+          <label>จำนวนจริง</label>
+          <input type="number" id="fQtyActual" placeholder="0" min="0">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">สถานะงาน</div>
+      <div class="chips">
+        <button class="chip selected-finish" onclick="selectStatus('Finish')" id="chip-Finish">✓ Finish</button>
+        <button class="chip" onclick="selectStatus('InProgress')" id="chip-InProgress">⟳ In Progress</button>
+        <button class="chip" onclick="selectStatus('Pending')" id="chip-Pending">⏳ Pending</button>
+        <button class="chip" onclick="selectStatus('Issue')" id="chip-Issue">⚠ มีปัญหา</button>
+      </div>
+      <div class="field" style="margin-top:12px">
+        <label>หมายเหตุ / Issue</label>
+        <input type="text" id="fRemark" placeholder="บันทึกเพิ่มเติม...">
+      </div>
+    </div>
+
+    <!-- Camera -->
+    <div class="card">
+      <div class="card-title">ถ่ายภาพ / แนบรูป</div>
+
+      <!-- ── ก่อนงาน ── -->
+      <div class="photo-section">
+        <div class="photo-section-header">
+          <div class="photo-section-label before">📸 ก่อนงาน</div>
+          <span class="photo-section-count" id="beforeCount">0 / 5</span>
+        </div>
+        <div class="slot-grid" id="beforeSlots"></div>
+      </div>
+
+      <!-- ── หลังงาน ── -->
+      <div class="photo-section" style="margin-top:16px">
+        <div class="photo-section-header">
+          <div class="photo-section-label after">✅ หลังงาน</div>
+          <span class="photo-section-count" id="afterCount">0 / 5</span>
+        </div>
+        <div class="slot-grid" id="afterSlots"></div>
+      </div>
+
+      <!-- Live camera overlay (shared) -->
+      <div id="cameraLive" style="display:none;margin-top:14px">
+        <div style="position:relative;border-radius:var(--radius-sm);overflow:hidden;background:#000">
+          <video id="videoEl" autoplay playsinline style="width:100%;max-height:300px;object-fit:cover;display:block"></video>
+          <div id="shutterFlash" style="position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;transition:opacity 0.08s"></div>
+          <div style="position:absolute;top:10px;left:12px;background:rgba(0,0,0,0.65);color:#fff;font-size:12px;font-family:var(--mono);padding:3px 10px;border-radius:12px" id="camLabel">ก่อนงาน</div>
+          <div style="position:absolute;top:10px;right:12px;background:rgba(0,0,0,0.65);color:#fff;font-size:12px;font-family:var(--mono);padding:3px 10px;border-radius:12px" id="camSlotBadge">0/5</div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-top:12px">
+          <button class="btn btn-ghost btn-sm" onclick="switchCamera()" style="width:40px;height:40px;padding:0;border-radius:50%;font-size:18px" title="สลับกล้อง">🔄</button>
+          <button onclick="capturePhoto()" id="shutterBtn" style="width:66px;height:66px;border-radius:50%;border:none;background:var(--accent);color:#fff;font-size:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.1s;box-shadow:0 0 0 6px rgba(91,127,255,0.18)">📸</button>
+          <label style="width:40px;height:40px;border-radius:50%;border:1px solid var(--border2);background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer" title="เลือกไฟล์">
+            🖼<input type="file" accept="image/*" style="display:none" onchange="handleFileSelectCam(event)">
+          </label>
+        </div>
+        <div style="text-align:center;margin-top:8px">
+          <button class="btn btn-ghost btn-sm" onclick="stopCamera()">✕ ปิดกล้อง</button>
+        </div>
+      </div>
+
+      <canvas id="canvasEl" style="display:none"></canvas>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-ghost" onclick="resetForm()">ล้างข้อมูล</button>
+      <button class="btn btn-success" onclick="saveLog()">💾 บันทึกงาน</button>
+    </div>
+  </div>
+
+  <!-- ── LIST PAGE ── -->
+  <div class="page" id="page-list">
+    <div class="filter-bar">
+      <input type="text" id="searchInput" placeholder="🔍 ค้นหางาน, ผู้ปฏิบัติ, location..." oninput="renderList()">
+      <select id="filterUser" onchange="renderList()" style="width:130px">
+        <option value="">ทุกคน</option>
+        <option>อัด</option><option>กุล</option>
+        <option>วิท</option><option>หมี</option><option>อัน</option>
+      </select>
+      <select id="filterStatus" onchange="renderList()" style="width:130px">
+        <option value="">ทุกสถานะ</option>
+        <option>Finish</option>
+        <option>InProgress</option>
+        <option>Pending</option>
+        <option>Issue</option>
+      </select>
+    </div>
+    <div class="log-list" id="logList"></div>
+  </div>
+
+  <!-- ── SUMMARY PAGE ── -->
+  <div class="page" id="page-summary">
+    <div class="stats" id="statsGrid"></div>
+
+    <div class="card">
+      <div class="card-title">ชั่วโมงงานแต่ละคน</div>
+      <div id="userChart"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">ประวัติวันล่าสุด</div>
+      <div id="recentByDate"></div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+</div><!-- /app -->
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle"></div>
+      <button class="modal-close" onclick="closeModalBtn()">✕</button>
+    </div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <div class="toast-dot"></div>
+  <span id="toastMsg"></span>
+</div>
+
+<script>
+// ─── DATA ───────────────────────────────────────────────────
+const SEED = [
+  {id:1,user:"อัด",date:"2026-05-04",start:"8:00",end:"9:00",hours:1,work:"ส่งรายงานประจำวัน Data Stock Onhand Spare Part , Raw Material & Consumables , E-Commerce แจ้งรายงานการเปลี่ยน Status WH.23(B)",location:"-",item:"-",qtyWork:0,qtyActual:0,status:"Finish",remark:"",photos:[]},
+  {id:2,user:"กุล",date:"2026-05-04",start:"8:00",end:"9:00",hours:1,work:"ส่งงาน Update งานล่าสุด Aging 5 ปี ให้คุณอันธิกา และทีม Inbound",location:"-",item:"-",qtyWork:0,qtyActual:0,status:"Finish",remark:"",photos:[]},
+  {id:3,user:"กุล",date:"2026-05-04",start:"9:00",end:"11:45",hours:2.75,work:"ลงรายการและส่งสรุปรายงาน Update ครั้งที่ 2 ตรวจนับสินค้า Aging 5 ปี ร่วมกับ ทางทีมขาย PA และทีม POA",location:"-",item:"-",qtyWork:0,qtyActual:0,status:"Finish",remark:"",photos:[]},
+  {id:4,user:"อัด",date:"2026-05-04",start:"9:00",end:"13:30",hours:3.5,work:"ส่งรายงานสต๊อกสินค้า ไม่พร้อมขาย กลุ่มสินค้า Spare Part และ รายงานสต๊อกสินค้า ไม่พร้อมขาย สินค้าดีที่มีลักษณะไม่สมบูรณ์ (เกรด B)",location:"-",item:"-",qtyWork:0,qtyActual:0,status:"Finish",remark:"",photos:[]},
+  {id:5,user:"กุล",date:"2026-05-04",start:"13:00",end:"16:00",hours:3,work:"ส่งสรุปรายการสินค้า Transfer-Putaway กลุ่มสินค้า Spare Part สินค้าพร้อมขายที่มีสถานะ Damage เปลี่ยน Status เป็น Good",location:"14",item:"14",qtyWork:14,qtyActual:22,status:"Finish",remark:"",photos:[]},
+  {id:6,user:"อัด",date:"2026-05-04",start:"13:30",end:"16:30",hours:3,work:"ถ่ายรูปสินค้าและวัดขนาด,น้ำหนัก CATEGORY SPARE PART ส่งรายงาน Product Information Report",location:"-",item:"19",qtyWork:19,qtyActual:19,status:"Finish",remark:"",photos:[]},
+  {id:7,user:"วิท",date:"2026-05-05",start:"8:15",end:"9:15",hours:1,work:"ส่ง Report Inventory Status change",location:"-",item:"-",qtyWork:0,qtyActual:0,status:"Finish",remark:"",photos:[]},
+  {id:8,user:"กุล",date:"2026-05-05",start:"8:00",end:"8:30",hours:0.5,work:"ทำ 5 ส Micro Rack G",location:"-",item:"-",qtyWork:0,qtyActual:0,status:"Finish",remark:"",photos:[]},
+  {id:9,user:"หมี",date:"2026-05-05",start:"8:00",end:"8:20",hours:0.33,work:"ทำ 5 ส helmet",location:"-",item:"-",qtyWork:0,qtyActual:0,status:"Finish",remark:"",photos:[]},
+  {id:10,user:"วิท",date:"2026-05-05",start:"8:00",end:"8:15",hours:0.25,work:"ทำความสะอาด 5 ส Selective B-17 - B-24 และ B-31",location:"B-17~B-24,B-31",item:"-",qtyWork:9,qtyActual:0,status:"Finish",remark:"",photos:[]},
+  {id:19,user:"อัด,หมี,วิท",date:"2026-05-05",start:"9:30",end:"16:30",hours:6,work:"ถ่ายรูปสินค้าและวัดขนาด,น้ำหนัก CATEGORY SPARE PART ส่งรายงาน Product Information Report",location:"-",item:"43",qtyWork:43,qtyActual:43,status:"Finish",remark:"",photos:[]},
+  {id:21,user:"อัด,วิท,อัน",date:"2026-05-05",start:"17:30",end:"19:50",hours:2.33,work:"Cycle Count Selective B-11 Level B/C",location:"B-11",item:"-",qtyWork:52,qtyActual:4603,status:"Finish",remark:"",photos:[]},
+  {id:34,user:"อัด,หมี,วิท",date:"2026-05-06",start:"9:30",end:"16:30",hours:6,work:"ถ่ายรูปสินค้าและวัดขนาด,น้ำหนัก CATEGORY SPARE PART ส่งรายงาน Product Information Report",location:"-",item:"50",qtyWork:50,qtyActual:50,status:"Finish",remark:"",photos:[]},
+  {id:35,user:"วิท,หมี,อัด,อัน",date:"2026-05-06",start:"17:30",end:"19:50",hours:2.33,work:"Cycle Count Selective B-11 Level D/E",location:"B-11",item:"-",qtyWork:52,qtyActual:4362,status:"Finish",remark:"",photos:[]},
+  {id:55,user:"อัด,วิท",date:"2026-05-08",start:"11:00",end:"11:30",hours:0.5,work:"OUT แจ้งว่าหางานรหัส PEMTFB009 MT0000 OS โลเคชั่น B-25-014-G ไม่พบ",location:"B-25-014-G",item:"PEMTFB009",qtyWork:1,qtyActual:1,status:"Finish",remark:"หาที่โลเคชั่น B-25-014-G จึงหยิบที่โล B-FD-014-C แทน",photos:[]},
+  {id:56,user:"อัด,วิท",date:"2026-05-08",start:"13:00",end:"13:30",hours:0.5,work:"OUT แจ้งว่างานรหัส LSMTR02RR01001 BK0000 XL (B-29-021-D) มี ไซต์ M ปนมา 1 Pcs",location:"B-29-021-D",item:"LSMTR02RR01001",qtyWork:1,qtyActual:1,status:"Finish",remark:"ตรวจสอบแล้วงานจริงเป็นไซต์ M แต่แปะสติ๊กเกอร์เป็นไซต์ XL",photos:[]},
+  {id:58,user:"อัด,วิท,หมี",date:"2026-05-08",start:"10:00",end:"16:30",hours:5.5,work:"ถ่ายรูปสินค้าและวัดขนาด,น้ำหนัก CATEGORY SPARE PART ส่งรายงาน Product Information Report",location:"-",item:"52",qtyWork:52,qtyActual:52,status:"Finish",remark:"",photos:[]},
+  {id:60,user:"อัน,หมี,กุล",date:"2026-05-08",start:"17:30",end:"19:40",hours:2.17,work:"Cycle Count Selective",location:"-",item:"-",qtyWork:74,qtyActual:1721,status:"Finish",remark:"",photos:[]},
+  {id:66,user:"วิท,หมี",date:"2026-05-11",start:"9:00",end:"16:30",hours:6.5,work:"ถ่ายรูปสินค้าและวัดขนาด,น้ำหนัก CATEGORY SPARE PART ส่งรายงาน Product Information Report",location:"-",item:"38",qtyWork:38,qtyActual:38,status:"Finish",remark:"",photos:[]},
+  {id:69,user:"หมี,วิท,กุล",date:"2026-05-11",start:"17:30",end:"19:50",hours:2.33,work:"Cycle Count Selective B-11 Level G B-12 Level B",location:"B-11,B-12",item:"-",qtyWork:52,qtyActual:1163,status:"Finish",remark:"",photos:[]},
+  {id:77,user:"กุล",date:"2026-05-12",start:"8:40",end:"16:00",hours:6.33,work:"ตรวจสอบงาน Spare Part สถานะ และ Damage & Disposal Count ครั้งที่ 1 ร่วมกับ บัญชี เตรียมทำ MEMO เพิ่ม",location:"-",item:"-",qtyWork:0,qtyActual:67,status:"Finish",remark:"",photos:[]},
+  {id:79,user:"อัน,หมี,กุล",date:"2026-05-12",start:"17:30",end:"19:40",hours:2.17,work:"Cycle Count Selective",location:"-",item:"-",qtyWork:78,qtyActual:2339,status:"Finish",remark:"",photos:[]},
+  {id:83,user:"กุล",date:"2026-05-13",start:"8:30",end:"11:20",hours:2.83,work:"ตรวจเช็คงาน โล QC( Disposal ไม่อยู่ในระบบ) 1 พาเลท",location:"QC",item:"-",qtyWork:0,qtyActual:23,status:"Finish",remark:"เจองาน Lost 4 ชิ้น Mummy-01 3 ชิ้น ย้ายเข้า B-01-014-E",photos:[]},
+  {id:87,user:"อัด,หมี,วิท",date:"2026-05-13",start:"9:30",end:"16:00",hours:6,work:"ถ่ายรูปสินค้าและวัดขนาด,น้ำหนัก CATEGORY SPARE PART ส่งรายงาน Product Information Report",location:"-",item:"56",qtyWork:56,qtyActual:56,status:"Finish",remark:"",photos:[]},
+  {id:89,user:"อัน,อัด,หมี,วิท,กุล",date:"2026-05-13",start:"17:30",end:"19:50",hours:2.33,work:"Cycle Count Selective B-12 Level F,G B-13 Level D,E",location:"B-12,B-13",item:"-",qtyWork:129,qtyActual:1543,status:"Finish",remark:"",photos:[]},
+];
+
+let logs = JSON.parse(localStorage.getItem('wl_logs') || 'null') || SEED;
+let nextId = Math.max(...logs.map(l=>l.id)) + 1;
+let currentStatus = 'Finish';
+let photos = [];
+let stream = null;
+
+// ─── INIT ───────────────────────────────────────────────────
+const today = new Date();
+document.getElementById('headerDate').textContent =
+  today.toLocaleDateString('th-TH',{day:'2-digit',month:'short',year:'numeric'});
+
+const todayStr = today.toISOString().split('T')[0];
+document.getElementById('fDate').value = todayStr;
+
+const nowH = String(today.getHours()).padStart(2,'0');
+const nowM = String(today.getMinutes()).padStart(2,'0');
+document.getElementById('fStart').value = `${nowH}:${nowM}`;
+
+initSlots();
+renderSummary();
+
+// ─── PAGE SWITCH ─────────────────────────────────────────────
+function switchPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+  if(name === 'list') renderList();
+  if(name === 'summary') renderSummary();
+}
+
+// ─── STATUS ─────────────────────────────────────────────────
+function selectStatus(s) {
+  currentStatus = s;
+  ['Finish','InProgress','Pending','Issue'].forEach(x => {
+    const c = document.getElementById('chip-'+x);
+    c.className = 'chip';
+    if(x === s) c.className = 'chip selected-'+x;
+  });
+}
+
+// ─── CAMERA ─────────────────────────────────────────────────
+let facingMode = 'environment';
+let activeSec = null; // 'before' | 'after'
+const MAX_PHOTOS = 5;
+
+// photos object: { before: [...], after: [...] }
+let photos = { before: Array(5).fill(null), after: Array(5).fill(null) };
+
+function initSlots() {
+  renderSlots('before');
+  renderSlots('after');
+}
+
+function renderSlots(sec) {
+  const grid = document.getElementById(sec === 'before' ? 'beforeSlots' : 'afterSlots');
+  const countEl = document.getElementById(sec === 'before' ? 'beforeCount' : 'afterCount');
+  const filled = photos[sec].filter(Boolean).length;
+  countEl.textContent = `${filled} / 5`;
+
+  grid.innerHTML = Array.from({length: 5}, (_, i) => {
+    const img = photos[sec][i];
+    const label = i + 1;
+    if(img) {
+      return `<div class="photo-slot filled" onclick="previewPhoto('${sec}',${i})">
+        <img src="${img}" alt="ภาพ ${label}">
+        <div class="slot-index">${label}</div>
+        <button class="slot-remove" onclick="event.stopPropagation();removeSlotPhoto('${sec}',${i})">✕</button>
+      </div>`;
+    } else {
+      const isNext = filled === i; // light up only next empty
+      return `<div class="photo-slot${isNext?' next-slot':''}" onclick="openSlot('${sec}',${i})">
+        <span class="slot-icon">${isNext ? '📷' : '+'}</span>
+        <span class="slot-num">${label}</span>
+      </div>`;
+    }
+  }).join('');
+
+  // style next slot slightly brighter
+  grid.querySelectorAll('.next-slot').forEach(el => {
+    el.style.borderColor = sec === 'before' ? 'var(--accent)' : 'var(--green)';
+    el.style.color = sec === 'before' ? 'var(--accent)' : 'var(--green)';
+  });
+}
+
+function openSlot(sec, idx) {
+  const filled = photos[sec].filter(Boolean).length;
+  if(idx !== filled) { showToast('⚠ กรุณาถ่ายตามลำดับ'); return; }
+  if(filled >= MAX_PHOTOS) { showToast('⚠ ครบ 5 ภาพแล้ว'); return; }
+  activeSec = sec;
+  startCamera(sec);
+}
+
+async function startCamera(sec) {
+  try {
+    if(stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode, width:{ideal:1280}, height:{ideal:720} }, audio:false
+    });
+    document.getElementById('videoEl').srcObject = stream;
+    document.getElementById('cameraLive').style.display = 'block';
+    document.getElementById('camLabel').textContent = sec === 'before' ? '📸 ก่อนงาน' : '✅ หลังงาน';
+    document.getElementById('camLabel').style.background =
+      sec === 'before' ? 'rgba(91,127,255,0.7)' : 'rgba(34,201,123,0.7)';
+    updateCamBadge();
+    document.getElementById('cameraLive').scrollIntoView({behavior:'smooth', block:'nearest'});
+  } catch(e) {
+    showToast('⚠ เปิดกล้องไม่ได้ — ลองเลือกจากไฟล์แทน');
+  }
+}
+
+async function switchCamera() {
+  facingMode = facingMode === 'environment' ? 'user' : 'environment';
+  if(activeSec) await startCamera(activeSec);
+}
+
+function stopCamera() {
+  if(stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+  document.getElementById('cameraLive').style.display = 'none';
+  activeSec = null;
+}
+
+function capturePhoto() {
+  if(!activeSec) return;
+  const filled = photos[activeSec].filter(Boolean).length;
+  if(filled >= MAX_PHOTOS) { showToast('⚠ ครบ 5 ภาพแล้ว'); stopCamera(); return; }
+
+  const video = document.getElementById('videoEl');
+  const canvas = document.getElementById('canvasEl');
+  canvas.width = video.videoWidth || 640;
+  canvas.height = video.videoHeight || 480;
+  canvas.getContext('2d').drawImage(video, 0, 0);
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+
+  photos[activeSec][filled] = dataUrl;
+  renderSlots(activeSec);
+  updateCamBadge();
+
+  // flash
+  const flash = document.getElementById('shutterFlash');
+  flash.style.opacity = '0.6';
+  setTimeout(() => flash.style.opacity = '0', 100);
+  const btn = document.getElementById('shutterBtn');
+  btn.style.transform = 'scale(0.85)';
+  setTimeout(() => btn.style.transform = 'scale(1)', 140);
+
+  const newFilled = photos[activeSec].filter(Boolean).length;
+  showToast(`📸 ภาพที่ ${newFilled} (${activeSec === 'before' ? 'ก่อนงาน' : 'หลังงาน'}) บันทึกแล้ว`);
+
+  if(newFilled >= MAX_PHOTOS) {
+    showToast(`✓ ครบ 5 ภาพแล้ว — ปิดกล้อง`);
+    setTimeout(stopCamera, 600);
+  }
+}
+
+function updateCamBadge() {
+  if(!activeSec) return;
+  const filled = photos[activeSec].filter(Boolean).length;
+  document.getElementById('camSlotBadge').textContent = `${filled}/5`;
+}
+
+function handleFileSelectCam(e) {
+  if(!activeSec) return;
+  const file = e.target.files[0];
+  if(!file) return;
+  const filled = photos[activeSec].filter(Boolean).length;
+  if(filled >= MAX_PHOTOS) { showToast('⚠ ครบ 5 ภาพแล้ว'); return; }
+  const reader = new FileReader();
+  reader.onload = ev => {
+    photos[activeSec][filled] = ev.target.result;
+    renderSlots(activeSec);
+    updateCamBadge();
+    const newFilled = photos[activeSec].filter(Boolean).length;
+    showToast(`🖼 เพิ่มภาพที่ ${newFilled} เรียบร้อย`);
+    if(newFilled >= MAX_PHOTOS) setTimeout(stopCamera, 400);
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+
+function removeSlotPhoto(sec, idx) {
+  // shift remaining down
+  photos[sec].splice(idx, 1);
+  photos[sec].push(null);
+  renderSlots(sec);
+  showToast('🗑 ลบภาพแล้ว');
+}
+
+function previewPhoto(sec, idx) {
+  const img = photos[sec][idx];
+  if(!img) return;
+  const secLabel = sec === 'before' ? 'ก่อนงาน' : 'หลังงาน';
+  const filled = photos[sec].filter(Boolean);
+  const pos = filled.indexOf(img);
+
+  document.getElementById('modalTitle').textContent = `${secLabel} — ภาพที่ ${idx + 1}`;
+  document.getElementById('modalBody').innerHTML = `
+    <div style="text-align:center">
+      <img src="${img}" style="max-width:100%;border-radius:var(--radius-sm);display:block;margin:0 auto">
+      <div style="display:flex;justify-content:center;gap:10px;margin-top:14px;flex-wrap:wrap">
+        ${idx > 0 && photos[sec][idx-1] ? `<button class="btn btn-ghost btn-sm" onclick="previewPhoto('${sec}',${idx-1})">← ก่อนหน้า</button>` : ''}
+        <button class="btn btn-danger btn-sm" onclick="removeSlotPhoto('${sec}',${idx});closeModalBtn()">🗑 ลบภาพนี้</button>
+        ${idx < 4 && photos[sec][idx+1] ? `<button class="btn btn-ghost btn-sm" onclick="previewPhoto('${sec}',${idx+1})">ถัดไป →</button>` : ''}
+      </div>
+    </div>`;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+// helper: flatten all photos for saving
+function getAllPhotos() {
+  return [
+    ...photos.before.filter(Boolean).map(p => ({type:'before', data:p})),
+    ...photos.after.filter(Boolean).map(p => ({type:'after', data:p})),
+  ];
+}
+
+// ─── SAVE ────────────────────────────────────────────────────
+function saveLog() {
+  const date = document.getElementById('fDate').value;
+  const start = document.getElementById('fStart').value;
+  const end = document.getElementById('fEnd').value;
+  const user = document.getElementById('fUser').value;
+  const work = document.getElementById('fWork').value;
+
+  if(!date || !user || !work) {
+    showToast('⚠ กรุณากรอกวันที่, ผู้ปฏิบัติ, และรายละเอียดงาน');
+    return;
+  }
+
+  const hours = calcHours(start, end);
+
+  const log = {
+    id: nextId++,
+    user,
+    date,
+    start,
+    end,
+    hours,
+    work,
+    location: document.getElementById('fLocation').value || '-',
+    item: document.getElementById('fItem').value || '-',
+    qtyWork: Number(document.getElementById('fQtyWork').value) || 0,
+    qtyActual: Number(document.getElementById('fQtyActual').value) || 0,
+    status: currentStatus,
+    remark: document.getElementById('fRemark').value,
+    photos: getAllPhotos(),
+    photosBefore: photos.before.filter(Boolean),
+    photosAfter: photos.after.filter(Boolean),
+  };
+
+  logs.unshift(log);
+  localStorage.setItem('wl_logs', JSON.stringify(logs));
+  showToast('✓ บันทึกงานเรียบร้อย');
+  resetForm();
+  switchPage('list');
+}
+
+function calcHours(start, end) {
+  if(!start || !end) return 0;
+  const [sh,sm] = start.split(':').map(Number);
+  const [eh,em] = end.split(':').map(Number);
+  const diff = (eh*60+em) - (sh*60+sm);
+  return Math.max(0, diff/60);
+}
+
+function resetForm() {
+  document.getElementById('fDate').value = todayStr;
+  document.getElementById('fUser').value = '';
+  document.getElementById('fStart').value = `${nowH}:${nowM}`;
+  document.getElementById('fEnd').value = '';
+  document.getElementById('fWork').value = '';
+  document.getElementById('fLocation').value = '';
+  document.getElementById('fItem').value = '';
+  document.getElementById('fQtyWork').value = '';
+  document.getElementById('fQtyActual').value = '';
+  document.getElementById('fRemark').value = '';
+  photos = { before: Array(5).fill(null), after: Array(5).fill(null) };
+  initSlots();
+  selectStatus('Finish');
+  stopCamera();
+  facingMode = 'environment';
+}
+
+// ─── LIST ────────────────────────────────────────────────────
+function renderList() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const u = document.getElementById('filterUser').value;
+  const s = document.getElementById('filterStatus').value;
+
+  let filtered = logs.filter(l => {
+    const matchQ = !q || l.work.toLowerCase().includes(q) || l.user.toLowerCase().includes(q) || l.location.toLowerCase().includes(q) || l.item.toLowerCase().includes(q);
+    const matchU = !u || l.user.includes(u);
+    const matchS = !s || l.status === s;
+    return matchQ && matchU && matchS;
+  });
+
+  const list = document.getElementById('logList');
+
+  if(!filtered.length) {
+    list.innerHTML = `<div class="empty-state"><span class="empty-icon">🔍</span><div class="empty-title">ไม่พบรายการ</div><div class="empty-sub">ลองเปลี่ยนคำค้นหา</div></div>`;
+    return;
+  }
+
+  list.innerHTML = filtered.map(l => {
+    const initials = l.user.slice(0,2);
+    const userKey = l.user.includes(',') ? 'default' : l.user;
+    const hoursStr = l.hours >= 1 ? l.hours.toFixed(1) : Math.round(l.hours*60)+'m';
+    const d = new Date(l.date + 'T00:00:00');
+    const dateStr = d.toLocaleDateString('th-TH',{day:'2-digit',month:'short'});
+    return `
+    <div class="log-item" onclick="openLog(${l.id})">
+      <div class="log-avatar user-${userKey}">${initials}</div>
+      <div class="log-body">
+        <div class="log-meta">
+          <span class="log-user">${l.user}</span>
+          <span class="log-time">${l.start}–${l.end}</span>
+          <span class="log-date">${dateStr}</span>
+        </div>
+        <div class="log-work">${l.work}</div>
+        <div class="log-tags">
+          ${l.hours>0 ? `<span class="tag tag-hour">⏱ ${l.hours>=1?l.hours.toFixed(1)+'h':Math.round(l.hours*60)+'m'}</span>` : ''}
+          ${l.qtyActual>0 ? `<span class="tag tag-qty">📦 ${l.qtyActual.toLocaleString()}</span>` : ''}
+          ${(()=>{const cnt=(l.photosBefore?.length||0)+(l.photosAfter?.length||0)||(l.photos?.length||0);return cnt>0?`<span class="tag tag-photo">📷 ${cnt}</span>`:''})()}
+          ${l.location && l.location!=='-' ? `<span class="tag" style="background:rgba(255,255,255,0.07);color:var(--text3)">📍 ${l.location}</span>` : ''}
+        </div>
+      </div>
+      <div class="log-right">
+        <span class="status-badge status-${l.status}">${l.status}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── MODAL ──────────────────────────────────────────────────
+function openLog(id) {
+  const l = logs.find(x => x.id === id);
+  if(!l) return;
+  document.getElementById('modalTitle').textContent = `#${l.id} — ${l.user}`;
+  const d = new Date(l.date+'T00:00:00');
+  const dateStr = d.toLocaleDateString('th-TH',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+
+  const rows = [
+    ['วันที่', dateStr],
+    ['เวลา', `${l.start} – ${l.end} (${l.hours.toFixed(2)} ชม.)`],
+    ['สถานะ', `<span class="status-badge status-${l.status}">${l.status}</span>`],
+    ['Location', l.location],
+    ['สินค้า', l.item],
+    ['จำนวน Work', l.qtyWork ? l.qtyWork.toLocaleString() : '-'],
+    ['จำนวนจริง', l.qtyActual ? l.qtyActual.toLocaleString() : '-'],
+    ['รายละเอียด', `<span style="color:var(--text);line-height:1.7">${l.work}</span>`],
+    ['หมายเหตุ', l.remark || '-'],
+  ];
+
+  const photosHtml = (l.photosBefore?.length || l.photosAfter?.length || l.photos?.length) ? `
+    <div class="detail-row">
+      <div class="detail-label">รูปภาพ</div>
+      <div style="flex:1">
+        ${l.photosBefore?.length ? `<div style="font-size:11px;color:var(--accent);font-family:var(--mono);margin-bottom:6px">📸 ก่อนงาน (${l.photosBefore.length})</div>
+        <div class="modal-photos" style="margin-bottom:12px">${l.photosBefore.map(p=>`<div class="modal-photo"><img src="${p}" loading="lazy"></div>`).join('')}</div>` : ''}
+        ${l.photosAfter?.length ? `<div style="font-size:11px;color:var(--green);font-family:var(--mono);margin-bottom:6px">✅ หลังงาน (${l.photosAfter.length})</div>
+        <div class="modal-photos">${l.photosAfter.map(p=>`<div class="modal-photo"><img src="${p}" loading="lazy"></div>`).join('')}</div>` : ''}
+        ${(!l.photosBefore && !l.photosAfter && l.photos?.length) ? `<div class="modal-photos">${l.photos.map(p=>`<div class="modal-photo"><img src="${typeof p==='object'?p.data:p}" loading="lazy"></div>`).join('')}</div>` : ''}
+      </div>
+    </div>` : '';
+
+  document.getElementById('modalBody').innerHTML =
+    rows.map(([k,v])=>`<div class="detail-row"><div class="detail-label">${k}</div><div class="detail-val">${v}</div></div>`).join('') +
+    photosHtml +
+    `<div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-danger btn-sm" onclick="deleteLog(${id})">🗑 ลบ</button>
+    </div>`;
+
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal(e) { if(e.target.id==='modalOverlay') closeModalBtn(); }
+function closeModalBtn() { document.getElementById('modalOverlay').classList.remove('open'); }
+
+function deleteLog(id) {
+  if(!confirm('ยืนยันการลบรายการนี้?')) return;
+  logs = logs.filter(l => l.id !== id);
+  localStorage.setItem('wl_logs', JSON.stringify(logs));
+  closeModalBtn();
+  renderList();
+  showToast('🗑 ลบรายการเรียบร้อย');
+}
+
+// ─── SUMMARY ────────────────────────────────────────────────
+function renderSummary() {
+  const totalH = logs.reduce((s,l)=>s+l.hours,0);
+  const totalPhotos = logs.reduce((s,l)=>s+l.photos.length,0);
+  const finishCount = logs.filter(l=>l.status==='Finish').length;
+  const issueCount = logs.filter(l=>l.status==='Issue').length;
+
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stat-card blue">
+      <div class="stat-label">รายการทั้งหมด</div>
+      <div class="stat-value">${logs.length}</div>
+      <div class="stat-sub">งาน</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-label">ชั่วโมงรวม</div>
+      <div class="stat-value">${totalH.toFixed(1)}</div>
+      <div class="stat-sub">ชั่วโมง</div>
+    </div>
+    <div class="stat-card amber">
+      <div class="stat-label">รูปภาพ</div>
+      <div class="stat-value">${totalPhotos}</div>
+      <div class="stat-sub">ภาพ</div>
+    </div>
+    <div class="stat-card purple">
+      <div class="stat-label">Finish</div>
+      <div class="stat-value">${finishCount}</div>
+      <div class="stat-sub">/ ${logs.length} งาน</div>
+    </div>
+  `;
+
+  // User hours chart
+  const userHours = {};
+  logs.forEach(l => {
+    l.user.split(',').map(u=>u.trim()).forEach(u => {
+      userHours[u] = (userHours[u]||0) + l.hours;
+    });
+  });
+
+  const maxH = Math.max(...Object.values(userHours));
+  const colors = { อัด:'var(--accent)', กุล:'var(--green)', วิท:'var(--amber)', หมี:'var(--accent2)', อัน:'var(--red)' };
+
+  document.getElementById('userChart').innerHTML = Object.entries(userHours)
+    .sort((a,b)=>b[1]-a[1])
+    .map(([u,h]) => `
+    <div style="display:grid;grid-template-columns:60px 1fr 50px;gap:10px;align-items:center;margin-bottom:10px">
+      <div style="font-size:13px;font-weight:600;color:${colors[u]||'var(--text2)'}">${u}</div>
+      <div style="background:var(--surface2);border-radius:4px;height:8px;overflow:hidden">
+        <div style="width:${(h/maxH*100).toFixed(1)}%;height:100%;background:${colors[u]||'var(--border2)'};border-radius:4px;transition:width 0.5s"></div>
+      </div>
+      <div style="font-size:13px;font-family:var(--mono);color:var(--text2);text-align:right">${h.toFixed(1)}h</div>
+    </div>`).join('');
+
+  // Recent by date
+  const byDate = {};
+  logs.forEach(l => { byDate[l.date] = byDate[l.date]||[]; byDate[l.date].push(l); });
+  const dates = Object.keys(byDate).sort().reverse().slice(0,5);
+
+  document.getElementById('recentByDate').innerHTML = dates.map(d => {
+    const dd = new Date(d+'T00:00:00');
+    const dStr = dd.toLocaleDateString('th-TH',{weekday:'short',day:'2-digit',month:'short'});
+    const items = byDate[d];
+    const totalH = items.reduce((s,l)=>s+l.hours,0);
+    return `
+    <div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:13px;font-weight:600;font-family:var(--mono);color:var(--text)">${dStr}</span>
+        <span style="font-size:11px;color:var(--text3);font-family:var(--mono)">${totalH.toFixed(1)}h · ${items.length} งาน</span>
+      </div>
+      ${items.slice(0,3).map(l=>`<div style="font-size:12px;color:var(--text2);padding:3px 0;display:flex;gap:8px;align-items:flex-start">
+        <span style="color:var(--text3);flex-shrink:0;font-family:var(--mono)">${l.start}</span>
+        <span style="overflow:hidden;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical">${l.work}</span>
+      </div>`).join('')}
+      ${items.length>3?`<div style="font-size:11px;color:var(--text3);margin-top:4px">+${items.length-3} รายการ</div>`:''}
+    </div>`;
+  }).join('') || '<div style="color:var(--text3);font-size:13px">ยังไม่มีข้อมูล</div>';
+}
+
+// ─── TOAST ──────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>
