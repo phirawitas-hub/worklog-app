@@ -776,6 +776,7 @@
     <span style="color:var(--text3);font-weight:400">/ INVENTORY TEAM</span>
   </div>
   <div class="header-right">
+    <div id="syncBadge" style="display:none;font-size:11px;font-family:var(--mono);padding:4px 10px;border-radius:20px;border:1px solid;transition:all 0.3s"></div>
     <div class="date-badge" id="headerDate"></div>
   </div>
 </header>
@@ -1007,11 +1008,114 @@ const SEED = [
   {id:89,user:"อัน,อัด,หมี,วิท,กุล",date:"2026-05-13",start:"17:30",end:"19:50",hours:2.33,work:"Cycle Count Selective B-12 Level F,G B-13 Level D,E",location:"B-12,B-13",item:"-",qtyWork:129,qtyActual:1543,status:"Finish",remark:"",photos:[]},
 ];
 
+// ─── CONFIG — ใส่ GAS URL ตรงนี้ ─────────────────────────────
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbwZEDYqhrhc02ps7Z6Cjbw01s_sVE9AWnfz2IBN4sPnVQ7mkon86oA_zatUMubZyhLKZw/exec';
+// วิธีได้ GAS URL: script.google.com → Deploy → New deployment → Web app → Copy URL
+// ถ้ายังไม่มี ให้ใส่ '' ไว้ก่อน จะใช้ localStorage อย่างเดียว
+// ─────────────────────────────────────────────────────────────
+
 let logs = JSON.parse(localStorage.getItem('wl_logs') || 'null') || SEED;
 let nextId = Math.max(...logs.map(l=>l.id)) + 1;
 let currentStatus = 'Finish';
 let photos = [];
 let stream = null;
+
+// ─── SYNC HELPERS ────────────────────────────────────────────
+function setSyncBadge(state) {
+  const el = document.getElementById('syncBadge');
+  const map = {
+    syncing: { text:'⟳ กำลัง sync...', bg:'rgba(91,127,255,0.15)', color:'var(--accent)', border:'rgba(91,127,255,0.4)' },
+    ok:      { text:'✓ Synced', bg:'rgba(34,201,123,0.15)', color:'var(--green)', border:'rgba(34,201,123,0.4)' },
+    error:   { text:'⚠ Offline', bg:'rgba(245,166,35,0.15)', color:'var(--amber)', border:'rgba(245,166,35,0.4)' },
+    off:     null,
+  };
+  if(!map[state]) { el.style.display='none'; return; }
+  const s = map[state];
+  el.style.display = 'block';
+  el.textContent = s.text;
+  el.style.background = s.bg;
+  el.style.color = s.color;
+  el.style.borderColor = s.border;
+  if(state === 'ok') setTimeout(()=>setSyncBadge('off'), 3000);
+}
+
+async function pushToGAS(log) {
+  if(!GAS_URL || GAS_URL === 'YOUR_GAS_URL_HERE') return;
+  setSyncBadge('syncing');
+  // ส่งเฉพาะ metadata (ไม่ส่ง base64 รูป เพื่อประหยัด quota)
+  const payload = {
+    action: 'save',
+    id: log.id,
+    user: log.user,
+    date: log.date,
+    start: log.start,
+    end: log.end,
+    hours: log.hours,
+    work: log.work,
+    location: log.location,
+    item: log.item,
+    qtyWork: log.qtyWork,
+    qtyActual: log.qtyActual,
+    status: log.status,
+    remark: log.remark,
+    photosBefore: log.photosBefore?.length || 0,
+    photosAfter: log.photosAfter?.length || 0,
+    savedAt: new Date().toISOString(),
+  };
+  try {
+    await fetch(GAS_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    setSyncBadge('ok');
+  } catch(e) {
+    setSyncBadge('error');
+    // ยังบันทึกใน localStorage อยู่ ไม่หาย
+  }
+}
+
+async function loadFromGAS() {
+  if(!GAS_URL || GAS_URL === 'YOUR_GAS_URL_HERE') return;
+  setSyncBadge('syncing');
+  try {
+    const res = await fetch(GAS_URL + '?action=getAll');
+    if(!res.ok) throw new Error();
+    const data = await res.json();
+    if(Array.isArray(data) && data.length > 0) {
+      // merge: GAS เป็น source of truth สำหรับ metadata, รูปเก็บใน localStorage
+      const localLogs = JSON.parse(localStorage.getItem('wl_logs') || '[]');
+      const photoMap = {};
+      localLogs.forEach(l => { photoMap[l.id] = { photosBefore: l.photosBefore, photosAfter: l.photosAfter }; });
+      logs = data.map(r => ({
+        id: Number(r.id||r.ID),
+        user: r.user||r.User||'',
+        date: r.date||r.Date||'',
+        start: r.start||r.Start||'',
+        end: r.end||r.End||'',
+        hours: Number(r.hours||r.Hours||0),
+        work: r.work||r.Work||'',
+        location: r.location||r.Location||'-',
+        item: r.item||r.Item||'-',
+        qtyWork: Number(r.qtyWork||0),
+        qtyActual: Number(r.qtyActual||0),
+        status: r.status||r.Status||'Finish',
+        remark: r.remark||r.Remark||'',
+        photos: [],
+        photosBefore: photoMap[r.id]?.photosBefore || [],
+        photosAfter: photoMap[r.id]?.photosAfter || [],
+      }));
+      nextId = Math.max(...logs.map(l=>l.id), nextId) + 1;
+      localStorage.setItem('wl_logs', JSON.stringify(logs));
+      setSyncBadge('ok');
+      renderList();
+      renderSummary();
+    }
+  } catch(e) {
+    setSyncBadge('error');
+  }
+}
 
 // ─── INIT ───────────────────────────────────────────────────
 const today = new Date();
@@ -1027,6 +1131,7 @@ document.getElementById('fStart').value = `${nowH}:${nowM}`;
 
 initSlots();
 renderSummary();
+loadFromGAS(); // ดึงข้อมูลจาก Google Sheets ตอนโหลดหน้า
 
 // ─── PAGE SWITCH ─────────────────────────────────────────────
 function switchPage(name) {
@@ -1259,6 +1364,7 @@ function saveLog() {
 
   logs.unshift(log);
   localStorage.setItem('wl_logs', JSON.stringify(logs));
+  pushToGAS(log); // sync ไป Google Sheets
   showToast('✓ บันทึกงานเรียบร้อย');
   resetForm();
   switchPage('list');
@@ -1397,7 +1503,7 @@ function deleteLog(id) {
 // ─── SUMMARY ────────────────────────────────────────────────
 function renderSummary() {
   const totalH = logs.reduce((s,l)=>s+l.hours,0);
-  const totalPhotos = logs.reduce((s,l)=>s+l.photos.length,0);
+  const totalPhotos = logs.reduce((s,l)=>s+(l.photosBefore?.length||0)+(l.photosAfter?.length||0),0);
   const finishCount = logs.filter(l=>l.status==='Finish').length;
   const issueCount = logs.filter(l=>l.status==='Issue').length;
 
