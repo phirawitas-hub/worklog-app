@@ -528,7 +528,7 @@
 
 <script>
 // ══════════════════════════════════════════════
-// ⚙️  CONFIG — แก้ GAS URL ตรงนี้
+// ⚙️  CONFIG — URL ของ Google Apps Script ของคุณ
 // ══════════════════════════════════════════════
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwZEDYqhrhc02ps7Z6Cjbw01s_sVE9AWnfz2IBN4sPnVQ7mkon86oA_zatUMubZyhLKZw/exec'; 
 // ══════════════════════════════════════════════
@@ -544,7 +544,7 @@ let currentStatus = 'Finish';
 
 // ── SYNC ─────────────────────────────────────────────────────
 
-// ฟังก์ชันใหม่! เพื่อส่งข้อมูลและรับสถานะที่แท้จริง
+// 🔥 ฟังก์ชันสำหรับส่งข้อมูลแบบรับรู้ Error ได้อย่างละเอียด
 async function pushToGAS(log) {
   if(!GAS_URL) return { ok: false, error: 'ยังไม่ได้ใส่ URL ของ Google Apps Script' };
   
@@ -561,25 +561,26 @@ async function pushToGAS(log) {
   };
 
   try {
-    // ใช้ fetch ธรรมดา เพื่อดักจับ Error กรณี Sheet ไม่คืนค่ากลับมา
     const response = await fetch(GAS_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
       body: JSON.stringify(payload)
     });
     
-    // ถ้ายิงไปหา Google ไม่สำเร็จเลย
     if(!response.ok) {
-      return { ok: false, error: `HTTP Error: ${response.status} ${response.statusText}` };
+      return { ok: false, error: `Google ปฏิเสธการเชื่อมต่อ (HTTP ${response.status})` };
     }
 
-    // อ่านค่าที่ตอบกลับมาจาก Code.gs (ถ้า Code.gs ไม่มี return จะ error ตรงนี้แหละ!)
     const resultText = await response.text();
-    return { ok: true, data: resultText };
+    
+    // เช็คข้อความที่ตอบกลับมาจาก Google Sheet
+    if(resultText.includes('"ok":true') || resultText.includes('"ok": true')) {
+      return { ok: true, data: resultText };
+    } else {
+      return { ok: false, error: "ข้อผิดพลาดจาก Google Sheet: " + resultText };
+    }
 
   } catch(e) {
-    // ถ้าพัง (เช่น Exception: did not return anything หรือ CORS error)
-    return { ok: false, error: e.message };
+    return { ok: false, error: `เชื่อมต่อล้มเหลว (Network Error): ${e.message}` };
   }
 }
 
@@ -855,24 +856,21 @@ async function saveLog() {
   setSaveUI('⏳', 'กำลังเชื่อมต่อ...', 'กำลังส่งข้อมูลไปยัง Google Sheets...');
   const res = await pushToGAS(log);
 
-  // 4. ตรวจสอบผลลัพธ์
+  // 4. ตรวจสอบผลลัพธ์แบบละเอียด
   if(res.ok) {
-    // สำเร็จ!
     setSaveUI('✅', 'บันทึกข้อมูลสำเร็จ!', 'ข้อมูลถูกส่งเข้า Google Sheets เรียบร้อยแล้ว');
-    document.getElementById('saveBtnWrap').style.display = 'none'; // ซ่อนปุ่ม เพราะจะปิดให้อัตโนมัติ
+    document.getElementById('saveBtnWrap').style.display = 'none'; 
     setTimeout(() => {
       closeSaveOverlay();
       resetForm();
       switchPage('list');
-    }, 1800);
+    }, 1500);
   } else {
-    // มีปัญหา (เช่น Script error หรือ Network)
-    setSaveUI('⚠️', 'บันทึกลงในแอปแล้ว', 'แต่ส่งข้อมูลไป Google Sheets ไม่สำเร็จ โปรดตรวจสอบการเชื่อมต่อ หรือตั้งค่า Apps Script', res.error);
-    // ไม่ Reset form เผื่อให้เค้ากดบันทึกใหม่ หรือจะกดปุ่มตกลงเพื่อไปหน้ารวมก็ได้
+    // ถ้าระบบพัง จะขึ้นหน้านี้ และโชว์ Error ชัดๆ ให้อ่าน
+    setSaveUI('⚠️', 'ส่งข้อมูลไป Google Sheet ไม่สำเร็จ', 'บันทึกลงแอปเรียบร้อย แต่เชื่อมต่อ Google Sheet พลาด', res.error);
     
-    // อัปเดตปุ่มกด
     const btn = document.querySelector('#saveBtnWrap button');
-    btn.textContent = "รับทราบ (ทำต่อออฟไลน์)";
+    btn.textContent = "รับทราบ";
     btn.onclick = function() {
       closeSaveOverlay();
       resetForm();
