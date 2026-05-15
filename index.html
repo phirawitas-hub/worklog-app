@@ -33,89 +33,89 @@
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
-  body { 
-    background-color: var(--bg); 
-    background-image: radial-gradient(#cbd5e1 2px, transparent 2px); 
-    background-size: 28px 28px; 
-    color: var(--text); 
-    font-family: var(--sans); 
-    font-size: 15px; 
-    line-height: 1.6; 
-    min-height: 100vh; 
+  body {
+    background-color: var(--bg);
+    background-image: radial-gradient(#cbd5e1 2px, transparent 2px);
+    background-size: 28px 28px;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
   }
 
   .app { display: flex; flex-direction: column; min-height: 100vh; }
 
-  header { 
-    background: var(--surface); 
-    border-bottom: 3px solid var(--border); 
-    padding: 0 24px; 
-    height: 70px; 
-    display: flex; 
-    align-items: center; 
-    justify-content: space-between; 
-    position: sticky; 
-    top: 0; 
-    z-index: 100; 
+  header {
+    background: var(--surface);
+    border-bottom: 3px solid var(--border);
+    padding: 0 24px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
   }
 
-  .logo { 
-    display: flex; 
-    align-items: center; 
-    gap: 12px; 
-    font-family: var(--sans); 
-    font-size: 18px; 
-    font-weight: 700; 
-    letter-spacing: 0.02em; 
-    color: var(--text); 
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: var(--sans);
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--text);
   }
 
-  .logo-icon { 
-    width: 36px; height: 36px; 
-    border-radius: 50%; 
-    background: var(--green); 
-    border: 2px solid var(--border); 
-    box-shadow: 2px 2px 0px var(--border); 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    font-size: 18px; 
+  .logo-icon {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--green);
+    border: 2px solid var(--border);
+    box-shadow: 2px 2px 0px var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
   }
 
   .header-right { display: flex; align-items: center; gap: 12px; }
 
-  .date-badge { 
-    font-family: var(--mono); 
-    font-size: 12px; font-weight: 700; 
-    color: var(--text); 
-    background: var(--surface); 
-    border: 2px solid var(--border); 
-    box-shadow: 2px 2px 0px var(--border); 
-    padding: 6px 14px; 
-    border-radius: 20px; 
+  .date-badge {
+    font-family: var(--mono);
+    font-size: 12px; font-weight: 700;
+    color: var(--text);
+    background: var(--surface);
+    border: 2px solid var(--border);
+    box-shadow: 2px 2px 0px var(--border);
+    padding: 6px 14px;
+    border-radius: 20px;
   }
 
-  .nav { 
-    background: var(--surface); 
-    border-bottom: 3px solid var(--border); 
-    display: flex; 
-    padding: 0 24px; 
-    gap: 8px; 
-    overflow-x: auto; 
+  .nav {
+    background: var(--surface);
+    border-bottom: 3px solid var(--border);
+    display: flex;
+    padding: 0 24px;
+    gap: 8px;
+    overflow-x: auto;
   }
 
-  .nav-tab { 
-    padding: 16px 20px; 
-    font-size: 15px; font-weight: 600; 
-    color: var(--text2); 
-    cursor: pointer; 
-    border: none; background: none; 
-    border-bottom: 4px solid transparent; 
-    transition: all 0.2s; 
-    font-family: var(--sans); 
-    display: flex; align-items: center; gap: 8px; 
-    white-space: nowrap; 
-    margin-bottom: -3px; 
+  .nav-tab {
+    padding: 16px 20px;
+    font-size: 15px; font-weight: 600;
+    color: var(--text2);
+    cursor: pointer;
+    border: none; background: none;
+    border-bottom: 4px solid transparent;
+    transition: all 0.2s;
+    font-family: var(--sans);
+    display: flex; align-items: center; gap: 8px;
+    white-space: nowrap;
+    margin-bottom: -3px;
   }
 
   .nav-tab.active { color: var(--text); border-bottom-color: var(--green); }
@@ -128,26 +128,26 @@
   @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
 
   .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 32px; }
-  
-  .stat-card { 
-    background: var(--surface); 
-    border: 3px solid var(--border); 
-    border-radius: var(--radius); 
-    padding: 24px; 
-    position: relative; 
-    box-shadow: var(--shadow); 
-    transition: transform 0.2s, box-shadow 0.2s; 
+
+  .stat-card {
+    background: var(--surface);
+    border: 3px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    position: relative;
+    box-shadow: var(--shadow);
+    transition: transform 0.2s, box-shadow 0.2s;
   }
   .stat-card:hover { transform: translate(-2px, -2px); box-shadow: var(--shadow-hover); }
 
-  .stat-icon { 
-    width: 48px; height: 48px; 
-    border-radius: 14px; 
-    display: flex; align-items: center; justify-content: center; 
-    font-size: 24px; 
-    border: 2px solid var(--border); 
-    box-shadow: 2px 2px 0px var(--border); 
-    margin-bottom: 16px; 
+  .stat-icon {
+    width: 48px; height: 48px;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    border: 2px solid var(--border);
+    box-shadow: 2px 2px 0px var(--border);
+    margin-bottom: 16px;
   }
   .stat-card.blue .stat-icon { background: var(--accent); color: white; }
   .stat-card.green .stat-icon { background: var(--green); color: var(--text); }
@@ -158,13 +158,13 @@
   .stat-value { font-size: 32px; font-weight: 700; font-family: var(--mono); line-height: 1; color: var(--text); }
   .stat-sub { font-size: 13px; font-weight: 500; color: var(--text3); margin-top: 8px; }
 
-  .card { 
-    background: var(--surface); 
-    border: 3px solid var(--border); 
-    border-radius: var(--radius); 
-    padding: 28px; 
-    margin-bottom: 24px; 
-    box-shadow: var(--shadow); 
+  .card {
+    background: var(--surface);
+    border: 3px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow);
   }
   .card-title { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 24px; display: flex; align-items: center; gap: 12px; }
   .card-title-icon { width: 32px; height: 32px; background: var(--surface2); border: 2px solid var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
@@ -173,20 +173,20 @@
   .form-grid.three { grid-template-columns: 1fr 1fr 1fr; }
   .field { display: flex; flex-direction: column; gap: 8px; }
   .field.span2 { grid-column: span 2; }
-  
+
   label { font-size: 14px; font-weight: 600; color: var(--text); }
-  
-  input, select, textarea { 
-    background: var(--surface); 
-    border: 2px solid var(--border); 
-    border-radius: var(--radius-sm); 
-    color: var(--text); 
-    font-family: var(--sans); 
-    font-size: 15px; 
-    padding: 14px 16px; 
-    outline: none; 
-    transition: all 0.2s; 
-    width: 100%; 
+
+  input, select, textarea {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    padding: 14px 16px;
+    outline: none;
+    transition: all 0.2s;
+    width: 100%;
   }
   input::placeholder, textarea::placeholder { color: var(--text3); }
   input:focus, select:focus, textarea:focus { transform: translate(-2px, -2px); box-shadow: var(--shadow-sm); }
@@ -221,7 +221,7 @@
   .photo-slot:hover:not(.filled) { border-style: solid; border-color: var(--border); box-shadow: var(--shadow-sm); transform: translate(-2px, -2px); color: var(--text); }
   .photo-slot.filled { border: 2px solid var(--border); box-shadow: var(--shadow-sm); cursor: pointer; }
   .photo-slot.filled img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  
+
   .slot-num { font-family: var(--mono); font-size: 12px; color: inherit; }
   .slot-icon { font-size: 24px; }
   .slot-remove { position: absolute; top: 6px; right: 6px; background: var(--surface); border: 2px solid var(--border); color: var(--text); width: 24px; height: 24px; border-radius: 50%; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; z-index: 2; transition: all 0.2s; box-shadow: 2px 2px 0px var(--border); }
@@ -239,11 +239,11 @@
   .btn-sm:hover { box-shadow: var(--shadow); }
 
   .form-actions { display: flex; gap: 16px; justify-content: flex-end; margin-top: 32px; padding-top: 24px; border-top: 2px dashed var(--border2); }
-  
+
   .filter-bar { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; align-items: center; }
   .filter-bar input { flex: 1; min-width: 250px; }
   .filter-bar select { width: auto; min-width: 130px; }
-  
+
   .log-list { display: flex; flex-direction: column; gap: 16px; }
   .log-item { background: var(--surface); border: 3px solid var(--border); border-radius: var(--radius); padding: 24px; cursor: pointer; transition: all 0.2s; display: grid; grid-template-columns: auto 1fr auto; gap: 20px; align-items: start; box-shadow: var(--shadow); }
   .log-item:hover { transform: translate(-4px, -4px); box-shadow: 8px 8px 0px var(--border); border-color: var(--accent); }
@@ -255,7 +255,7 @@
   .log-date { font-size: 13px; font-weight: 600; color: var(--text2); font-family: var(--mono); }
   .log-work { font-size: 15px; color: var(--text); line-height: 1.6; font-weight: 500; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
   .log-tags { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
-  
+
   .tag { font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 16px; display: inline-flex; align-items: center; gap: 6px; background: var(--surface); border: 2px solid var(--border); box-shadow: 2px 2px 0px var(--border); color: var(--text); }
   .log-right { text-align: right; flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 12px; }
   .status-badge { font-size: 13px; font-weight: 700; padding: 6px 14px; border-radius: 20px; display: inline-block; border: 2px solid var(--border); box-shadow: 2px 2px 0px var(--border); }
@@ -271,17 +271,17 @@
   .modal-title { font-size: 22px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 12px; }
   .modal-close { background: var(--surface); border: 2px solid var(--border); box-shadow: 2px 2px 0px var(--border); color: var(--text); font-size: 18px; font-weight: bold; cursor: pointer; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
   .modal-close:hover { transform: translate(-2px,-2px); box-shadow: 4px 4px 0px var(--border); background: var(--red); color: white; }
-  
+
   .detail-row { display: flex; gap: 16px; margin-bottom: 16px; align-items: flex-start; }
   .detail-label { font-size: 14px; font-weight: 700; color: var(--text2); width: 120px; flex-shrink: 0; padding-top: 2px; }
   .detail-val { font-size: 15px; font-weight: 500; color: var(--text); flex: 1; line-height: 1.6; }
-  
+
   .modal-photos { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 16px; margin-top: 16px; }
   .modal-photo { border-radius: var(--radius-sm); overflow: hidden; aspect-ratio: 1; border: 2px solid var(--border); box-shadow: 3px 3px 0px var(--border); cursor: pointer; transition: transform 0.2s; }
   .modal-photo:hover { transform: translate(-4px,-4px); box-shadow: 7px 7px 0px var(--border); }
   .modal-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-  /* ─── Save Loading UI ─── */
+  /* Save Loading UI */
   .save-modal { max-width: 400px; text-align: center; padding: 40px 24px; display: flex; flex-direction: column; align-items: center; }
   .spinner-icon { font-size: 48px; display: inline-block; animation: spin 1s linear infinite; }
   @keyframes spin { 100% { transform: rotate(360deg); } }
@@ -359,7 +359,11 @@
           <label>ผู้ปฏิบัติงาน</label>
           <select id="fUser">
             <option value="">— เลือกพนักงาน —</option>
-            <option value="อัด">อัด</option><option value="กุล">กุล</option><option value="วิท">วิท</option><option value="หมี">หมี</option><option value="อัน">อัน</option>
+            <option value="อัด">อัด</option>
+            <option value="กุล">กุล</option>
+            <option value="วิท">วิท</option>
+            <option value="หมี">หมี</option>
+            <option value="อัน">อัน</option>
           </select>
         </div>
         <div class="field">
@@ -372,18 +376,18 @@
             <textarea id="fWork" placeholder="พิมพ์หรือเลือกจากรายการ..."></textarea>
             <button type="button" class="combo-toggle" onclick="toggleDropdown('workDrop')" title="เลือกจากรายการ">▾</button>
             <div class="combo-dropdown" id="workDrop">
-              <div class="combo-option" onclick="pickWork('ส่งรายงานประจำวัน Data Stock Onhand Spare Part , Raw Material & Consumables , E-Commerce')"><span class="opt-icon">📊</span>ส่งรายงานประจำวัน Data Stock Onhand</div>
-              <div class="combo-option" onclick="pickWork('ส่ง Report Inventory Status change')"><span class="opt-icon">📋</span>ส่ง Report Inventory Status change</div>
-              <div class="combo-option" onclick="pickWork('ถ่ายรูปสินค้าและวัดขนาด,น้ำหนัก CATEGORY SPARE PART , ส่งรายงาน Product Information Report')"><span class="opt-icon">📷</span>ถ่ายรูปสินค้าและวัดขนาด Product Info Report</div>
-              <div class="combo-option" onclick="pickWork('Cycle Count Selective ')"><span class="opt-icon">🔢</span>Cycle Count Selective</div>
-              <div class="combo-option" onclick="pickWork('ตักงาน / เก็บงาน ')"><span class="opt-icon">📦</span>ตักงาน / เก็บงาน</div>
-              <div class="combo-option" onclick="pickWork('ทำ 5 ส ')"><span class="opt-icon">🧹</span>ทำ 5 ส</div>
-              <div class="combo-option" onclick="pickWork('Replen งาน ')"><span class="opt-icon">🔄</span>Replen งาน</div>
-              <div class="combo-option" onclick="pickWork('Transfer-Putaway สินค้า ')"><span class="opt-icon">📤</span>Transfer-Putaway สินค้า</div>
-              <div class="combo-option" onclick="pickWork('ตรวจนับสินค้า Aging 5 ปี ')"><span class="opt-icon">⏳</span>ตรวจนับสินค้า Aging 5 ปี</div>
-              <div class="combo-option" onclick="pickWork('ตรวจสอบสินค้า DMG & Disposal ')"><span class="opt-icon">🔍</span>ตรวจสอบสินค้า DMG & Disposal</div>
-              <div class="combo-option" onclick="pickWork('เปลี่ยน Status สินค้า ')"><span class="opt-icon">🔁</span>เปลี่ยน Status สินค้า</div>
-              <div class="combo-option" onclick="pickWork('ตรวจเช็คงาน Location ')"><span class="opt-icon">📍</span>ตรวจเช็คงาน Location</div>
+              <div class="combo-option" onclick="pickWork('ส่งรายงานประจำวัน Data Stock Onhand Spare Part , Raw Material & Consumables , E-Commerce')"><span>📊</span>ส่งรายงานประจำวัน Data Stock Onhand</div>
+              <div class="combo-option" onclick="pickWork('ส่ง Report Inventory Status change')"><span>📋</span>ส่ง Report Inventory Status change</div>
+              <div class="combo-option" onclick="pickWork('ถ่ายรูปสินค้าและวัดขนาด,น้ำหนัก CATEGORY SPARE PART , ส่งรายงาน Product Information Report')"><span>📷</span>ถ่ายรูปสินค้าและวัดขนาด Product Info Report</div>
+              <div class="combo-option" onclick="pickWork('Cycle Count Selective ')"><span>🔢</span>Cycle Count Selective</div>
+              <div class="combo-option" onclick="pickWork('ตักงาน / เก็บงาน ')"><span>📦</span>ตักงาน / เก็บงาน</div>
+              <div class="combo-option" onclick="pickWork('ทำ 5 ส ')"><span>🧹</span>ทำ 5 ส</div>
+              <div class="combo-option" onclick="pickWork('Replen งาน ')"><span>🔄</span>Replen งาน</div>
+              <div class="combo-option" onclick="pickWork('Transfer-Putaway สินค้า ')"><span>📤</span>Transfer-Putaway สินค้า</div>
+              <div class="combo-option" onclick="pickWork('ตรวจนับสินค้า Aging 5 ปี ')"><span>⏳</span>ตรวจนับสินค้า Aging 5 ปี</div>
+              <div class="combo-option" onclick="pickWork('ตรวจสอบสินค้า DMG & Disposal ')"><span>🔍</span>ตรวจสอบสินค้า DMG & Disposal</div>
+              <div class="combo-option" onclick="pickWork('เปลี่ยน Status สินค้า ')"><span>🔁</span>เปลี่ยน Status สินค้า</div>
+              <div class="combo-option" onclick="pickWork('ตรวจเช็คงาน Location ')"><span>📍</span>ตรวจเช็คงาน Location</div>
             </div>
           </div>
         </div>
@@ -409,10 +413,10 @@
           <input type="text" id="fRemark" placeholder="พิมพ์หรือเลือกจากรายการ...">
           <button type="button" class="combo-toggle" onclick="toggleDropdown('remarkDrop')" style="top:8px;">▾</button>
           <div class="combo-dropdown" id="remarkDrop">
-            <div class="combo-option" onclick="pickRemark('ตรวจสอบแล้วถูกต้อง')"><span class="opt-icon">✅</span>ตรวจสอบแล้วถูกต้อง</div>
-            <div class="combo-option" onclick="pickRemark('สินค้าจำนวนไม่ตรงกับระบบ')"><span class="opt-icon">⚠️</span>สินค้าจำนวนไม่ตรงกับระบบ</div>
-            <div class="combo-option" onclick="pickRemark('หาสินค้าไม่พบใน Location ที่ระบุ')"><span class="opt-icon">🔍</span>หาสินค้าไม่พบใน Location ที่ระบุ</div>
-            <div class="combo-option" onclick="pickRemark('สินค้า Damage ไม่สามารถจำหน่ายได้')"><span class="opt-icon">❌</span>สินค้า Damage ไม่สามารถจำหน่ายได้</div>
+            <div class="combo-option" onclick="pickRemark('ตรวจสอบแล้วถูกต้อง')"><span>✅</span>ตรวจสอบแล้วถูกต้อง</div>
+            <div class="combo-option" onclick="pickRemark('สินค้าจำนวนไม่ตรงกับระบบ')"><span>⚠️</span>สินค้าจำนวนไม่ตรงกับระบบ</div>
+            <div class="combo-option" onclick="pickRemark('หาสินค้าไม่พบใน Location ที่ระบุ')"><span>🔍</span>หาสินค้าไม่พบใน Location ที่ระบุ</div>
+            <div class="combo-option" onclick="pickRemark('สินค้า Damage ไม่สามารถจำหน่ายได้')"><span>❌</span>สินค้า Damage ไม่สามารถจำหน่ายได้</div>
           </div>
         </div>
       </div>
@@ -467,10 +471,12 @@
     <div class="filter-bar">
       <input type="text" id="searchInput" placeholder="🔍 ค้นหางาน, ผู้ปฏิบัติ, location..." oninput="renderList()">
       <select id="filterUser" onchange="renderList()">
-        <option value="">ทุกคน</option><option>อัด</option><option>กุล</option><option>วิท</option><option>หมี</option><option>อัน</option>
+        <option value="">ทุกคน</option>
+        <option>อัด</option><option>กุล</option><option>วิท</option><option>หมี</option><option>อัน</option>
       </select>
       <select id="filterStatus" onchange="renderList()">
-        <option value="">ทุกสถานะ</option><option>Finish</option><option>InProgress</option><option>Pending</option><option>Issue</option>
+        <option value="">ทุกสถานะ</option>
+        <option>Finish</option><option>InProgress</option><option>Pending</option><option>Issue</option>
       </select>
     </div>
     <div class="log-list" id="logList"></div>
@@ -492,15 +498,15 @@
 </div>
 </div>
 
-<!-- Save Loading UI Modal -->
-<div class="modal-overlay" id="saveOverlay" style="z-index: 9999;">
+<!-- Save Loading Modal -->
+<div class="modal-overlay" id="saveOverlay" style="z-index:9999;">
   <div class="modal save-modal">
     <div id="saveSpinner" class="spinner-icon">⏳</div>
     <div id="saveTitle" class="save-title">กำลังประมวลผล...</div>
     <div id="saveDesc" class="save-desc">กรุณารอสักครู่</div>
     <div id="saveDetails" class="save-details"></div>
-    <div style="margin-top: 24px; display: none; width: 100%;" id="saveBtnWrap">
-      <button class="btn btn-primary" onclick="closeSaveOverlay()" style="width: 100%;">ตกลง (รับทราบ)</button>
+    <div style="margin-top:24px;display:none;width:100%;" id="saveBtnWrap">
+      <button class="btn btn-primary" onclick="closeSaveOverlay()" style="width:100%;">ตกลง (รับทราบ)</button>
     </div>
   </div>
 </div>
@@ -516,7 +522,7 @@
   </div>
 </div>
 
-<!-- Full image Modal -->
+<!-- Full Image Modal -->
 <div class="modal-overlay" id="imgModalOverlay" style="z-index:250;" onclick="closeImgModal(event)">
   <div class="modal" style="max-width:800px;text-align:center;padding:24px;">
     <img id="fullImgPreview" src="" style="max-width:100%;max-height:75vh;border-radius:var(--radius-sm);object-fit:contain;border:2px solid var(--border);">
@@ -528,9 +534,9 @@
 
 <script>
 // ══════════════════════════════════════════════
-// ⚙️  CONFIG — URL ของ Google Apps Script ของคุณ
+// ⚙️  CONFIG
 // ══════════════════════════════════════════════
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbwZEDYqhrhc02ps7Z6Cjbw01s_sVE9AWnfz2IBN4sPnVQ7mkon86oA_zatUMubZyhLKZw/exec'; 
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbwZEDYqhrhc02ps7Z6Cjbw01s_sVE9AWnfz2IBN4sPnVQ7mkon86oA_zatUMubZyhLKZw/exec';
 // ══════════════════════════════════════════════
 
 let logs = [];
@@ -539,99 +545,116 @@ try {
   logs = saved ? JSON.parse(saved) : [];
 } catch(e) { logs = []; }
 
-let nextId = logs.length > 0 ? Math.max(...logs.map(l=>l.id||0)) + 1 : 1;
+let nextId = logs.length > 0 ? Math.max(...logs.map(l => l.id || 0)) + 1 : 1;
 let currentStatus = 'Finish';
 
 // ── SYNC ─────────────────────────────────────────────────────
-
-// 🔥 ฟังก์ชันสำหรับส่งข้อมูลแบบรับรู้ Error ได้อย่างละเอียด
+// ✅ แก้แล้ว: เพิ่ม redirect:'follow' และ headers ที่ถูกต้อง
 async function pushToGAS(log) {
-  if(!GAS_URL) return { ok: false, error: 'ยังไม่ได้ใส่ URL ของ Google Apps Script' };
-  
+  if (!GAS_URL) return { ok: false, error: 'ยังไม่ได้ใส่ URL ของ Google Apps Script' };
+
   const payload = {
-    action: 'save',
-    id: log.id, user: log.user, date: log.date,
-    start: log.start, end: log.end, hours: log.hours,
-    work: log.work, location: log.location, item: log.item,
-    qtyWork: log.qtyWork, qtyActual: log.qtyActual,
-    status: log.status, remark: log.remark,
+    action:     'save',
+    id:         log.id,
+    user:       log.user,
+    date:       log.date,
+    start:      log.start,
+    end:        log.end,
+    hours:      log.hours,
+    work:       log.work,
+    location:   log.location,
+    item:       log.item,
+    qtyWork:    log.qtyWork,
+    qtyActual:  log.qtyActual,
+    status:     log.status,
+    remark:     log.remark,
     photosBefore: log.photosBefore?.length || 0,
-    photosAfter:  log.photosAfter?.length || 0,
-    savedAt: new Date().toISOString(),
+    photosAfter:  log.photosAfter?.length  || 0,
+    savedAt:    new Date().toISOString(),
   };
 
   try {
+    // ✅ แก้แล้ว: เพิ่ม redirect:'follow' และ headers:'text/plain' เพื่อหลีกเลี่ยง CORS preflight
     const response = await fetch(GAS_URL, {
-      method: 'POST',
-      body: JSON.stringify(payload)
+      method:   'POST',
+      redirect: 'follow',
+      headers:  { 'Content-Type': 'text/plain;charset=utf-8' },
+      body:     JSON.stringify(payload),
     });
-    
-    if(!response.ok) {
+
+    if (!response.ok) {
       return { ok: false, error: `Google ปฏิเสธการเชื่อมต่อ (HTTP ${response.status})` };
     }
 
     const resultText = await response.text();
-    
-    // เช็คข้อความที่ตอบกลับมาจาก Google Sheet
-    if(resultText.includes('"ok":true') || resultText.includes('"ok": true')) {
-      return { ok: true, data: resultText };
-    } else {
-      return { ok: false, error: "ข้อผิดพลาดจาก Google Sheet: " + resultText };
+
+    // ✅ แก้แล้ว: parse JSON ก่อน แล้วค่อยเช็ค .ok แทนการ includes string
+    try {
+      const json = JSON.parse(resultText);
+      if (json.ok === true) {
+        return { ok: true, data: json };
+      } else {
+        return { ok: false, error: 'ข้อผิดพลาดจาก Google Sheet: ' + (json.error || resultText) };
+      }
+    } catch (_) {
+      // ถ้า parse ไม่ได้ ให้เช็ค string fallback
+      if (resultText.includes('"ok":true') || resultText.includes('"ok": true')) {
+        return { ok: true };
+      }
+      return { ok: false, error: 'ตอบกลับผิดรูปแบบ: ' + resultText.slice(0, 200) };
     }
 
-  } catch(e) {
+  } catch (e) {
     return { ok: false, error: `เชื่อมต่อล้มเหลว (Network Error): ${e.message}` };
   }
 }
 
 // ── INIT ─────────────────────────────────────────────────────
-const today = new Date();
-document.getElementById('headerDate').textContent = today.toLocaleDateString('th-TH',{day:'2-digit',month:'short',year:'numeric'});
+const today    = new Date();
+const todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+const nowH     = String(today.getHours()).padStart(2, '0');
+const nowM     = String(today.getMinutes()).padStart(2, '0');
 
-const todayStr = today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
-document.getElementById('fDate').value = todayStr;
-
-const nowH = String(today.getHours()).padStart(2,'0');
-const nowM = String(today.getMinutes()).padStart(2,'0');
+document.getElementById('headerDate').textContent = today.toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: 'numeric' });
+document.getElementById('fDate').value  = todayStr;
 document.getElementById('fStart').value = `${nowH}:${nowM}`;
 
 initSlots();
 renderList();
 renderSummary();
 
-// close dropdowns when clicking outside
+// ปิด dropdown เมื่อคลิกข้างนอก
 document.addEventListener('click', e => {
-  if(!e.target.closest('.combo-wrap')) {
-    document.querySelectorAll('.combo-dropdown.open').forEach(d=>d.classList.remove('open'));
+  if (!e.target.closest('.combo-wrap')) {
+    document.querySelectorAll('.combo-dropdown.open').forEach(d => d.classList.remove('open'));
   }
 });
 
 // ── DROPDOWN HELPERS ─────────────────────────────────────────
 function toggleDropdown(id) {
-  const el = document.getElementById(id);
+  const el     = document.getElementById(id);
   const wasOpen = el.classList.contains('open');
-  document.querySelectorAll('.combo-dropdown.open').forEach(d=>d.classList.remove('open'));
-  if(!wasOpen) el.classList.add('open');
+  document.querySelectorAll('.combo-dropdown.open').forEach(d => d.classList.remove('open'));
+  if (!wasOpen) el.classList.add('open');
 }
-function pickWork(val) { document.getElementById('fWork').value = val; document.getElementById('workDrop').classList.remove('open'); document.getElementById('fWork').focus(); }
+function pickWork(val)   { document.getElementById('fWork').value = val; document.getElementById('workDrop').classList.remove('open'); }
 function pickRemark(val) { document.getElementById('fRemark').value = val; document.getElementById('remarkDrop').classList.remove('open'); }
 
-// ── PAGE ─────────────────────────────────────────────────────
+// ── PAGE SWITCH ───────────────────────────────────────────────
 function switchPage(name) {
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById('page-'+name).classList.add('active');
-  document.getElementById('tab-'+name).classList.add('active');
-  if(name==='list') renderList();
-  if(name==='summary') renderSummary();
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+  if (name === 'list')    renderList();
+  if (name === 'summary') renderSummary();
 }
 
 function selectStatus(s) {
   currentStatus = s;
-  ['Finish','InProgress','Pending','Issue'].forEach(x=>{
-    const c = document.getElementById('chip-'+x);
-    c.className = 'chip';
-    if(x===s) c.className = 'chip selected-'+x;
+  ['Finish', 'InProgress', 'Pending', 'Issue'].forEach(x => {
+    const c = document.getElementById('chip-' + x);
+    c.className = 'chip' + (x === s ? ' selected-' + x : '');
   });
 }
 
@@ -645,104 +668,123 @@ let photos = { before: Array(5).fill(null), after: Array(5).fill(null) };
 function initSlots() { renderSlots('before'); renderSlots('after'); }
 
 function renderSlots(sec) {
-  const grid    = document.getElementById(sec==='before'?'beforeSlots':'afterSlots');
-  const countEl = document.getElementById(sec==='before'?'beforeCount':'afterCount');
+  const grid    = document.getElementById(sec === 'before' ? 'beforeSlots' : 'afterSlots');
+  const countEl = document.getElementById(sec === 'before' ? 'beforeCount' : 'afterCount');
   const filled  = photos[sec].filter(Boolean).length;
   countEl.textContent = `${filled} / 5`;
 
-  grid.innerHTML = Array.from({length:5},(_,i)=>{
+  grid.innerHTML = Array.from({ length: 5 }, (_, i) => {
     const img = photos[sec][i];
-    if(img) return `
+    if (img) return `
       <div class="photo-slot filled" onclick="previewPhoto('${sec}',${i})">
-        <img src="${img}" alt="${i+1}"><div class="slot-index">${i+1}</div>
+        <img src="${img}" alt="${i + 1}">
+        <div class="slot-index">${i + 1}</div>
         <button class="slot-remove" onclick="event.stopPropagation();removeSlotPhoto('${sec}',${i})">✕</button>
       </div>`;
-    const isNext = filled===i;
-    const borderStyle = isNext ? `border-style:solid;border-color:${sec==='before'?'var(--accent)':'var(--green)'};` : '';
+    const isNext = filled === i;
+    const borderStyle = isNext ? `border-style:solid;border-color:${sec === 'before' ? 'var(--accent)' : 'var(--green)'};` : '';
     return `
       <div class="photo-slot" onclick="openSlot('${sec}',${i})" style="${borderStyle}">
-        <span class="slot-icon">${isNext?'📸':'+'}</span><span class="slot-num">${i+1}</span>
+        <span class="slot-icon">${isNext ? '📸' : '+'}</span>
+        <span class="slot-num">${i + 1}</span>
       </div>`;
   }).join('');
 }
 
 function openSlot(sec, idx) {
   const filled = photos[sec].filter(Boolean).length;
-  if(idx!==filled){ showToast('⚠ กรุณาถ่ายตามลำดับ'); return; }
-  if(filled>=MAX_PHOTOS){ showToast('⚠ ครบ 5 ภาพแล้ว'); return; }
+  if (idx !== filled) { showToast('⚠ กรุณาถ่ายตามลำดับ'); return; }
+  if (filled >= MAX_PHOTOS) { showToast('⚠ ครบ 5 ภาพแล้ว'); return; }
   activeSec = sec;
   startCamera(sec);
 }
 
 async function startCamera(sec) {
-  document.getElementById('cameraLive').style.display = 'block';
-  document.getElementById('camFallback').style.display = 'none';
-  document.getElementById('videoEl').style.display = 'block';
-  document.getElementById('camControls').style.display = 'flex';
-  document.getElementById('camLabel').textContent = sec==='before'?'📸 ก่อนงาน':'✅ หลังงาน';
+  document.getElementById('cameraLive').style.display   = 'block';
+  document.getElementById('camFallback').style.display  = 'none';
+  document.getElementById('videoEl').style.display      = 'block';
+  document.getElementById('camControls').style.display  = 'flex';
+  document.getElementById('camLabel').textContent        = sec === 'before' ? '📸 ก่อนงาน' : '✅ หลังงาน';
   updateCamBadge();
 
   try {
-    if(camStream){ camStream.getTracks().forEach(t=>t.stop()); camStream=null; }
-    camStream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode, width:{ideal:1280}, height:{ideal:720} }, audio:false });
+    if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
+    camStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
+      audio: false
+    });
     document.getElementById('videoEl').srcObject = camStream;
-    document.getElementById('cameraLive').scrollIntoView({behavior:'smooth',block:'center'});
-  } catch(e) {
-    document.getElementById('videoEl').style.display = 'none';
+    document.getElementById('cameraLive').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  } catch (e) {
+    document.getElementById('videoEl').style.display     = 'none';
     document.getElementById('camControls').style.display = 'none';
     document.getElementById('camFallback').style.display = 'block';
-    document.getElementById('cameraLive').scrollIntoView({behavior:'smooth',block:'center'});
+    document.getElementById('cameraLive').scrollIntoView({ behavior: 'smooth', block: 'center' });
     showToast('⚠ เปิดกล้องไม่ได้ — กรุณาเลือกไฟล์แทน');
   }
 }
 
-async function switchCamera() { facingMode = facingMode==='environment'?'user':'environment'; if(activeSec) await startCamera(activeSec); }
-function stopCamera() { if(camStream){ camStream.getTracks().forEach(t=>t.stop()); camStream=null; } document.getElementById('cameraLive').style.display = 'none'; activeSec = null; }
+async function switchCamera() {
+  facingMode = facingMode === 'environment' ? 'user' : 'environment';
+  if (activeSec) await startCamera(activeSec);
+}
+
+function stopCamera() {
+  if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
+  document.getElementById('cameraLive').style.display = 'none';
+  activeSec = null;
+}
 
 function capturePhoto() {
-  if(!activeSec) return;
+  if (!activeSec) return;
   const filled = photos[activeSec].filter(Boolean).length;
-  if(filled>=MAX_PHOTOS) { stopCamera(); return; }
+  if (filled >= MAX_PHOTOS) { stopCamera(); return; }
 
   const video  = document.getElementById('videoEl');
   const canvas = document.getElementById('canvasEl');
-  if(!camStream || video.readyState < 2) return;
+  if (!camStream || video.readyState < 2) return;
 
-  const MAX_DIM = 800; 
+  const MAX_DIM = 800;
   let w = video.videoWidth || 640, h = video.videoHeight || 480;
   if (w > MAX_DIM) { h = Math.round(h * MAX_DIM / w); w = MAX_DIM; }
   if (h > MAX_DIM) { w = Math.round(w * MAX_DIM / h); h = MAX_DIM; }
 
   canvas.width = w; canvas.height = h;
   canvas.getContext('2d').drawImage(video, 0, 0, w, h);
-  photos[activeSec][filled] = canvas.toDataURL('image/jpeg', 0.6); 
+  photos[activeSec][filled] = canvas.toDataURL('image/jpeg', 0.6);
 
   renderSlots(activeSec); updateCamBadge();
 
-  const flash = document.getElementById('shutterFlash'); flash.style.opacity='1'; setTimeout(()=>flash.style.opacity='0',150);
-  const btn = document.getElementById('shutterBtn'); btn.style.transform='scale(0.85)'; setTimeout(()=>btn.style.transform='scale(1)',150);
+  const flash = document.getElementById('shutterFlash');
+  flash.style.opacity = '1'; setTimeout(() => flash.style.opacity = '0', 150);
+  const btn = document.getElementById('shutterBtn');
+  btn.style.transform = 'scale(0.85)'; setTimeout(() => btn.style.transform = 'scale(1)', 150);
 
   const nf = photos[activeSec].filter(Boolean).length;
   showToast(`📸 ภาพที่ ${nf} บันทึกแล้ว`);
-  if(nf>=MAX_PHOTOS) setTimeout(stopCamera, 600); 
+  if (nf >= MAX_PHOTOS) setTimeout(stopCamera, 600);
 }
 
-function updateCamBadge() { if(activeSec) document.getElementById('camSlotBadge').textContent = `${photos[activeSec].filter(Boolean).length}/5`; }
+function updateCamBadge() {
+  if (activeSec) document.getElementById('camSlotBadge').textContent = `${photos[activeSec].filter(Boolean).length}/5`;
+}
 
 function handleFileSelectCam(e) {
-  if(!activeSec) return;
-  const file = e.target.files[0]; if(!file) return;
-  if(!file.type.startsWith('image/')) return showToast('⚠ โปรดเลือกไฟล์รูปภาพ'); 
-  
+  if (!activeSec) return;
+  const file = e.target.files[0];
+  if (!file) return;
+  if (!file.type.startsWith('image/')) return showToast('⚠ โปรดเลือกไฟล์รูปภาพ');
+
   const filled = photos[activeSec].filter(Boolean).length;
-  if(filled>=MAX_PHOTOS) return showToast('⚠ ครบ 5 ภาพแล้ว'); 
-  
+  if (filled >= MAX_PHOTOS) return showToast('⚠ ครบ 5 ภาพแล้ว');
+
   const reader = new FileReader();
   reader.onload = ev => {
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement('canvas');
-      const MAX_DIM = 800; let w = img.width, h = img.height;
+      const MAX_DIM = 800;
+      let w = img.width, h = img.height;
       if (w > MAX_DIM) { h = Math.round(h * MAX_DIM / w); w = MAX_DIM; }
       if (h > MAX_DIM) { w = Math.round(w * MAX_DIM / h); h = MAX_DIM; }
       canvas.width = w; canvas.height = h;
@@ -751,49 +793,62 @@ function handleFileSelectCam(e) {
       renderSlots(activeSec); updateCamBadge();
       const nf = photos[activeSec].filter(Boolean).length;
       showToast(`🖼 เพิ่มภาพที่ ${nf} เรียบร้อย`);
-      if(nf>=MAX_PHOTOS) setTimeout(stopCamera,500);
+      if (nf >= MAX_PHOTOS) setTimeout(stopCamera, 500);
     };
     img.src = ev.target.result;
   };
-  reader.readAsDataURL(file); e.target.value='';
+  reader.readAsDataURL(file);
+  e.target.value = '';
 }
 
-function removeSlotPhoto(sec,idx) { photos[sec].splice(idx,1); photos[sec].push(null); renderSlots(sec); if(activeSec===sec) updateCamBadge(); showToast('🗑 ลบภาพแล้ว'); }
-function previewPhoto(sec,idx) { const img = photos[sec][idx]; if(!img) return; document.getElementById('fullImgPreview').src = img; document.getElementById('imgModalOverlay').classList.add('open'); }
+function removeSlotPhoto(sec, idx) {
+  photos[sec].splice(idx, 1); photos[sec].push(null);
+  renderSlots(sec);
+  if (activeSec === sec) updateCamBadge();
+  showToast('🗑 ลบภาพแล้ว');
+}
+
+function previewPhoto(sec, idx) {
+  const img = photos[sec][idx];
+  if (!img) return;
+  document.getElementById('fullImgPreview').src = img;
+  document.getElementById('imgModalOverlay').classList.add('open');
+}
 
 function getAllPhotos() {
-  return [...photos.before.filter(Boolean).map(p=>({type:'before',data:p})), ...photos.after.filter(Boolean).map(p=>({type:'after',data:p}))];
+  return [
+    ...photos.before.filter(Boolean).map(p => ({ type: 'before', data: p })),
+    ...photos.after.filter(Boolean).map(p  => ({ type: 'after',  data: p })),
+  ];
 }
 
-// ── SAVE LOGIC + UI ──────────────────────────────────────────
-
+// ── SAVE ─────────────────────────────────────────────────────
 function setSaveUI(icon, title, desc, errorMsg = null) {
   const spinner = document.getElementById('saveSpinner');
-  const overlay = document.getElementById('saveOverlay');
   const btnWrap = document.getElementById('saveBtnWrap');
   const details = document.getElementById('saveDetails');
 
   document.getElementById('saveTitle').textContent = title;
-  document.getElementById('saveDesc').textContent = desc;
+  document.getElementById('saveDesc').textContent  = desc;
 
-  if(icon === '⏳') {
-    spinner.textContent = '⏳';
+  if (icon === '⏳') {
+    spinner.textContent   = '⏳';
     spinner.style.animation = 'spin 1s linear infinite';
-    btnWrap.style.display = 'none';
+    btnWrap.style.display   = 'none';
   } else {
-    spinner.textContent = icon;
+    spinner.textContent     = icon;
     spinner.style.animation = 'none';
-    btnWrap.style.display = 'block';
+    btnWrap.style.display   = 'block';
   }
 
-  if(errorMsg) {
-    details.textContent = errorMsg;
-    details.style.display = 'block';
+  if (errorMsg) {
+    details.textContent    = errorMsg;
+    details.style.display  = 'block';
   } else {
-    details.style.display = 'none';
+    details.style.display  = 'none';
   }
 
-  overlay.classList.add('open');
+  document.getElementById('saveOverlay').classList.add('open');
 }
 
 function closeSaveOverlay() {
@@ -807,102 +862,91 @@ async function saveLog() {
   const start = document.getElementById('fStart').value;
   const end   = document.getElementById('fEnd').value;
 
-  // validation
-  if(!date||!user||!work) {
+  // Validation
+  if (!date || !user || !work) {
     showToast('⚠ กรุณากรอก วันที่, ผู้ปฏิบัติ และ รายละเอียดงาน');
-    if(!user){ document.getElementById('fUser').style.borderColor='var(--red)'; setTimeout(()=>document.getElementById('fUser').style.borderColor='var(--border)',2000); }
-    if(!work){ document.getElementById('fWork').style.borderColor='var(--red)'; setTimeout(()=>document.getElementById('fWork').style.borderColor='var(--border)',2000); }
+    if (!user) { document.getElementById('fUser').style.borderColor = 'var(--red)'; setTimeout(() => document.getElementById('fUser').style.borderColor = 'var(--border)', 2000); }
+    if (!work) { document.getElementById('fWork').style.borderColor = 'var(--red)'; setTimeout(() => document.getElementById('fWork').style.borderColor = 'var(--border)', 2000); }
     return;
   }
 
   const log = {
-    id:       nextId++,
+    id:        nextId++,
     user, date, start, end,
-    hours:    calcHours(start,end),
+    hours:     calcHours(start, end),
     work,
-    location: document.getElementById('fLocation').value || '-',
-    item:     document.getElementById('fItem').value     || '-',
-    qtyWork:  Number(document.getElementById('fQtyWork').value)  || 0,
-    qtyActual:Number(document.getElementById('fQtyActual').value)|| 0,
-    status:   currentStatus,
-    remark:   document.getElementById('fRemark').value,
-    photos:   getAllPhotos(),
+    location:  document.getElementById('fLocation').value   || '-',
+    item:      document.getElementById('fItem').value        || '-',
+    qtyWork:   Number(document.getElementById('fQtyWork').value)   || 0,
+    qtyActual: Number(document.getElementById('fQtyActual').value) || 0,
+    status:    currentStatus,
+    remark:    document.getElementById('fRemark').value,
+    photos:    getAllPhotos(),
     photosBefore: photos.before.filter(Boolean),
     photosAfter:  photos.after.filter(Boolean),
   };
 
-  // 1. เปิดหน้าต่างกำลังโหลด
+  // 1. เปิด loading
   setSaveUI('⏳', 'กำลังประมวลผล...', 'กำลังบันทึกข้อมูลลงในระบบของเครื่อง');
 
-  // 2. บันทึกลง LocalStorage
-  logs.unshift(log); 
-  let savedSuccessfully = false;
-  while (!savedSuccessfully && logs.length > 0) {
+  // 2. บันทึก LocalStorage
+  logs.unshift(log);
+  let savedLocally = false;
+  while (!savedLocally && logs.length > 0) {
     try {
       localStorage.setItem('wl_logs', JSON.stringify(logs));
-      savedSuccessfully = true;
-    } catch(e) {
-      if(logs.length > 1) {
-        logs.pop(); 
-      } else {
+      savedLocally = true;
+    } catch (e) {
+      if (logs.length > 1) { logs.pop(); }
+      else {
         setSaveUI('❌', 'พื้นที่เครื่องเต็ม', 'รูปภาพอาจมีขนาดใหญ่เกินไป ไม่สามารถบันทึกได้');
-        logs.shift(); 
-        return; 
+        logs.shift();
+        return;
       }
     }
   }
 
-  // 3. ส่งข้อมูลไป Google Sheets
+  // 3. ส่งไป Google Sheets
   setSaveUI('⏳', 'กำลังเชื่อมต่อ...', 'กำลังส่งข้อมูลไปยัง Google Sheets...');
   const res = await pushToGAS(log);
 
-  // 4. ตรวจสอบผลลัพธ์แบบละเอียด
-  if(res.ok) {
+  // 4. แสดงผลลัพธ์
+  if (res.ok) {
     setSaveUI('✅', 'บันทึกข้อมูลสำเร็จ!', 'ข้อมูลถูกส่งเข้า Google Sheets เรียบร้อยแล้ว');
-    document.getElementById('saveBtnWrap').style.display = 'none'; 
-    setTimeout(() => {
-      closeSaveOverlay();
-      resetForm();
-      switchPage('list');
-    }, 1500);
+    document.getElementById('saveBtnWrap').style.display = 'none';
+    setTimeout(() => { closeSaveOverlay(); resetForm(); switchPage('list'); }, 1500);
   } else {
-    // ถ้าระบบพัง จะขึ้นหน้านี้ และโชว์ Error ชัดๆ ให้อ่าน
     setSaveUI('⚠️', 'ส่งข้อมูลไป Google Sheet ไม่สำเร็จ', 'บันทึกลงแอปเรียบร้อย แต่เชื่อมต่อ Google Sheet พลาด', res.error);
-    
     const btn = document.querySelector('#saveBtnWrap button');
-    btn.textContent = "รับทราบ";
-    btn.onclick = function() {
-      closeSaveOverlay();
-      resetForm();
-      switchPage('list');
-    }
+    btn.textContent = 'รับทราบ';
+    btn.onclick = function () { closeSaveOverlay(); resetForm(); switchPage('list'); };
   }
 }
 
-function calcHours(start,end) {
-  if(!start||!end) return 0;
-  const [sh,sm]=start.split(':').map(Number);
-  const [eh,em]=end.split(':').map(Number);
-  return Math.max(0,((eh*60+em)-(sh*60+sm))/60);
+function calcHours(start, end) {
+  if (!start || !end) return 0;
+  const [sh, sm] = start.split(':').map(Number);
+  const [eh, em] = end.split(':').map(Number);
+  return Math.max(0, ((eh * 60 + em) - (sh * 60 + sm)) / 60);
 }
 
 function resetForm() {
-  document.getElementById('fDate').value     = todayStr;
-  document.getElementById('fUser').value     = '';
-  document.getElementById('fStart').value    = `${nowH}:${nowM}`;
-  document.getElementById('fEnd').value      = '';
-  document.getElementById('fWork').value     = '';
-  document.getElementById('fLocation').value = '';
-  document.getElementById('fItem').value     = '';
-  document.getElementById('fQtyWork').value  = '';
-  document.getElementById('fQtyActual').value= '';
-  document.getElementById('fRemark').value   = '';
-  
-  photos = { before:Array(5).fill(null), after:Array(5).fill(null) };
+  document.getElementById('fDate').value      = todayStr;
+  document.getElementById('fUser').value      = '';
+  document.getElementById('fStart').value     = `${nowH}:${nowM}`;
+  document.getElementById('fEnd').value       = '';
+  document.getElementById('fWork').value      = '';
+  document.getElementById('fLocation').value  = '';
+  document.getElementById('fItem').value      = '';
+  document.getElementById('fQtyWork').value   = '';
+  document.getElementById('fQtyActual').value = '';
+  document.getElementById('fRemark').value    = '';
+
+  photos = { before: Array(5).fill(null), after: Array(5).fill(null) };
   initSlots();
   selectStatus('Finish');
   stopCamera();
-  facingMode='environment';
+  facingMode = 'environment';
 }
 
 // ── LIST ─────────────────────────────────────────────────────
@@ -912,22 +956,16 @@ function renderList() {
   const s = document.getElementById('filterStatus').value;
 
   const filtered = logs.filter(l => {
-    const wStr = String(l.work || '').toLowerCase();
-    const uStr = String(l.user || '').toLowerCase();
-    const lStr = String(l.location || '').toLowerCase();
-    const iStr = String(l.item || '').toLowerCase();
-    const qLower = q.toLowerCase();
-
-    const mQ = !q || wStr.includes(qLower) || uStr.includes(qLower) || lStr.includes(qLower) || iStr.includes(qLower);
-    const mU = !u || uStr.includes(u.toLowerCase());
+    const mQ = !q || [l.work, l.user, l.location, l.item].some(v => String(v || '').toLowerCase().includes(q));
+    const mU = !u || String(l.user || '').includes(u);
     const mS = !s || l.status === s;
     return mQ && mU && mS;
   });
 
   const list = document.getElementById('logList');
-  
-  if(!filtered.length){
-    list.innerHTML=`
+
+  if (!filtered.length) {
+    list.innerHTML = `
       <div style="text-align:center;padding:60px 20px;background:var(--surface);border-radius:var(--radius);border:3px dashed var(--border2);box-shadow:var(--shadow-sm);">
         <span style="font-size:56px;display:block;margin-bottom:16px;">🔍</span>
         <div style="font-size:18px;font-weight:700;margin-bottom:8px;">ไม่พบรายการ</div>
@@ -936,32 +974,32 @@ function renderList() {
     return;
   }
 
-  list.innerHTML = filtered.map(l=>{
-    const userKey = (l.user||'').includes(',')?'default':l.user;
+  list.innerHTML = filtered.map(l => {
+    const userKey = (l.user || '').includes(',') ? 'default' : l.user;
     let dateStr = l.date;
-    try { const d = new Date(l.date+'T00:00:00'); if(!isNaN(d)) dateStr=d.toLocaleDateString('th-TH',{day:'2-digit',month:'short'}); } catch(e){}
-    const cnt = (l.photosBefore?.length||0)+(l.photosAfter?.length||0);
-    
+    try { const d = new Date(l.date + 'T00:00:00'); if (!isNaN(d)) dateStr = d.toLocaleDateString('th-TH', { day: '2-digit', month: 'short' }); } catch (e) {}
+    const cnt = (l.photosBefore?.length || 0) + (l.photosAfter?.length || 0);
+
     return `
     <div class="log-item" onclick="openLog(${l.id})">
-      <div class="log-avatar user-${userKey}">${(l.user||'??').slice(0,2)}</div>
+      <div class="log-avatar user-${userKey}">${(l.user || '??').slice(0, 2)}</div>
       <div class="log-body">
         <div class="log-meta">
-          <span class="log-user">${l.user||'ไม่มีชื่อ'}</span>
-          <span class="log-time">🕒 ${l.start||'--'}–${l.end||'--'}</span>
+          <span class="log-user">${l.user || 'ไม่มีชื่อ'}</span>
+          <span class="log-time">🕒 ${l.start || '--'}–${l.end || '--'}</span>
           <span class="log-date">${dateStr}</span>
         </div>
-        <div class="log-work">${l.work||'-'}</div>
+        <div class="log-work">${l.work || '-'}</div>
         <div class="log-tags">
-          ${l.hours>0?`<span class="tag">⏱ ${l.hours>=1?l.hours.toFixed(1)+'h':Math.round(l.hours*60)+'m'}</span>`:''}
-          ${l.qtyActual>0?`<span class="tag">📦 ${l.qtyActual.toLocaleString()}</span>`:''}
-          ${cnt>0?`<span class="tag">📸 ${cnt}</span>`:''}
-          ${l.location&&l.location!=='-'?`<span class="tag">📍 ${l.location}</span>`:''}
+          ${l.hours > 0 ? `<span class="tag">⏱ ${l.hours >= 1 ? l.hours.toFixed(1) + 'h' : Math.round(l.hours * 60) + 'm'}</span>` : ''}
+          ${l.qtyActual > 0 ? `<span class="tag">📦 ${l.qtyActual.toLocaleString()}</span>` : ''}
+          ${cnt > 0 ? `<span class="tag">📸 ${cnt}</span>` : ''}
+          ${l.location && l.location !== '-' ? `<span class="tag">📍 ${l.location}</span>` : ''}
         </div>
       </div>
       <div class="log-right">
         <span class="status-badge status-${l.status}">${l.status}</span>
-        ${l.hours>0?`<div style="font-size:22px;font-weight:700;font-family:var(--mono);">${l.hours.toFixed(1)}<span style="font-size:13px;color:var(--text3);margin-left:4px;">h</span></div>`:''}
+        ${l.hours > 0 ? `<div style="font-size:22px;font-weight:700;font-family:var(--mono);">${l.hours.toFixed(1)}<span style="font-size:13px;color:var(--text3);margin-left:4px;">h</span></div>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -969,91 +1007,95 @@ function renderList() {
 
 // ── MODAL ────────────────────────────────────────────────────
 function openLog(id) {
-  const l = logs.find(x=>x.id===id); if(!l) return;
-  
+  const l = logs.find(x => x.id === id);
+  if (!l) return;
+
   document.getElementById('modalTitle').innerHTML = `<div class="card-title-icon" style="background:var(--accent);color:white;">#${l.id}</div><span>รายการของ ${l.user}</span>`;
+
   let dateStr = l.date;
-  try { const d=new Date(l.date+'T00:00:00'); if(!isNaN(d)) dateStr=d.toLocaleDateString('th-TH',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}); } catch(e){}
+  try { const d = new Date(l.date + 'T00:00:00'); if (!isNaN(d)) dateStr = d.toLocaleDateString('th-TH', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' }); } catch (e) {}
 
   const rows = [
-    ['วันที่',  dateStr],
-    ['เวลา',   `${l.start||'-'} – ${l.end||'-'} (${(l.hours||0).toFixed(2)} ชม.)`],
-    ['สถานะ',  `<span class="status-badge status-${l.status}">${l.status}</span>`],
-    ['Location', l.location||'-'],
-    ['สินค้า', l.item||'-'],
-    ['จำนวน Work',  l.qtyWork?l.qtyWork.toLocaleString():'0'],
-    ['จำนวนจริง',  l.qtyActual?l.qtyActual.toLocaleString():'0'],
-    ['รายละเอียด', `<div style="background:var(--bg);padding:16px;border-radius:var(--radius-sm);border:2px solid var(--border);line-height:1.7;">${(l.work||'').replace(/\n/g,'<br>')}</div>`],
-    ['หมายเหตุ', l.remark?`<span style="color:var(--red);font-weight:600;">${l.remark}</span>`:'-'],
+    ['วันที่',     dateStr],
+    ['เวลา',      `${l.start || '-'} – ${l.end || '-'} (${(l.hours || 0).toFixed(2)} ชม.)`],
+    ['สถานะ',     `<span class="status-badge status-${l.status}">${l.status}</span>`],
+    ['Location',   l.location || '-'],
+    ['สินค้า',    l.item || '-'],
+    ['จำนวน Work', l.qtyWork ? l.qtyWork.toLocaleString() : '0'],
+    ['จำนวนจริง',  l.qtyActual ? l.qtyActual.toLocaleString() : '0'],
+    ['รายละเอียด', `<div style="background:var(--bg);padding:16px;border-radius:var(--radius-sm);border:2px solid var(--border);line-height:1.7;">${(l.work || '').replace(/\n/g, '<br>')}</div>`],
+    ['หมายเหตุ',   l.remark ? `<span style="color:var(--red);font-weight:600;">${l.remark}</span>` : '-'],
   ];
 
-  const photosHtml = (l.photosBefore?.length||l.photosAfter?.length) ? `
+  const photosHtml = (l.photosBefore?.length || l.photosAfter?.length) ? `
     <div class="detail-row" style="flex-direction:column;gap:12px;">
       <div class="detail-label" style="width:100%;font-size:16px;font-weight:700;border-bottom:2px solid var(--border2);padding-bottom:12px;">รูปภาพแนบ</div>
       <div>
-        ${l.photosBefore?.length?`
-          <div style="font-size:14px;font-weight:600;margin-bottom:12px;">📸 ก่อนงาน (${l.photosBefore.length})</div>
-          <div class="modal-photos" style="margin-bottom:24px">${l.photosBefore.map(p=>`<div class="modal-photo" onclick="showFullImg('${p}')"><img src="${p}" loading="lazy"></div>`).join('')}</div>
-        `:''}
-        ${l.photosAfter?.length?`
-          <div style="font-size:14px;font-weight:600;margin-bottom:12px;">✅ หลังงาน (${l.photosAfter.length})</div>
-          <div class="modal-photos">${l.photosAfter.map(p=>`<div class="modal-photo" onclick="showFullImg('${p}')"><img src="${p}" loading="lazy"></div>`).join('')}</div>
-        `:''}
+        ${l.photosBefore?.length ? `<div style="font-size:14px;font-weight:600;margin-bottom:12px;">📸 ก่อนงาน (${l.photosBefore.length})</div><div class="modal-photos" style="margin-bottom:24px">${l.photosBefore.map(p => `<div class="modal-photo" onclick="showFullImg('${p}')"><img src="${p}" loading="lazy"></div>`).join('')}</div>` : ''}
+        ${l.photosAfter?.length  ? `<div style="font-size:14px;font-weight:600;margin-bottom:12px;">✅ หลังงาน (${l.photosAfter.length})</div><div class="modal-photos">${l.photosAfter.map(p => `<div class="modal-photo" onclick="showFullImg('${p}')"><img src="${p}" loading="lazy"></div>`).join('')}</div>` : ''}
       </div>
     </div>` : '';
 
-  document.getElementById('modalBody').innerHTML = rows.map(([k,v])=>`<div class="detail-row"><div class="detail-label">${k}</div><div class="detail-val">${v}</div></div>`).join('')+ photosHtml+
+  document.getElementById('modalBody').innerHTML =
+    rows.map(([k, v]) => `<div class="detail-row"><div class="detail-label">${k}</div><div class="detail-val">${v}</div></div>`).join('') +
+    photosHtml +
     `<div style="margin-top:32px;padding-top:24px;border-top:2px dashed var(--border2);display:flex;gap:16px;justify-content:flex-end;">
-      <button class="btn btn-ghost" onclick="closeModalBtn()">ปิด</button><button class="btn btn-danger" onclick="deleteLog(${id})">🗑 ลบรายการ</button>
+      <button class="btn btn-ghost" onclick="closeModalBtn()">ปิด</button>
+      <button class="btn btn-danger" onclick="deleteLog(${id})">🗑 ลบรายการ</button>
     </div>`;
 
   document.getElementById('modalOverlay').classList.add('open');
 }
 
-function showFullImg(src){ document.getElementById('fullImgPreview').src=src; document.getElementById('imgModalOverlay').classList.add('open'); }
-function closeModal(e){ if(e.target.id==='modalOverlay') closeModalBtn(); }
-function closeModalBtn(){ document.getElementById('modalOverlay').classList.remove('open'); }
-function closeImgModal(e){ if(e.target.id==='imgModalOverlay') closeImgModalBtn(); }
+function showFullImg(src) { document.getElementById('fullImgPreview').src = src; document.getElementById('imgModalOverlay').classList.add('open'); }
+function closeModal(e)    { if (e.target.id === 'modalOverlay') closeModalBtn(); }
+function closeModalBtn()  { document.getElementById('modalOverlay').classList.remove('open'); }
+function closeImgModal(e) { if (e.target.id === 'imgModalOverlay') closeImgModalBtn(); }
 function closeImgModalBtn(){ document.getElementById('imgModalOverlay').classList.remove('open'); }
 
 function deleteLog(id) {
-  if(!confirm('ยืนยันการลบรายการนี้?')) return;
-  logs = logs.filter(l=>l.id!==id); localStorage.setItem('wl_logs', JSON.stringify(logs));
-  closeModalBtn(); renderList(); showToast('🗑 ลบรายการเรียบร้อย');
+  if (!confirm('ยืนยันการลบรายการนี้?')) return;
+  logs = logs.filter(l => l.id !== id);
+  localStorage.setItem('wl_logs', JSON.stringify(logs));
+  closeModalBtn(); renderList();
+  showToast('🗑 ลบรายการเรียบร้อย');
 }
 
 // ── SUMMARY ──────────────────────────────────────────────────
 function renderSummary() {
-  const totalH      = logs.reduce((s,l)=>s+(l.hours||0),0);
-  const totalPhotos = logs.reduce((s,l)=>s+(l.photosBefore?.length||0)+(l.photosAfter?.length||0),0);
-  const finishCount = logs.filter(l=>l.status==='Finish').length;
+  const totalH      = logs.reduce((s, l) => s + (l.hours || 0), 0);
+  const totalPhotos = logs.reduce((s, l) => s + (l.photosBefore?.length || 0) + (l.photosAfter?.length || 0), 0);
+  const finishCount = logs.filter(l => l.status === 'Finish').length;
 
   document.getElementById('statsGrid').innerHTML = `
     <div class="stat-card blue"><div class="stat-icon">📄</div><div class="stat-label">รายการทั้งหมด</div><div class="stat-value">${logs.length}</div><div class="stat-sub">งาน</div></div>
     <div class="stat-card green"><div class="stat-icon">⏱</div><div class="stat-label">ชั่วโมงรวม</div><div class="stat-value">${totalH.toFixed(1)}</div><div class="stat-sub">ชั่วโมง</div></div>
     <div class="stat-card amber"><div class="stat-icon">🖼</div><div class="stat-label">รูปภาพ</div><div class="stat-value">${totalPhotos}</div><div class="stat-sub">ภาพ</div></div>
-    <div class="stat-card purple"><div class="stat-icon">✅</div><div class="stat-label">Finish</div><div class="stat-value">${finishCount}</div><div class="stat-sub">จาก ${logs.length} (${logs.length>0?Math.round(finishCount/logs.length*100):0}%)</div></div>`;
+    <div class="stat-card purple"><div class="stat-icon">✅</div><div class="stat-label">Finish</div><div class="stat-value">${finishCount}</div><div class="stat-sub">จาก ${logs.length} (${logs.length > 0 ? Math.round(finishCount / logs.length * 100) : 0}%)</div></div>`;
 
-  const userHours={};
-  logs.forEach(l=>{ if(l.user) l.user.split(',').map(u=>u.trim()).filter(Boolean).forEach(u=>{userHours[u]=(userHours[u]||0)+(l.hours||0);}); });
-  const maxH=Math.max(0.1,...Object.values(userHours));
-  const colors={อัด:'var(--accent)',กุล:'var(--green)',วิท:'var(--amber)',หมี:'var(--accent2)',อัน:'var(--red)'};
+  const userHours = {};
+  logs.forEach(l => { if (l.user) l.user.split(',').map(u => u.trim()).filter(Boolean).forEach(u => { userHours[u] = (userHours[u] || 0) + (l.hours || 0); }); });
+  const maxH = Math.max(0.1, ...Object.values(userHours));
+  const colors = { อัด: 'var(--accent)', กุล: 'var(--green)', วิท: 'var(--amber)', หมี: 'var(--accent2)', อัน: 'var(--red)' };
 
-  document.getElementById('userChart').innerHTML = Object.entries(userHours).sort((a,b)=>b[1]-a[1]).map(([u,h])=>`
+  document.getElementById('userChart').innerHTML = Object.entries(userHours).sort((a, b) => b[1] - a[1]).map(([u, h]) => `
     <div style="display:grid;grid-template-columns:70px 1fr 70px;gap:16px;align-items:center;">
       <div style="font-size:15px;font-weight:700;">${u}</div>
       <div style="background:var(--bg);border-radius:10px;height:16px;overflow:hidden;border:2px solid var(--border);">
-        <div style="width:${(h/maxH*100).toFixed(1)}%;height:100%;background:${colors[u]||'var(--text3)'};border-radius:8px;transition:width 0.8s;"></div>
+        <div style="width:${(h / maxH * 100).toFixed(1)}%;height:100%;background:${colors[u] || 'var(--text3)'};border-radius:8px;transition:width 0.8s;"></div>
       </div>
       <div style="font-size:15px;font-weight:700;font-family:var(--mono);text-align:right;">${h.toFixed(1)}h</div>
     </div>`).join('') || '<div style="text-align:center;padding:24px;color:var(--text3);font-weight:600;">ยังไม่มีข้อมูล</div>';
 
-  const byDate={}; logs.forEach(l=>{ if(!l.date) return; byDate[l.date]=byDate[l.date]||[]; byDate[l.date].push(l); });
-  const dates=Object.keys(byDate).sort().reverse().slice(0,5);
+  const byDate = {};
+  logs.forEach(l => { if (!l.date) return; byDate[l.date] = byDate[l.date] || []; byDate[l.date].push(l); });
+  const dates = Object.keys(byDate).sort().reverse().slice(0, 5);
 
-  document.getElementById('recentByDate').innerHTML = dates.map(d=>{
-    let dStr=d; try{ const dd=new Date(d+'T00:00:00'); if(!isNaN(dd)) dStr=dd.toLocaleDateString('th-TH',{weekday:'short',day:'2-digit',month:'short',year:'numeric'}); }catch(e){}
-    const items=byDate[d]; const tH=items.reduce((s,l)=>s+(l.hours||0),0);
+  document.getElementById('recentByDate').innerHTML = dates.map(d => {
+    let dStr = d;
+    try { const dd = new Date(d + 'T00:00:00'); if (!isNaN(dd)) dStr = dd.toLocaleDateString('th-TH', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }); } catch (e) {}
+    const items = byDate[d];
+    const tH = items.reduce((s, l) => s + (l.hours || 0), 0);
     return `
     <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:2px dashed var(--border2);">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
@@ -1061,9 +1103,9 @@ function renderSummary() {
         <span style="font-size:13px;font-weight:700;background:var(--surface);padding:4px 12px;border-radius:16px;border:2px solid var(--border);font-family:var(--mono);box-shadow:2px 2px 0px var(--border);">${tH.toFixed(1)}h · ${items.length} งาน</span>
       </div>
       <div style="display:flex;flex-direction:column;gap:10px;">
-        ${items.slice(0,3).map(l=>`
+        ${items.slice(0, 3).map(l => `
         <div style="background:var(--bg);padding:12px 16px;border-radius:var(--radius-sm);border:2px solid var(--border);display:flex;gap:12px;align-items:flex-start;box-shadow:2px 2px 0px var(--border);">
-          <span style="font-weight:700;background:var(--surface);border:2px solid var(--border);padding:2px 8px;border-radius:8px;flex-shrink:0;font-family:var(--mono);font-size:12px;">${l.start||'--'}</span>
+          <span style="font-weight:700;background:var(--surface);border:2px solid var(--border);padding:2px 8px;border-radius:8px;flex-shrink:0;font-family:var(--mono);font-size:12px;">${l.start || '--'}</span>
           <div style="flex:1;min-width:0;">
             <div style="font-weight:600;font-size:14px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;">${l.work}</div>
             <div style="font-size:12px;color:var(--text2);margin-top:4px;">👤 ${l.user}</div>
@@ -1071,19 +1113,20 @@ function renderSummary() {
           <span class="status-badge status-${l.status}" style="font-size:11px;padding:4px 10px;">${l.status}</span>
         </div>`).join('')}
       </div>
-      ${items.length>3?`<div style="font-size:14px;font-weight:700;color:var(--accent);margin-top:12px;text-align:center;cursor:pointer;padding:8px;border-radius:12px;border:2px solid var(--border);background:var(--bg);" onclick="switchPage('list')">ดูเพิ่มอีก ${items.length-3} รายการ →</div>`:''}
+      ${items.length > 3 ? `<div style="font-size:14px;font-weight:700;color:var(--accent);margin-top:12px;text-align:center;cursor:pointer;padding:8px;border-radius:12px;border:2px solid var(--border);background:var(--bg);" onclick="switchPage('list')">ดูเพิ่มอีก ${items.length - 3} รายการ →</div>` : ''}
     </div>`;
   }).join('') || '<div style="text-align:center;padding:24px;color:var(--text3);font-weight:600;">ยังไม่มีประวัติ</div>';
 }
 
+// ── TOAST ─────────────────────────────────────────────────────
 function showToast(msg) {
-  const t = document.getElementById('toast');
+  const t   = document.getElementById('toast');
   const ico = t.querySelector('.toast-icon');
   document.getElementById('toastMsg').textContent = msg;
-  ico.textContent = msg.includes('⚠')?'⚠️':msg.includes('🗑')?'🗑️':msg.includes('📸')||msg.includes('🖼')?'📸':'✅';
+  ico.textContent = msg.includes('⚠') ? '⚠️' : msg.includes('🗑') ? '🗑️' : msg.includes('📸') || msg.includes('🖼') ? '📸' : '✅';
   t.classList.add('show');
-  if(t._hide) clearTimeout(t._hide);
-  t._hide = setTimeout(()=>t.classList.remove('show'), 3000);
+  if (t._hide) clearTimeout(t._hide);
+  t._hide = setTimeout(() => t.classList.remove('show'), 3000);
 }
 </script>
 </body>
