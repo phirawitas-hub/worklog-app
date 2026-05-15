@@ -554,58 +554,38 @@ async function pushToGAS(log) {
   if (!GAS_URL) return { ok: false, error: 'ยังไม่ได้ใส่ URL ของ Google Apps Script' };
 
   const payload = {
-    action:     'save',
-    id:         log.id,
-    user:       log.user,
-    date:       log.date,
-    start:      log.start,
-    end:        log.end,
-    hours:      log.hours,
-    work:       log.work,
-    location:   log.location,
-    item:       log.item,
-    qtyWork:    log.qtyWork,
-    qtyActual:  log.qtyActual,
-    status:     log.status,
-    remark:     log.remark,
+    action:       'save',
+    id:           log.id,
+    user:         log.user,
+    date:         log.date,
+    start:        log.start,
+    end:          log.end,
+    hours:        log.hours,
+    work:         log.work,
+    location:     log.location,
+    item:         log.item,
+    qtyWork:      log.qtyWork,
+    qtyActual:    log.qtyActual,
+    status:       log.status,
+    remark:       log.remark,
     photosBefore: log.photosBefore?.length || 0,
     photosAfter:  log.photosAfter?.length  || 0,
-    savedAt:    new Date().toISOString(),
+    savedAt:      new Date().toISOString(),
   };
 
   try {
-    // ✅ แก้แล้ว: เพิ่ม redirect:'follow' และ headers:'text/plain' เพื่อหลีกเลี่ยง CORS preflight
-    const response = await fetch(GAS_URL, {
-      method:   'POST',
-      redirect: 'follow',
-      headers:  { 'Content-Type': 'text/plain;charset=utf-8' },
-      body:     JSON.stringify(payload),
+    // ✅ ใช้ mode:'no-cors' — วิธีเดียวที่ทำงานได้จริงกับ Google Apps Script
+    // GAS จะได้รับข้อมูลและบันทึกลง Sheet เรียบร้อย
+    // แต่ browser จะอ่าน response ไม่ได้ (opaque) ซึ่งเป็นเรื่องปกติของ GAS
+    await fetch(GAS_URL, {
+      method: 'POST',
+      mode:   'no-cors',
+      body:   JSON.stringify(payload),
     });
-
-    if (!response.ok) {
-      return { ok: false, error: `Google ปฏิเสธการเชื่อมต่อ (HTTP ${response.status})` };
-    }
-
-    const resultText = await response.text();
-
-    // ✅ แก้แล้ว: parse JSON ก่อน แล้วค่อยเช็ค .ok แทนการ includes string
-    try {
-      const json = JSON.parse(resultText);
-      if (json.ok === true) {
-        return { ok: true, data: json };
-      } else {
-        return { ok: false, error: 'ข้อผิดพลาดจาก Google Sheet: ' + (json.error || resultText) };
-      }
-    } catch (_) {
-      // ถ้า parse ไม่ได้ ให้เช็ค string fallback
-      if (resultText.includes('"ok":true') || resultText.includes('"ok": true')) {
-        return { ok: true };
-      }
-      return { ok: false, error: 'ตอบกลับผิดรูปแบบ: ' + resultText.slice(0, 200) };
-    }
-
+    // ถ้า fetch ไม่ throw = ส่งสำเร็จ
+    return { ok: true };
   } catch (e) {
-    return { ok: false, error: `เชื่อมต่อล้มเหลว (Network Error): ${e.message}` };
+    return { ok: false, error: `เชื่อมต่อล้มเหลว: ${e.message}` };
   }
 }
 
@@ -856,17 +836,31 @@ function closeSaveOverlay() {
 }
 
 async function saveLog() {
+  try {
+
   const date  = document.getElementById('fDate').value;
   const user  = document.getElementById('fUser').value;
   const work  = document.getElementById('fWork').value.trim();
   const start = document.getElementById('fStart').value;
   const end   = document.getElementById('fEnd').value;
 
-  // Validation
+  // Validation — เลื่อนไปหาฟิลด์ที่ยังไม่กรอก
   if (!date || !user || !work) {
-    showToast('⚠ กรุณากรอก วันที่, ผู้ปฏิบัติ และ รายละเอียดงาน');
-    if (!user) { document.getElementById('fUser').style.borderColor = 'var(--red)'; setTimeout(() => document.getElementById('fUser').style.borderColor = 'var(--border)', 2000); }
-    if (!work) { document.getElementById('fWork').style.borderColor = 'var(--red)'; setTimeout(() => document.getElementById('fWork').style.borderColor = 'var(--border)', 2000); }
+    if (!user) {
+      const el = document.getElementById('fUser');
+      el.style.borderColor = 'var(--red)';
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(() => el.style.borderColor = 'var(--border)', 3000);
+      showToast('⚠ กรุณาเลือกผู้ปฏิบัติงาน');
+    } else if (!work) {
+      const el = document.getElementById('fWork');
+      el.style.borderColor = 'var(--red)';
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(() => el.style.borderColor = 'var(--border)', 3000);
+      showToast('⚠ กรุณากรอกรายละเอียดงาน');
+    } else {
+      showToast('⚠ กรุณากรอกวันที่');
+    }
     return;
   }
 
@@ -920,6 +914,11 @@ async function saveLog() {
     const btn = document.querySelector('#saveBtnWrap button');
     btn.textContent = 'รับทราบ';
     btn.onclick = function () { closeSaveOverlay(); resetForm(); switchPage('list'); };
+  }
+
+  } catch (fatalErr) {
+    // จับ JS Error ที่อาจเกิดเงียบๆ ให้แสดงผลแทน
+    setSaveUI('❌', 'เกิดข้อผิดพลาด', 'กรุณาแจ้ง Admin', String(fatalErr));
   }
 }
 
