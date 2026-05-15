@@ -98,11 +98,12 @@
     display: flex;
     padding: 0 24px;
     gap: 4px;
+    overflow-x: auto;
   }
 
   .nav-tab {
-    padding: 10px 16px;
-    font-size: 13px;
+    padding: 12px 16px;
+    font-size: 14px;
     font-weight: 500;
     color: var(--text2);
     cursor: pointer;
@@ -113,7 +114,8 @@
     font-family: var(--sans);
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
+    white-space: nowrap;
   }
 
   .nav-tab.active {
@@ -126,14 +128,19 @@
   /* ─── Main content ─── */
   .main { flex: 1; padding: 24px; max-width: 900px; margin: 0 auto; width: 100%; }
 
-  .page { display: none; }
+  .page { display: none; animation: fadeIn 0.3s ease; }
   .page.active { display: block; }
+  
+  @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+  }
 
   /* ─── Stats row ─── */
   .stats {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
+    gap: 16px;
     margin-bottom: 24px;
   }
 
@@ -141,7 +148,7 @@
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 16px;
+    padding: 20px;
     position: relative;
     overflow: hidden;
   }
@@ -150,7 +157,7 @@
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0;
-    height: 2px;
+    height: 3px;
   }
 
   .stat-card.blue::before { background: var(--accent); }
@@ -158,40 +165,40 @@
   .stat-card.amber::before { background: var(--amber); }
   .stat-card.purple::before { background: var(--accent2); }
 
-  .stat-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; font-family: var(--mono); margin-bottom: 6px; }
-  .stat-value { font-size: 26px; font-weight: 700; font-family: var(--mono); line-height: 1; }
+  .stat-label { font-size: 12px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; font-family: var(--mono); margin-bottom: 8px; }
+  .stat-value { font-size: 28px; font-weight: 700; font-family: var(--mono); line-height: 1; }
   .stat-card.blue .stat-value { color: var(--accent); }
   .stat-card.green .stat-value { color: var(--green); }
   .stat-card.amber .stat-value { color: var(--amber); }
   .stat-card.purple .stat-value { color: var(--accent2); }
-  .stat-sub { font-size: 12px; color: var(--text3); margin-top: 4px; }
+  .stat-sub { font-size: 13px; color: var(--text3); margin-top: 6px; }
 
   /* ─── Form card ─── */
   .card {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 20px;
-    margin-bottom: 16px;
+    padding: 24px;
+    margin-bottom: 20px;
   }
 
   .card-title {
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
     color: var(--text2);
     text-transform: uppercase;
     letter-spacing: 0.08em;
     font-family: var(--mono);
-    margin-bottom: 16px;
+    margin-bottom: 20px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
   }
 
   .card-title::before {
     content: '';
-    width: 3px;
-    height: 14px;
+    width: 4px;
+    height: 16px;
     background: var(--accent);
     border-radius: 2px;
     display: block;
@@ -201,451 +208,85 @@
   .form-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    gap: 16px;
   }
 
   .form-grid.three { grid-template-columns: 1fr 1fr 1fr; }
   .form-grid.full { grid-template-columns: 1fr; }
 
-  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field { display: flex; flex-direction: column; gap: 8px; }
   .field.span2 { grid-column: span 2; }
 
   label {
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 500;
     color: var(--text2);
     letter-spacing: 0.03em;
   }
 
   input, select, textarea {
-    background: var(--surface2);
+    background: var(--bg);
     border: 1px solid var(--border2);
     border-radius: var(--radius-sm);
     color: var(--text);
     font-family: var(--sans);
-    font-size: 14px;
-    padding: 9px 12px;
+    font-size: 15px;
+    padding: 12px 16px;
     outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    transition: all 0.2s;
     width: 100%;
   }
 
   input:focus, select:focus, textarea:focus {
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(91,127,255,0.12);
+    background: var(--surface2);
   }
 
-  textarea { resize: vertical; min-height: 80px; }
+  textarea { resize: vertical; min-height: 100px; }
 
-  select option { background: var(--surface2); }
+  select option { background: var(--surface); color: var(--text); }
 
   /* ─── Status chips ─── */
-  .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chips { display: flex; gap: 10px; flex-wrap: wrap; }
 
   .chip {
-    padding: 6px 14px;
+    padding: 8px 16px;
     border-radius: 20px;
-    font-size: 13px;
+    font-size: 14px;
     cursor: pointer;
     border: 1px solid var(--border2);
     color: var(--text2);
-    transition: all 0.15s;
+    transition: all 0.2s;
     font-family: var(--sans);
     background: transparent;
+    display: flex;
+    align-items: center;
+    gap: 6px;
   }
 
-  .chip.selected-finish { background: rgba(34,201,123,0.15); border-color: var(--green); color: var(--green); }
-  .chip.selected-progress { background: rgba(91,127,255,0.15); border-color: var(--accent); color: var(--accent); }
-  .chip.selected-pending { background: rgba(245,166,35,0.15); border-color: var(--amber); color: var(--amber); }
-  .chip.selected-issue { background: rgba(255,85,85,0.15); border-color: var(--red); color: var(--red); }
+  .chip:hover { border-color: var(--text3); }
+
+  .chip.selected-Finish { background: rgba(34,201,123,0.15); border-color: var(--green); color: var(--green); }
+  .chip.selected-InProgress { background: rgba(91,127,255,0.15); border-color: var(--accent); color: var(--accent); }
+  .chip.selected-Pending { background: rgba(245,166,35,0.15); border-color: var(--amber); color: var(--amber); }
+  .chip.selected-Issue { background: rgba(255,85,85,0.15); border-color: var(--red); color: var(--red); }
 
   /* ─── Camera section ─── */
-  .camera-zone {
-    border: 1.5px dashed var(--border2);
-    border-radius: var(--radius);
-    padding: 20px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .camera-zone:hover { border-color: var(--accent); background: rgba(91,127,255,0.04); }
-
-  .camera-icon {
-    font-size: 28px;
-    margin-bottom: 8px;
-    display: block;
-  }
-
-  .camera-text { font-size: 13px; color: var(--text2); }
-  .camera-sub { font-size: 11px; color: var(--text3); margin-top: 4px; }
-
-  #videoEl {
-    width: 100%;
-    border-radius: var(--radius-sm);
-    display: none;
-    background: #000;
-    max-height: 280px;
-    object-fit: cover;
-  }
-
-  .photo-preview-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-    gap: 8px;
-    margin-top: 12px;
-  }
-
-  .photo-thumb {
-    position: relative;
-    aspect-ratio: 1;
-    border-radius: var(--radius-sm);
-    overflow: hidden;
-    border: 1px solid var(--border);
-  }
-
-  .photo-thumb img {
-    width: 100%; height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-
-  .photo-remove {
-    position: absolute;
-    top: 4px; right: 4px;
-    background: rgba(0,0,0,0.7);
-    border: none;
-    color: white;
-    width: 20px; height: 20px;
-    border-radius: 50%;
-    font-size: 12px;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    line-height: 1;
-  }
-
-  .camera-controls {
-    display: flex;
-    gap: 8px;
-    margin-top: 10px;
-    justify-content: center;
-  }
-
-  /* ─── Buttons ─── */
-  .btn {
-    padding: 10px 20px;
-    border-radius: var(--radius-sm);
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    border: none;
-    transition: all 0.15s;
-    font-family: var(--sans);
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .btn-primary {
-    background: var(--accent);
-    color: white;
-  }
-  .btn-primary:hover { background: #4a6ff0; transform: translateY(-1px); }
-  .btn-primary:active { transform: translateY(0); }
-
-  .btn-success {
-    background: var(--green);
-    color: #051a0d;
-    font-weight: 700;
-  }
-  .btn-success:hover { background: #1db368; transform: translateY(-1px); }
-
-  .btn-ghost {
-    background: var(--surface2);
-    color: var(--text2);
-    border: 1px solid var(--border2);
-  }
-  .btn-ghost:hover { color: var(--text); border-color: var(--border2); }
-
-  .btn-danger {
-    background: rgba(255,85,85,0.15);
-    color: var(--red);
-    border: 1px solid rgba(255,85,85,0.3);
-  }
-
-  .btn-sm { padding: 6px 12px; font-size: 12px; }
-
-  .form-actions {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-    margin-top: 20px;
-    padding-top: 16px;
-    border-top: 1px solid var(--border);
-  }
-
-  /* ─── Log list ─── */
-  .filter-bar {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 16px;
-    flex-wrap: wrap;
-    align-items: center;
-  }
-
-  .filter-bar input {
-    flex: 1;
-    min-width: 200px;
-  }
-
-  .log-list { display: flex; flex-direction: column; gap: 10px; }
-
-  .log-item {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 16px;
-    cursor: pointer;
-    transition: all 0.15s;
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    gap: 14px;
-    align-items: start;
-  }
-
-  .log-item:hover {
-    border-color: var(--border2);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-  }
-
-  .log-avatar {
-    width: 36px; height: 36px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    font-weight: 700;
-    font-family: var(--mono);
-    flex-shrink: 0;
-    margin-top: 2px;
-  }
-
-  .log-body { min-width: 0; }
-
-  .log-meta {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    margin-bottom: 4px;
-    flex-wrap: wrap;
-  }
-
-  .log-user { font-size: 13px; font-weight: 600; }
-  .log-time { font-size: 11px; color: var(--text3); font-family: var(--mono); }
-  .log-date { font-size: 11px; color: var(--text3); font-family: var(--mono); }
-
-  .log-work {
-    font-size: 13px;
-    color: var(--text2);
-    line-height: 1.5;
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-  }
-
-  .log-tags {
-    display: flex;
-    gap: 6px;
-    margin-top: 8px;
-    flex-wrap: wrap;
-  }
-
-  .tag {
-    font-size: 11px;
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-family: var(--mono);
-  }
-
-  .tag-hour { background: rgba(91,127,255,0.15); color: var(--accent); }
-  .tag-qty { background: rgba(34,201,123,0.12); color: var(--green); }
-  .tag-photo { background: rgba(124,92,252,0.15); color: var(--accent2); }
-
-  .log-right { text-align: right; flex-shrink: 0; }
-
-  .status-badge {
-    font-size: 11px;
-    font-weight: 600;
-    padding: 3px 10px;
-    border-radius: 12px;
-    font-family: var(--mono);
-    display: inline-block;
-  }
-
-  .status-Finish { background: rgba(34,201,123,0.15); color: var(--green); }
-  .status-InProgress { background: rgba(91,127,255,0.15); color: var(--accent); }
-  .status-Pending { background: rgba(245,166,35,0.15); color: var(--amber); }
-  .status-Issue { background: rgba(255,85,85,0.15); color: var(--red); }
-
-  .log-hours {
-    font-size: 20px;
-    font-weight: 700;
-    font-family: var(--mono);
-    color: var(--text);
-    margin-top: 4px;
-  }
-
-  .log-hours span { font-size: 11px; color: var(--text3); font-weight: 400; }
-
-  /* ─── Modal ─── */
-  .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    backdrop-filter: blur(4px);
-    z-index: 200;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-  }
-
-  .modal-overlay.open { display: flex; }
-
-  .modal {
-    background: var(--surface);
-    border: 1px solid var(--border2);
-    border-radius: var(--radius);
-    max-width: 600px;
-    width: 100%;
-    max-height: 85vh;
-    overflow-y: auto;
-    padding: 24px;
-  }
-
-  .modal-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 20px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .modal-title { font-size: 16px; font-weight: 600; }
-
-  .modal-close {
-    background: none;
-    border: none;
-    color: var(--text3);
-    font-size: 20px;
-    cursor: pointer;
-    padding: 4px;
-    line-height: 1;
-    transition: color 0.15s;
-  }
-
-  .modal-close:hover { color: var(--text); }
-
-  .detail-row {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 12px;
-    align-items: flex-start;
-  }
-
-  .detail-label {
-    font-size: 12px;
-    color: var(--text3);
-    font-family: var(--mono);
-    width: 80px;
-    flex-shrink: 0;
-    padding-top: 2px;
-  }
-
-  .detail-val { font-size: 14px; color: var(--text); flex: 1; }
-
-  .modal-photos {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 8px;
-    margin-top: 8px;
-  }
-
-  .modal-photo {
-    border-radius: var(--radius-sm);
-    overflow: hidden;
-    aspect-ratio: 1;
-    border: 1px solid var(--border);
-  }
-
-  .modal-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
-
-  /* ─── Empty state ─── */
-  .empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--text3);
-  }
-
-  .empty-icon { font-size: 48px; display: block; margin-bottom: 12px; }
-  .empty-title { font-size: 16px; color: var(--text2); margin-bottom: 6px; }
-  .empty-sub { font-size: 13px; }
-
-  /* ─── Toast ─── */
-  .toast {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    background: var(--surface2);
-    border: 1px solid var(--border2);
-    border-radius: var(--radius-sm);
-    padding: 12px 18px;
-    font-size: 13px;
-    color: var(--text);
-    z-index: 300;
-    transform: translateY(80px);
-    opacity: 0;
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .toast.show { transform: translateY(0); opacity: 1; }
-  .toast .toast-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
-
-  /* ─── User color map ─── */
-  .user-อัด { background: rgba(91,127,255,0.2); color: #7b9fff; }
-  .user-กุล { background: rgba(34,201,123,0.2); color: #3de090; }
-  .user-วิท { background: rgba(245,166,35,0.2); color: #f8bf55; }
-  .user-หมี { background: rgba(124,92,252,0.2); color: #a084fc; }
-  .user-อัน { background: rgba(255,85,85,0.2); color: #ff7b7b; }
-  .user-default { background: rgba(255,255,255,0.1); color: var(--text2); }
-
-  /* ─── Scrollbar ─── */
-  ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
-
-  /* ─── Photo sections (before/after) ─── */
   .photo-section-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
   }
   .photo-section-label {
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
-    padding: 4px 12px;
+    padding: 6px 16px;
     border-radius: 20px;
-    font-family: var(--mono);
+    font-family: var(--sans);
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
   .photo-section-label.before {
     background: rgba(91,127,255,0.15);
@@ -658,37 +299,36 @@
     border: 1px solid rgba(34,201,123,0.3);
   }
   .photo-section-count {
-    font-size: 12px;
+    font-size: 13px;
     font-family: var(--mono);
     color: var(--text3);
   }
 
-  /* ─── Slot grid: 5 fixed slots ─── */
   .slot-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    gap: 8px;
+    gap: 12px;
   }
   .photo-slot {
     aspect-ratio: 1;
     border-radius: var(--radius-sm);
     border: 1.5px dashed var(--border2);
-    background: var(--surface2);
+    background: var(--bg);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.18s;
+    transition: all 0.2s;
     position: relative;
     overflow: hidden;
-    font-size: 11px;
+    font-size: 12px;
     color: var(--text3);
-    gap: 4px;
+    gap: 6px;
   }
   .photo-slot:hover:not(.filled) {
     border-color: var(--accent);
-    background: rgba(91,127,255,0.07);
+    background: var(--surface2);
     color: var(--text2);
   }
   .photo-slot.filled {
@@ -702,66 +342,331 @@
   }
   .slot-num {
     font-family: var(--mono);
-    font-size: 10px;
+    font-size: 11px;
     color: var(--text3);
   }
-  .slot-icon { font-size: 18px; }
+  .slot-icon { font-size: 20px; }
   .slot-remove {
     position: absolute;
-    top: 3px; right: 3px;
-    background: rgba(0,0,0,0.65);
+    top: 4px; right: 4px;
+    background: rgba(0,0,0,0.7);
     border: none;
     color: #fff;
-    width: 18px; height: 18px;
+    width: 22px; height: 22px;
     border-radius: 50%;
-    font-size: 11px;
+    font-size: 12px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     line-height: 1;
     z-index: 2;
+    transition: background 0.2s;
   }
+  .slot-remove:hover { background: var(--red); }
   .slot-index {
     position: absolute;
-    bottom: 3px; left: 4px;
-    background: rgba(0,0,0,0.55);
+    bottom: 4px; left: 4px;
+    background: rgba(0,0,0,0.6);
     color: #fff;
-    font-size: 9px;
+    font-size: 10px;
     font-family: var(--mono);
-    padding: 1px 4px;
+    padding: 2px 6px;
     border-radius: 4px;
   }
 
-  /* ─── cam-action-btn (kept minimal) ─── */
-  .cam-action-btn {
-    flex: 1;
-    background: var(--surface2);
-    border: 1.5px dashed var(--border2);
-    border-radius: var(--radius);
-    padding: 18px 12px;
-    text-align: center;
+  /* ─── Buttons ─── */
+  .btn {
+    padding: 12px 24px;
+    border-radius: var(--radius-sm);
+    font-size: 15px;
+    font-weight: 600;
     cursor: pointer;
-    transition: all 0.18s;
-    color: var(--text2);
+    border: none;
+    transition: all 0.2s;
     font-family: var(--sans);
-    display: block;
-  }
-  .cam-action-btn:hover {
-    border-color: var(--accent);
-    background: rgba(91,127,255,0.07);
-    color: var(--text);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
   }
 
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: #4a6ff0; transform: translateY(-2px); }
+  .btn-primary:active { transform: translateY(0); }
+
+  .btn-success { background: var(--green); color: #051a0d; }
+  .btn-success:hover { background: #1db368; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(34,201,123,0.3); }
+
+  .btn-ghost { background: transparent; color: var(--text2); border: 1px solid var(--border2); }
+  .btn-ghost:hover { background: var(--surface2); color: var(--text); }
+
+  .btn-danger { background: rgba(255,85,85,0.15); color: var(--red); border: 1px solid rgba(255,85,85,0.3); }
+  .btn-danger:hover { background: var(--red); color: white; }
+
+  .btn-sm { padding: 8px 16px; font-size: 13px; }
+
+  .form-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ─── Log list ─── */
+  .filter-bar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .filter-bar input { flex: 1; min-width: 250px; }
+
+  .log-list { display: flex; flex-direction: column; gap: 12px; }
+
+  .log-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 16px;
+    align-items: start;
+  }
+
+  .log-item:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  }
+
+  .log-avatar {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: var(--mono);
+    flex-shrink: 0;
+  }
+
+  .log-body { min-width: 0; }
+
+  .log-meta {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+  }
+
+  .log-user { font-size: 14px; font-weight: 600; color: var(--text); }
+  .log-time { font-size: 12px; color: var(--text3); font-family: var(--mono); }
+  .log-date { font-size: 12px; color: var(--text3); font-family: var(--mono); }
+
+  .log-work {
+    font-size: 14px;
+    color: var(--text2);
+    line-height: 1.5;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
+  .log-tags {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-family: var(--mono);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .tag-hour { background: rgba(91,127,255,0.15); color: var(--accent); }
+  .tag-qty { background: rgba(34,201,123,0.12); color: var(--green); }
+  .tag-photo { background: rgba(124,92,252,0.15); color: var(--accent2); }
+
+  .log-right { text-align: right; flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+
+  .status-badge {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-family: var(--mono);
+    display: inline-block;
+  }
+
+  .status-Finish { background: rgba(34,201,123,0.15); color: var(--green); border: 1px solid rgba(34,201,123,0.3); }
+  .status-InProgress { background: rgba(91,127,255,0.15); color: var(--accent); border: 1px solid rgba(91,127,255,0.3); }
+  .status-Pending { background: rgba(245,166,35,0.15); color: var(--amber); border: 1px solid rgba(245,166,35,0.3); }
+  .status-Issue { background: rgba(255,85,85,0.15); color: var(--red); border: 1px solid rgba(255,85,85,0.3); }
+
+  /* ─── Modal ─── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(5px);
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .modal-overlay.open { display: flex; opacity: 1; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    max-width: 650px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 24px;
+    transform: translateY(20px);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  
+  .modal-overlay.open .modal { transform: translateY(0); }
+
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .modal-title { font-size: 18px; font-weight: 600; color: var(--text); }
+
+  .modal-close {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    color: var(--text2);
+    font-size: 16px;
+    cursor: pointer;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+
+  .modal-close:hover { background: var(--border2); color: var(--text); }
+
+  .detail-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+    align-items: flex-start;
+  }
+
+  .detail-label {
+    font-size: 13px;
+    color: var(--text3);
+    font-family: var(--mono);
+    width: 100px;
+    flex-shrink: 0;
+    padding-top: 2px;
+  }
+
+  .detail-val { font-size: 15px; color: var(--text); flex: 1; line-height: 1.5; }
+
+  .modal-photos {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  .modal-photo {
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    aspect-ratio: 1;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  
+  .modal-photo:hover { transform: scale(1.05); border-color: var(--accent); }
+
+  .modal-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  /* ─── Toast ─── */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--surface2);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius-sm);
+    padding: 16px 24px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    z-index: 300;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  }
+
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast .toast-icon { font-size: 18px; }
+
+  /* ─── User colors ─── */
+  .user-อัด { background: rgba(91,127,255,0.2); color: #7b9fff; border: 1px solid rgba(91,127,255,0.3); }
+  .user-กุล { background: rgba(34,201,123,0.2); color: #3de090; border: 1px solid rgba(34,201,123,0.3); }
+  .user-วิท { background: rgba(245,166,35,0.2); color: #f8bf55; border: 1px solid rgba(245,166,35,0.3); }
+  .user-หมี { background: rgba(124,92,252,0.2); color: #a084fc; border: 1px solid rgba(124,92,252,0.3); }
+  .user-อัน { background: rgba(255,85,85,0.2); color: #ff7b7b; border: 1px solid rgba(255,85,85,0.3); }
+  .user-default { background: rgba(255,255,255,0.1); color: var(--text2); border: 1px solid rgba(255,255,255,0.2); }
+
+  /* ─── Scrollbar ─── */
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+
   /* ─── Responsive ─── */
-  @media (max-width: 640px) {
+  @media (max-width: 768px) {
     .stats { grid-template-columns: 1fr 1fr; }
     .form-grid { grid-template-columns: 1fr; }
-    .form-grid.three { grid-template-columns: 1fr 1fr; }
+    .form-grid.three { grid-template-columns: 1fr; }
     .field.span2 { grid-column: span 1; }
     .main { padding: 16px; }
     header { padding: 0 16px; }
-    .nav { padding: 0 12px; }
+    .nav { padding: 0 16px; }
+    .slot-grid { grid-template-columns: repeat(5, 1fr); gap: 8px; }
+    .photo-section-label { font-size: 12px; padding: 4px 12px; }
+    .log-item { grid-template-columns: 1fr; gap: 12px; }
+    .log-right { align-items: flex-start; text-align: left; }
   }
 </style>
 </head>
@@ -784,13 +689,13 @@
 <!-- Nav -->
 <nav class="nav">
   <button class="nav-tab active" onclick="switchPage('add')" id="tab-add">
-    ＋ บันทึกงาน
+    <span style="font-size: 18px;">＋</span> บันทึกงาน
   </button>
   <button class="nav-tab" onclick="switchPage('list')" id="tab-list">
-    ☰ รายการทั้งหมด
+    <span style="font-size: 18px;">☰</span> รายการทั้งหมด
   </button>
   <button class="nav-tab" onclick="switchPage('summary')" id="tab-summary">
-    ◑ สรุปภาพรวม
+    <span style="font-size: 18px;">◑</span> สรุปภาพรวม
   </button>
 </nav>
 
@@ -842,7 +747,7 @@
           <textarea id="fWork" placeholder="อธิบายงานที่ทำ..."></textarea>
         </div>
       </div>
-      <div class="form-grid three" style="margin-top:12px">
+      <div class="form-grid three" style="margin-top:16px">
         <div class="field">
           <label>รายการ (Item)</label>
           <input type="text" id="fItem" placeholder="SKU / รหัสสินค้า">
@@ -861,12 +766,12 @@
     <div class="card">
       <div class="card-title">สถานะงาน</div>
       <div class="chips">
-        <button class="chip selected-finish" onclick="selectStatus('Finish')" id="chip-Finish">✓ Finish</button>
+        <button class="chip selected-Finish" onclick="selectStatus('Finish')" id="chip-Finish">✓ Finish</button>
         <button class="chip" onclick="selectStatus('InProgress')" id="chip-InProgress">⟳ In Progress</button>
         <button class="chip" onclick="selectStatus('Pending')" id="chip-Pending">⏳ Pending</button>
         <button class="chip" onclick="selectStatus('Issue')" id="chip-Issue">⚠ มีปัญหา</button>
       </div>
-      <div class="field" style="margin-top:12px">
+      <div class="field" style="margin-top:16px">
         <label>หมายเหตุ / Issue</label>
         <input type="text" id="fRemark" placeholder="บันทึกเพิ่มเติม...">
       </div>
@@ -886,7 +791,7 @@
       </div>
 
       <!-- ── หลังงาน ── -->
-      <div class="photo-section" style="margin-top:16px">
+      <div class="photo-section" style="margin-top:24px">
         <div class="photo-section-header">
           <div class="photo-section-label after">✅ หลังงาน</div>
           <span class="photo-section-count" id="afterCount">0 / 5</span>
@@ -895,21 +800,21 @@
       </div>
 
       <!-- Live camera overlay (shared) -->
-      <div id="cameraLive" style="display:none;margin-top:14px">
-        <div style="position:relative;border-radius:var(--radius-sm);overflow:hidden;background:#000">
-          <video id="videoEl" autoplay playsinline style="width:100%;max-height:300px;object-fit:cover;display:block"></video>
-          <div id="shutterFlash" style="position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;transition:opacity 0.08s"></div>
-          <div style="position:absolute;top:10px;left:12px;background:rgba(0,0,0,0.65);color:#fff;font-size:12px;font-family:var(--mono);padding:3px 10px;border-radius:12px" id="camLabel">ก่อนงาน</div>
-          <div style="position:absolute;top:10px;right:12px;background:rgba(0,0,0,0.65);color:#fff;font-size:12px;font-family:var(--mono);padding:3px 10px;border-radius:12px" id="camSlotBadge">0/5</div>
+      <div id="cameraLive" style="display:none;margin-top:20px;border:1px solid var(--border);border-radius:var(--radius);padding:16px;background:var(--surface2)">
+        <div style="position:relative;border-radius:var(--radius-sm);overflow:hidden;background:#000;box-shadow:inset 0 0 20px rgba(0,0,0,0.5)">
+          <video id="videoEl" autoplay playsinline style="width:100%;max-height:400px;object-fit:cover;display:block"></video>
+          <div id="shutterFlash" style="position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;transition:opacity 0.1s"></div>
+          <div style="position:absolute;top:12px;left:12px;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);color:#fff;font-size:13px;font-weight:500;padding:6px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.2)" id="camLabel">ก่อนงาน</div>
+          <div style="position:absolute;top:12px;right:12px;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);color:#fff;font-size:13px;font-family:var(--mono);padding:6px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.2)" id="camSlotBadge">0/5</div>
         </div>
-        <div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-top:12px">
-          <button class="btn btn-ghost btn-sm" onclick="switchCamera()" style="width:40px;height:40px;padding:0;border-radius:50%;font-size:18px" title="สลับกล้อง">🔄</button>
-          <button onclick="capturePhoto()" id="shutterBtn" style="width:66px;height:66px;border-radius:50%;border:none;background:var(--accent);color:#fff;font-size:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.1s;box-shadow:0 0 0 6px rgba(91,127,255,0.18)">📸</button>
-          <label style="width:40px;height:40px;border-radius:50%;border:1px solid var(--border2);background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer" title="เลือกไฟล์">
+        <div style="display:flex;align-items:center;justify-content:center;gap:20px;margin-top:20px">
+          <button class="btn btn-ghost" onclick="switchCamera()" style="width:50px;height:50px;padding:0;border-radius:50%;font-size:20px" title="สลับกล้อง">🔄</button>
+          <button onclick="capturePhoto()" id="shutterBtn" style="width:72px;height:72px;border-radius:50%;border:none;background:var(--accent);color:#fff;font-size:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.1s;box-shadow:0 0 0 6px rgba(91,127,255,0.2), 0 8px 16px rgba(0,0,0,0.3)">📸</button>
+          <label style="width:50px;height:50px;border-radius:50%;border:1px solid var(--border2);background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;transition:all 0.2s" title="เลือกไฟล์">
             🖼<input type="file" accept="image/*" style="display:none" onchange="handleFileSelectCam(event)">
           </label>
         </div>
-        <div style="text-align:center;margin-top:8px">
+        <div style="text-align:center;margin-top:16px">
           <button class="btn btn-ghost btn-sm" onclick="stopCamera()">✕ ปิดกล้อง</button>
         </div>
       </div>
@@ -927,12 +832,12 @@
   <div class="page" id="page-list">
     <div class="filter-bar">
       <input type="text" id="searchInput" placeholder="🔍 ค้นหางาน, ผู้ปฏิบัติ, location..." oninput="renderList()">
-      <select id="filterUser" onchange="renderList()" style="width:130px">
+      <select id="filterUser" onchange="renderList()" style="width:auto;min-width:130px">
         <option value="">ทุกคน</option>
         <option>อัด</option><option>กุล</option>
         <option>วิท</option><option>หมี</option><option>อัน</option>
       </select>
-      <select id="filterStatus" onchange="renderList()" style="width:130px">
+      <select id="filterStatus" onchange="renderList()" style="width:auto;min-width:130px">
         <option value="">ทุกสถานะ</option>
         <option>Finish</option>
         <option>InProgress</option>
@@ -949,7 +854,7 @@
 
     <div class="card">
       <div class="card-title">ชั่วโมงงานแต่ละคน</div>
-      <div id="userChart"></div>
+      <div id="userChart" style="display:flex;flex-direction:column;gap:12px;"></div>
     </div>
 
     <div class="card">
@@ -972,9 +877,19 @@
   </div>
 </div>
 
+<!-- Modal Image Preview -->
+<div class="modal-overlay" id="imgModalOverlay" style="z-index: 250;" onclick="closeImgModal(event)">
+    <div class="modal" id="imgModal" style="background:transparent;border:none;box-shadow:none;text-align:center;">
+        <img id="fullImgPreview" src="" style="max-width:100%;max-height:80vh;border-radius:var(--radius);object-fit:contain;box-shadow:0 10px 40px rgba(0,0,0,0.5);">
+        <div style="margin-top:16px;">
+            <button class="btn btn-ghost" onclick="closeImgModalBtn()" style="background:rgba(0,0,0,0.5);color:white;border:none;backdrop-filter:blur(5px);">✕ ปิด</button>
+        </div>
+    </div>
+</div>
+
 <!-- Toast -->
 <div class="toast" id="toast">
-  <div class="toast-dot"></div>
+  <span class="toast-icon">✨</span>
   <span id="toastMsg"></span>
 </div>
 
@@ -991,39 +906,34 @@ const SEED = [
   {id:8,user:"กุล",date:"2026-05-05",start:"8:00",end:"8:30",hours:0.5,work:"ทำ 5 ส Micro Rack G",location:"-",item:"-",qtyWork:0,qtyActual:0,status:"Finish",remark:"",photos:[]},
   {id:9,user:"หมี",date:"2026-05-05",start:"8:00",end:"8:20",hours:0.33,work:"ทำ 5 ส helmet",location:"-",item:"-",qtyWork:0,qtyActual:0,status:"Finish",remark:"",photos:[]},
   {id:10,user:"วิท",date:"2026-05-05",start:"8:00",end:"8:15",hours:0.25,work:"ทำความสะอาด 5 ส Selective B-17 - B-24 และ B-31",location:"B-17~B-24,B-31",item:"-",qtyWork:9,qtyActual:0,status:"Finish",remark:"",photos:[]},
-  {id:19,user:"อัด,หมี,วิท",date:"2026-05-05",start:"9:30",end:"16:30",hours:6,work:"ถ่ายรูปสินค้าและวัดขนาด,น้ำหนัก CATEGORY SPARE PART ส่งรายงาน Product Information Report",location:"-",item:"43",qtyWork:43,qtyActual:43,status:"Finish",remark:"",photos:[]},
-  {id:21,user:"อัด,วิท,อัน",date:"2026-05-05",start:"17:30",end:"19:50",hours:2.33,work:"Cycle Count Selective B-11 Level B/C",location:"B-11",item:"-",qtyWork:52,qtyActual:4603,status:"Finish",remark:"",photos:[]},
-  {id:34,user:"อัด,หมี,วิท",date:"2026-05-06",start:"9:30",end:"16:30",hours:6,work:"ถ่ายรูปสินค้าและวัดขนาด,น้ำหนัก CATEGORY SPARE PART ส่งรายงาน Product Information Report",location:"-",item:"50",qtyWork:50,qtyActual:50,status:"Finish",remark:"",photos:[]},
-  {id:35,user:"วิท,หมี,อัด,อัน",date:"2026-05-06",start:"17:30",end:"19:50",hours:2.33,work:"Cycle Count Selective B-11 Level D/E",location:"B-11",item:"-",qtyWork:52,qtyActual:4362,status:"Finish",remark:"",photos:[]},
-  {id:55,user:"อัด,วิท",date:"2026-05-08",start:"11:00",end:"11:30",hours:0.5,work:"OUT แจ้งว่าหางานรหัส PEMTFB009 MT0000 OS โลเคชั่น B-25-014-G ไม่พบ",location:"B-25-014-G",item:"PEMTFB009",qtyWork:1,qtyActual:1,status:"Finish",remark:"หาที่โลเคชั่น B-25-014-G จึงหยิบที่โล B-FD-014-C แทน",photos:[]},
-  {id:56,user:"อัด,วิท",date:"2026-05-08",start:"13:00",end:"13:30",hours:0.5,work:"OUT แจ้งว่างานรหัส LSMTR02RR01001 BK0000 XL (B-29-021-D) มี ไซต์ M ปนมา 1 Pcs",location:"B-29-021-D",item:"LSMTR02RR01001",qtyWork:1,qtyActual:1,status:"Finish",remark:"ตรวจสอบแล้วงานจริงเป็นไซต์ M แต่แปะสติ๊กเกอร์เป็นไซต์ XL",photos:[]},
-  {id:58,user:"อัด,วิท,หมี",date:"2026-05-08",start:"10:00",end:"16:30",hours:5.5,work:"ถ่ายรูปสินค้าและวัดขนาด,น้ำหนัก CATEGORY SPARE PART ส่งรายงาน Product Information Report",location:"-",item:"52",qtyWork:52,qtyActual:52,status:"Finish",remark:"",photos:[]},
-  {id:60,user:"อัน,หมี,กุล",date:"2026-05-08",start:"17:30",end:"19:40",hours:2.17,work:"Cycle Count Selective",location:"-",item:"-",qtyWork:74,qtyActual:1721,status:"Finish",remark:"",photos:[]},
-  {id:66,user:"วิท,หมี",date:"2026-05-11",start:"9:00",end:"16:30",hours:6.5,work:"ถ่ายรูปสินค้าและวัดขนาด,น้ำหนัก CATEGORY SPARE PART ส่งรายงาน Product Information Report",location:"-",item:"38",qtyWork:38,qtyActual:38,status:"Finish",remark:"",photos:[]},
-  {id:69,user:"หมี,วิท,กุล",date:"2026-05-11",start:"17:30",end:"19:50",hours:2.33,work:"Cycle Count Selective B-11 Level G B-12 Level B",location:"B-11,B-12",item:"-",qtyWork:52,qtyActual:1163,status:"Finish",remark:"",photos:[]},
-  {id:77,user:"กุล",date:"2026-05-12",start:"8:40",end:"16:00",hours:6.33,work:"ตรวจสอบงาน Spare Part สถานะ และ Damage & Disposal Count ครั้งที่ 1 ร่วมกับ บัญชี เตรียมทำ MEMO เพิ่ม",location:"-",item:"-",qtyWork:0,qtyActual:67,status:"Finish",remark:"",photos:[]},
-  {id:79,user:"อัน,หมี,กุล",date:"2026-05-12",start:"17:30",end:"19:40",hours:2.17,work:"Cycle Count Selective",location:"-",item:"-",qtyWork:78,qtyActual:2339,status:"Finish",remark:"",photos:[]},
-  {id:83,user:"กุล",date:"2026-05-13",start:"8:30",end:"11:20",hours:2.83,work:"ตรวจเช็คงาน โล QC( Disposal ไม่อยู่ในระบบ) 1 พาเลท",location:"QC",item:"-",qtyWork:0,qtyActual:23,status:"Finish",remark:"เจองาน Lost 4 ชิ้น Mummy-01 3 ชิ้น ย้ายเข้า B-01-014-E",photos:[]},
-  {id:87,user:"อัด,หมี,วิท",date:"2026-05-13",start:"9:30",end:"16:00",hours:6,work:"ถ่ายรูปสินค้าและวัดขนาด,น้ำหนัก CATEGORY SPARE PART ส่งรายงาน Product Information Report",location:"-",item:"56",qtyWork:56,qtyActual:56,status:"Finish",remark:"",photos:[]},
-  {id:89,user:"อัน,อัด,หมี,วิท,กุล",date:"2026-05-13",start:"17:30",end:"19:50",hours:2.33,work:"Cycle Count Selective B-12 Level F,G B-13 Level D,E",location:"B-12,B-13",item:"-",qtyWork:129,qtyActual:1543,status:"Finish",remark:"",photos:[]},
 ];
 
 // ─── CONFIG — ใส่ GAS URL ตรงนี้ ─────────────────────────────
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbwZEDYqhrhc02ps7Z6Cjbw01s_sVE9AWnfz2IBN4sPnVQ7mkon86oA_zatUMubZyhLKZw/exec';
-// วิธีได้ GAS URL: script.google.com → Deploy → New deployment → Web app → Copy URL
-// ถ้ายังไม่มี ให้ใส่ '' ไว้ก่อน จะใช้ localStorage อย่างเดียว
+const GAS_URL = ''; // ถ้าไม่มีให้เว้นว่างไว้ จะใช้ LocalStorage
 // ─────────────────────────────────────────────────────────────
 
-let logs = JSON.parse(localStorage.getItem('wl_logs') || 'null') || SEED;
-let nextId = Math.max(...logs.map(l=>l.id)) + 1;
+let logs = [];
+try {
+    const savedLogs = localStorage.getItem('wl_logs');
+    if (savedLogs) {
+        logs = JSON.parse(savedLogs);
+    } else {
+        logs = SEED;
+        localStorage.setItem('wl_logs', JSON.stringify(logs));
+    }
+} catch (e) {
+    console.error("Error parsing localStorage data:", e);
+    logs = SEED;
+}
+
+let nextId = logs.length > 0 ? Math.max(...logs.map(l=>l.id)) + 1 : 1;
 let currentStatus = 'Finish';
-let stream = null;
 
 // ─── SYNC HELPERS ────────────────────────────────────────────
 function setSyncBadge(state) {
   const el = document.getElementById('syncBadge');
   const map = {
-    syncing: { text:'⟳ กำลัง sync...', bg:'rgba(91,127,255,0.15)', color:'var(--accent)', border:'rgba(91,127,255,0.4)' },
+    syncing: { text:'⟳ Syncing...', bg:'rgba(91,127,255,0.15)', color:'var(--accent)', border:'rgba(91,127,255,0.4)' },
     ok:      { text:'✓ Synced', bg:'rgba(34,201,123,0.15)', color:'var(--green)', border:'rgba(34,201,123,0.4)' },
     error:   { text:'⚠ Offline', bg:'rgba(245,166,35,0.15)', color:'var(--amber)', border:'rgba(245,166,35,0.4)' },
     off:     null,
@@ -1039,9 +949,8 @@ function setSyncBadge(state) {
 }
 
 async function pushToGAS(log) {
-  if(!GAS_URL || GAS_URL === 'YOUR_GAS_URL_HERE') return;
+  if(!GAS_URL) return;
   setSyncBadge('syncing');
-  // ส่งเฉพาะ metadata (ไม่ส่ง base64 รูป เพื่อประหยัด quota)
   const payload = {
     action: 'save',
     id: log.id,
@@ -1070,23 +979,23 @@ async function pushToGAS(log) {
     });
     setSyncBadge('ok');
   } catch(e) {
+    console.error("Sync error:", e);
     setSyncBadge('error');
-    // ยังบันทึกใน localStorage อยู่ ไม่หาย
   }
 }
 
 async function loadFromGAS() {
-  if(!GAS_URL || GAS_URL === 'YOUR_GAS_URL_HERE') return;
+  if(!GAS_URL) return;
   setSyncBadge('syncing');
   try {
     const res = await fetch(GAS_URL + '?action=getAll');
-    if(!res.ok) throw new Error();
+    if(!res.ok) throw new Error('Network response was not ok');
     const data = await res.json();
     if(Array.isArray(data) && data.length > 0) {
-      // merge: GAS เป็น source of truth สำหรับ metadata, รูปเก็บใน localStorage
       const localLogs = JSON.parse(localStorage.getItem('wl_logs') || '[]');
       const photoMap = {};
       localLogs.forEach(l => { photoMap[l.id] = { photosBefore: l.photosBefore, photosAfter: l.photosAfter }; });
+      
       logs = data.map(r => ({
         id: Number(r.id||r.ID),
         user: r.user||r.User||'',
@@ -1112,7 +1021,8 @@ async function loadFromGAS() {
       renderSummary();
     }
   } catch(e) {
-    setSyncBadge('error');
+      console.error("Load from GAS error:", e);
+      setSyncBadge('error');
   }
 }
 
@@ -1121,7 +1031,7 @@ const today = new Date();
 document.getElementById('headerDate').textContent =
   today.toLocaleDateString('th-TH',{day:'2-digit',month:'short',year:'numeric'});
 
-const todayStr = today.toISOString().split('T')[0];
+const todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
 document.getElementById('fDate').value = todayStr;
 
 const nowH = String(today.getHours()).padStart(2,'0');
@@ -1129,8 +1039,9 @@ const nowM = String(today.getMinutes()).padStart(2,'0');
 document.getElementById('fStart').value = `${nowH}:${nowM}`;
 
 initSlots();
+renderList(); // เพิ่มบรรทัดนี้เพื่อให้เรนเดอร์ลิสต์ตอนโหลดด้วย (เผื่อผู้ใช้คลิกแท็บนี้)
 renderSummary();
-loadFromGAS(); // ดึงข้อมูลจาก Google Sheets ตอนโหลดหน้า
+if(GAS_URL) loadFromGAS();
 
 // ─── PAGE SWITCH ─────────────────────────────────────────────
 function switchPage(name) {
@@ -1155,7 +1066,7 @@ function selectStatus(s) {
 // ─── CAMERA ─────────────────────────────────────────────────
 let facingMode = 'environment';
 let activeSec = null; // 'before' | 'after'
-let stream = null;
+let camStream = null; // Rename to avoid conflict with top-level variable if any
 const MAX_PHOTOS = 5;
 
 // photos object: { before: [...], after: [...] }
@@ -1179,27 +1090,21 @@ function renderSlots(sec) {
       return `<div class="photo-slot filled" onclick="previewPhoto('${sec}',${i})">
         <img src="${img}" alt="ภาพ ${label}">
         <div class="slot-index">${label}</div>
-        <button class="slot-remove" onclick="event.stopPropagation();removeSlotPhoto('${sec}',${i})">✕</button>
+        <button class="slot-remove" onclick="event.stopPropagation();removeSlotPhoto('${sec}',${i})" title="ลบภาพนี้">✕</button>
       </div>`;
     } else {
       const isNext = filled === i; // light up only next empty
-      return `<div class="photo-slot${isNext?' next-slot':''}" onclick="openSlot('${sec}',${i})">
+      return `<div class="photo-slot${isNext?' next-slot':''}" onclick="openSlot('${sec}',${i})" style="${isNext ? (sec==='before'?'border-color:var(--accent);color:var(--accent)':'border-color:var(--green);color:var(--green)') : ''}">
         <span class="slot-icon">${isNext ? '📷' : '+'}</span>
         <span class="slot-num">${label}</span>
       </div>`;
     }
   }).join('');
-
-  // style next slot slightly brighter
-  grid.querySelectorAll('.next-slot').forEach(el => {
-    el.style.borderColor = sec === 'before' ? 'var(--accent)' : 'var(--green)';
-    el.style.color = sec === 'before' ? 'var(--accent)' : 'var(--green)';
-  });
 }
 
 function openSlot(sec, idx) {
   const filled = photos[sec].filter(Boolean).length;
-  if(idx !== filled) { showToast('⚠ กรุณาถ่ายตามลำดับ'); return; }
+  if(idx !== filled) { showToast('⚠ กรุณาถ่ายหรือแนบภาพตามลำดับ'); return; }
   if(filled >= MAX_PHOTOS) { showToast('⚠ ครบ 5 ภาพแล้ว'); return; }
   activeSec = sec;
   startCamera(sec);
@@ -1207,63 +1112,80 @@ function openSlot(sec, idx) {
 
 async function startCamera(sec) {
   try {
-    if(stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
-    stream = await navigator.mediaDevices.getUserMedia({
+    if(camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
+    camStream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode, width:{ideal:1280}, height:{ideal:720} }, audio:false
     });
-    document.getElementById('videoEl').srcObject = stream;
+    document.getElementById('videoEl').srcObject = camStream;
     document.getElementById('cameraLive').style.display = 'block';
-    document.getElementById('camLabel').textContent = sec === 'before' ? '📸 ก่อนงาน' : '✅ หลังงาน';
-    document.getElementById('camLabel').style.background =
-      sec === 'before' ? 'rgba(91,127,255,0.7)' : 'rgba(34,201,123,0.7)';
+    
+    const camLabel = document.getElementById('camLabel');
+    camLabel.textContent = sec === 'before' ? '📸 ก่อนงาน' : '✅ หลังงาน';
+    camLabel.style.borderColor = sec === 'before' ? 'rgba(91,127,255,0.5)' : 'rgba(34,201,123,0.5)';
+    camLabel.style.color = sec === 'before' ? 'var(--accent)' : 'var(--green)';
+    
     updateCamBadge();
-    document.getElementById('cameraLive').scrollIntoView({behavior:'smooth', block:'nearest'});
+    document.getElementById('cameraLive').scrollIntoView({behavior:'smooth', block:'center'});
   } catch(e) {
-    showToast('⚠ เปิดกล้องไม่ได้ — ลองเลือกจากไฟล์แทน');
+      console.warn("Camera access denied or error:", e);
+      // Fallback for when camera is not available (e.g. PC without webcam or permissions denied)
+      showToast('⚠ ไม่สามารถเปิดกล้องได้ โปรดใช้ปุ่ม "เลือกไฟล์" แทน');
+      document.getElementById('cameraLive').style.display = 'block'; // Show UI anyway for file upload
+      document.getElementById('videoEl').style.display = 'none'; // Hide video element
   }
 }
 
 async function switchCamera() {
   facingMode = facingMode === 'environment' ? 'user' : 'environment';
-  if(activeSec) await startCamera(activeSec);
+  if(activeSec && camStream) await startCamera(activeSec);
 }
 
 function stopCamera() {
-  if(stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+  if(camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
   document.getElementById('cameraLive').style.display = 'none';
+  document.getElementById('videoEl').style.display = 'block'; // Reset display state
   activeSec = null;
 }
 
 function capturePhoto() {
-  if(!activeSec) return;
+  if(!activeSec || !camStream) return;
   const filled = photos[activeSec].filter(Boolean).length;
   if(filled >= MAX_PHOTOS) { showToast('⚠ ครบ 5 ภาพแล้ว'); stopCamera(); return; }
 
   const video = document.getElementById('videoEl');
   const canvas = document.getElementById('canvasEl');
-  canvas.width = video.videoWidth || 640;
-  canvas.height = video.videoHeight || 480;
+  
+  if(video.videoWidth === 0 || video.videoHeight === 0) return; // Video not ready
+
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
   canvas.getContext('2d').drawImage(video, 0, 0);
-  const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+  
+  // Compress image slightly to save space
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
 
   photos[activeSec][filled] = dataUrl;
   renderSlots(activeSec);
   updateCamBadge();
 
-  // flash
+  // Shutter flash effect
   const flash = document.getElementById('shutterFlash');
-  flash.style.opacity = '0.6';
-  setTimeout(() => flash.style.opacity = '0', 100);
+  flash.style.opacity = '1';
+  setTimeout(() => flash.style.opacity = '0', 150);
+  
+  // Button press effect
   const btn = document.getElementById('shutterBtn');
   btn.style.transform = 'scale(0.85)';
-  setTimeout(() => btn.style.transform = 'scale(1)', 140);
+  setTimeout(() => btn.style.transform = 'scale(1)', 150);
 
   const newFilled = photos[activeSec].filter(Boolean).length;
-  showToast(`📸 ภาพที่ ${newFilled} (${activeSec === 'before' ? 'ก่อนงาน' : 'หลังงาน'}) บันทึกแล้ว`);
+  showToast(`📸 บันทึกภาพที่ ${newFilled} แล้ว`);
 
   if(newFilled >= MAX_PHOTOS) {
-    showToast(`✓ ครบ 5 ภาพแล้ว — ปิดกล้อง`);
-    setTimeout(stopCamera, 600);
+    setTimeout(() => {
+        showToast(`✓ ครบ 5 ภาพแล้ว`);
+        stopCamera();
+    }, 500);
   }
 }
 
@@ -1277,50 +1199,53 @@ function handleFileSelectCam(e) {
   if(!activeSec) return;
   const file = e.target.files[0];
   if(!file) return;
+  
+  // Validate file type
+  if(!file.type.startsWith('image/')) {
+      showToast('⚠ โปรดเลือกไฟล์รูปภาพเท่านั้น');
+      return;
+  }
+
   const filled = photos[activeSec].filter(Boolean).length;
   if(filled >= MAX_PHOTOS) { showToast('⚠ ครบ 5 ภาพแล้ว'); return; }
+  
   const reader = new FileReader();
   reader.onload = ev => {
+    // Basic compression/resizing could be added here if needed for very large files
     photos[activeSec][filled] = ev.target.result;
     renderSlots(activeSec);
     updateCamBadge();
     const newFilled = photos[activeSec].filter(Boolean).length;
     showToast(`🖼 เพิ่มภาพที่ ${newFilled} เรียบร้อย`);
-    if(newFilled >= MAX_PHOTOS) setTimeout(stopCamera, 400);
+    if(newFilled >= MAX_PHOTOS) setTimeout(stopCamera, 500);
   };
   reader.readAsDataURL(file);
-  e.target.value = '';
+  e.target.value = ''; // Reset input
 }
 
 function removeSlotPhoto(sec, idx) {
-  // shift remaining down
+  // Shift remaining items down to keep continuous array
   photos[sec].splice(idx, 1);
   photos[sec].push(null);
   renderSlots(sec);
   showToast('🗑 ลบภาพแล้ว');
+  if(activeSec === sec) updateCamBadge();
 }
 
 function previewPhoto(sec, idx) {
   const img = photos[sec][idx];
   if(!img) return;
-  const secLabel = sec === 'before' ? 'ก่อนงาน' : 'หลังงาน';
-  const filled = photos[sec].filter(Boolean);
-  const pos = filled.indexOf(img);
-
-  document.getElementById('modalTitle').textContent = `${secLabel} — ภาพที่ ${idx + 1}`;
-  document.getElementById('modalBody').innerHTML = `
-    <div style="text-align:center">
-      <img src="${img}" style="max-width:100%;border-radius:var(--radius-sm);display:block;margin:0 auto">
-      <div style="display:flex;justify-content:center;gap:10px;margin-top:14px;flex-wrap:wrap">
-        ${idx > 0 && photos[sec][idx-1] ? `<button class="btn btn-ghost btn-sm" onclick="previewPhoto('${sec}',${idx-1})">← ก่อนหน้า</button>` : ''}
-        <button class="btn btn-danger btn-sm" onclick="removeSlotPhoto('${sec}',${idx});closeModalBtn()">🗑 ลบภาพนี้</button>
-        ${idx < 4 && photos[sec][idx+1] ? `<button class="btn btn-ghost btn-sm" onclick="previewPhoto('${sec}',${idx+1})">ถัดไป →</button>` : ''}
-      </div>
-    </div>`;
-  document.getElementById('modalOverlay').classList.add('open');
+  
+  // Open full image modal
+  document.getElementById('fullImgPreview').src = img;
+  document.getElementById('imgModalOverlay').classList.add('open');
 }
 
-// helper: flatten all photos for saving
+function closeImgModal(e) { if(e.target.id==='imgModalOverlay') closeImgModalBtn(); }
+function closeImgModalBtn() { document.getElementById('imgModalOverlay').classList.remove('open'); }
+
+
+// helper: flatten all photos for saving legacy structure if needed
 function getAllPhotos() {
   return [
     ...photos.before.filter(Boolean).map(p => ({type:'before', data:p})),
@@ -1338,6 +1263,14 @@ function saveLog() {
 
   if(!date || !user || !work) {
     showToast('⚠ กรุณากรอกวันที่, ผู้ปฏิบัติ, และรายละเอียดงาน');
+    
+    // Highlight required fields briefly
+    if(!user) document.getElementById('fUser').style.borderColor = 'var(--red)';
+    if(!work) document.getElementById('fWork').style.borderColor = 'var(--red)';
+    setTimeout(() => {
+        document.getElementById('fUser').style.borderColor = 'var(--border2)';
+        document.getElementById('fWork').style.borderColor = 'var(--border2)';
+    }, 2000);
     return;
   }
 
@@ -1357,17 +1290,28 @@ function saveLog() {
     qtyActual: Number(document.getElementById('fQtyActual').value) || 0,
     status: currentStatus,
     remark: document.getElementById('fRemark').value,
-    photos: getAllPhotos(),
+    photos: getAllPhotos(), // Keep for legacy compatibility if needed
     photosBefore: photos.before.filter(Boolean),
     photosAfter: photos.after.filter(Boolean),
   };
 
-  logs.unshift(log);
-  localStorage.setItem('wl_logs', JSON.stringify(logs));
-  pushToGAS(log); // sync ไป Google Sheets
-  showToast('✓ บันทึกงานเรียบร้อย');
-  resetForm();
-  switchPage('list');
+  try {
+      logs.unshift(log);
+      localStorage.setItem('wl_logs', JSON.stringify(logs));
+      pushToGAS(log); // sync ไป Google Sheets
+      showToast('✓ บันทึกงานเรียบร้อย');
+      resetForm();
+      switchPage('list');
+  } catch (e) {
+      // Handle LocalStorage quota exceeded
+      console.error("Storage error:", e);
+      if(e.name === 'QuotaExceededError' || e.message.includes('quota')) {
+          alert("พื้นที่จัดเก็บข้อมูลในเบราว์เซอร์เต็ม เนื่องจากรูปภาพเยอะเกินไป กรุณาลบรายการเก่าๆ ออกบ้าง");
+          logs.shift(); // Revert addition
+      } else {
+          showToast('⚠ เกิดข้อผิดพลาดในการบันทึก');
+      }
+  }
 }
 
 function calcHours(start, end) {
@@ -1412,23 +1356,35 @@ function renderList() {
   const list = document.getElementById('logList');
 
   if(!filtered.length) {
-    list.innerHTML = `<div class="empty-state"><span class="empty-icon">🔍</span><div class="empty-title">ไม่พบรายการ</div><div class="empty-sub">ลองเปลี่ยนคำค้นหา</div></div>`;
+    list.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--text3);background:var(--surface);border-radius:var(--radius);border:1px dashed var(--border2);">
+      <span style="font-size:48px;display:block;margin-bottom:16px;">🔍</span>
+      <div style="font-size:16px;color:var(--text2);margin-bottom:8px;font-weight:500;">ไม่พบรายการที่ค้นหา</div>
+      <div style="font-size:14px;">ลองเปลี่ยนคำค้นหา หรือล้างตัวกรอง</div>
+    </div>`;
     return;
   }
 
   list.innerHTML = filtered.map(l => {
-    const initials = l.user.slice(0,2);
+    const initials = l.user ? l.user.slice(0,2) : '??';
     const userKey = l.user.includes(',') ? 'default' : l.user;
-    const hoursStr = l.hours >= 1 ? l.hours.toFixed(1) : Math.round(l.hours*60)+'m';
-    const d = new Date(l.date + 'T00:00:00');
-    const dateStr = d.toLocaleDateString('th-TH',{day:'2-digit',month:'short'});
+    
+    let dateStr = '';
+    try {
+        const d = new Date(l.date + 'T00:00:00');
+        if(!isNaN(d.getTime())) {
+            dateStr = d.toLocaleDateString('th-TH',{day:'2-digit',month:'short'});
+        } else {
+            dateStr = l.date; // Fallback
+        }
+    } catch(e) { dateStr = l.date; }
+    
     return `
     <div class="log-item" onclick="openLog(${l.id})">
       <div class="log-avatar user-${userKey}">${initials}</div>
       <div class="log-body">
         <div class="log-meta">
           <span class="log-user">${l.user}</span>
-          <span class="log-time">${l.start}–${l.end}</span>
+          <span class="log-time">${l.start||'--:--'}–${l.end||'--:--'}</span>
           <span class="log-date">${dateStr}</span>
         </div>
         <div class="log-work">${l.work}</div>
@@ -1436,11 +1392,12 @@ function renderList() {
           ${l.hours>0 ? `<span class="tag tag-hour">⏱ ${l.hours>=1?l.hours.toFixed(1)+'h':Math.round(l.hours*60)+'m'}</span>` : ''}
           ${l.qtyActual>0 ? `<span class="tag tag-qty">📦 ${l.qtyActual.toLocaleString()}</span>` : ''}
           ${(()=>{const cnt=(l.photosBefore?.length||0)+(l.photosAfter?.length||0)||(l.photos?.length||0);return cnt>0?`<span class="tag tag-photo">📷 ${cnt}</span>`:''})()}
-          ${l.location && l.location!=='-' ? `<span class="tag" style="background:rgba(255,255,255,0.07);color:var(--text3)">📍 ${l.location}</span>` : ''}
+          ${l.location && l.location!=='-' ? `<span class="tag" style="background:rgba(255,255,255,0.07);color:var(--text3);border:1px solid var(--border2)">📍 ${l.location}</span>` : ''}
         </div>
       </div>
       <div class="log-right">
         <span class="status-badge status-${l.status}">${l.status}</span>
+        ${l.hours > 0 ? `<div style="font-size:18px;font-weight:700;font-family:var(--mono);color:var(--text);margin-top:auto;">${l.hours.toFixed(1)}<span style="font-size:11px;font-weight:400;color:var(--text3);margin-left:2px;">h</span></div>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -1450,140 +1407,198 @@ function renderList() {
 function openLog(id) {
   const l = logs.find(x => x.id === id);
   if(!l) return;
-  document.getElementById('modalTitle').textContent = `#${l.id} — ${l.user}`;
-  const d = new Date(l.date+'T00:00:00');
-  const dateStr = d.toLocaleDateString('th-TH',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+  document.getElementById('modalTitle').textContent = `รายการ #${l.id} — ${l.user}`;
+  
+  let dateStr = l.date;
+  try {
+      const d = new Date(l.date+'T00:00:00');
+      if(!isNaN(d.getTime())) dateStr = d.toLocaleDateString('th-TH',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+  } catch(e) {}
 
   const rows = [
     ['วันที่', dateStr],
-    ['เวลา', `${l.start} – ${l.end} (${l.hours.toFixed(2)} ชม.)`],
+    ['เวลา', `${l.start||'-'} – ${l.end||'-'} (${l.hours>0 ? l.hours.toFixed(2) : '0.00'} ชม.)`],
     ['สถานะ', `<span class="status-badge status-${l.status}">${l.status}</span>`],
-    ['Location', l.location],
-    ['สินค้า', l.item],
-    ['จำนวน Work', l.qtyWork ? l.qtyWork.toLocaleString() : '-'],
-    ['จำนวนจริง', l.qtyActual ? l.qtyActual.toLocaleString() : '-'],
-    ['รายละเอียด', `<span style="color:var(--text);line-height:1.7">${l.work}</span>`],
-    ['หมายเหตุ', l.remark || '-'],
+    ['Location', l.location || '-'],
+    ['สินค้า (Item)', l.item || '-'],
+    ['จำนวน Work', l.qtyWork ? l.qtyWork.toLocaleString() : '0'],
+    ['จำนวนจริง', l.qtyActual ? l.qtyActual.toLocaleString() : '0'],
+    ['รายละเอียดงาน', `<div style="color:var(--text);line-height:1.6;background:var(--bg);padding:12px;border-radius:var(--radius-sm);border:1px solid var(--border2);margin-top:4px;">${l.work.replace(/\n/g, '<br>')}</div>`],
+    ['หมายเหตุ', l.remark ? `<span style="color:var(--amber)">${l.remark}</span>` : '-'],
   ];
 
   const photosHtml = (l.photosBefore?.length || l.photosAfter?.length || l.photos?.length) ? `
-    <div class="detail-row">
-      <div class="detail-label">รูปภาพ</div>
-      <div style="flex:1">
-        ${l.photosBefore?.length ? `<div style="font-size:11px;color:var(--accent);font-family:var(--mono);margin-bottom:6px">📸 ก่อนงาน (${l.photosBefore.length})</div>
-        <div class="modal-photos" style="margin-bottom:12px">${l.photosBefore.map(p=>`<div class="modal-photo"><img src="${p}" loading="lazy"></div>`).join('')}</div>` : ''}
-        ${l.photosAfter?.length ? `<div style="font-size:11px;color:var(--green);font-family:var(--mono);margin-bottom:6px">✅ หลังงาน (${l.photosAfter.length})</div>
-        <div class="modal-photos">${l.photosAfter.map(p=>`<div class="modal-photo"><img src="${p}" loading="lazy"></div>`).join('')}</div>` : ''}
-        ${(!l.photosBefore && !l.photosAfter && l.photos?.length) ? `<div class="modal-photos">${l.photos.map(p=>`<div class="modal-photo"><img src="${typeof p==='object'?p.data:p}" loading="lazy"></div>`).join('')}</div>` : ''}
+    <div class="detail-row" style="flex-direction:column;gap:8px;">
+      <div class="detail-label" style="width:100%;font-size:14px;font-weight:600;color:var(--text);border-bottom:1px solid var(--border);padding-bottom:8px;margin-bottom:8px;">รูปภาพแนบ</div>
+      <div style="width:100%;">
+        ${l.photosBefore?.length ? `
+        <div style="font-size:13px;color:var(--accent);font-family:var(--sans);margin-bottom:8px;display:flex;align-items:center;gap:6px;">📸 ก่อนงาน <span style="background:rgba(91,127,255,0.2);padding:2px 8px;border-radius:10px;font-size:11px;">${l.photosBefore.length} ภาพ</span></div>
+        <div class="modal-photos" style="margin-bottom:20px">${l.photosBefore.map(p=>`<div class="modal-photo" onclick="showFullImg('${p}')"><img src="${p}" loading="lazy"></div>`).join('')}</div>` : ''}
+        
+        ${l.photosAfter?.length ? `
+        <div style="font-size:13px;color:var(--green);font-family:var(--sans);margin-bottom:8px;display:flex;align-items:center;gap:6px;">✅ หลังงาน <span style="background:rgba(34,201,123,0.2);padding:2px 8px;border-radius:10px;font-size:11px;">${l.photosAfter.length} ภาพ</span></div>
+        <div class="modal-photos">${l.photosAfter.map(p=>`<div class="modal-photo" onclick="showFullImg('${p}')"><img src="${p}" loading="lazy"></div>`).join('')}</div>` : ''}
+        
+        ${(!l.photosBefore && !l.photosAfter && l.photos?.length) ? `
+        <div class="modal-photos">${l.photos.map(p=>`<div class="modal-photo" onclick="showFullImg('${typeof p==='object'?p.data:p}')"><img src="${typeof p==='object'?p.data:p}" loading="lazy"></div>`).join('')}</div>` : ''}
       </div>
     </div>` : '';
 
   document.getElementById('modalBody').innerHTML =
     rows.map(([k,v])=>`<div class="detail-row"><div class="detail-label">${k}</div><div class="detail-val">${v}</div></div>`).join('') +
     photosHtml +
-    `<div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end">
-      <button class="btn btn-danger btn-sm" onclick="deleteLog(${id})">🗑 ลบ</button>
+    `<div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border);display:flex;gap:12px;justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="closeModalBtn()">ปิด</button>
+      <button class="btn btn-danger" onclick="deleteLog(${id})">🗑 ลบรายการนี้</button>
     </div>`;
 
   document.getElementById('modalOverlay').classList.add('open');
+}
+
+function showFullImg(src) {
+    document.getElementById('fullImgPreview').src = src;
+    document.getElementById('imgModalOverlay').classList.add('open');
 }
 
 function closeModal(e) { if(e.target.id==='modalOverlay') closeModalBtn(); }
 function closeModalBtn() { document.getElementById('modalOverlay').classList.remove('open'); }
 
 function deleteLog(id) {
-  if(!confirm('ยืนยันการลบรายการนี้?')) return;
+  if(!confirm('ยืนยันการลบรายการนี้ใช่หรือไม่? การกระทำนี้ไม่สามารถย้อนกลับได้')) return;
   logs = logs.filter(l => l.id !== id);
-  localStorage.setItem('wl_logs', JSON.stringify(logs));
-  closeModalBtn();
-  renderList();
-  showToast('🗑 ลบรายการเรียบร้อย');
+  try {
+      localStorage.setItem('wl_logs', JSON.stringify(logs));
+      closeModalBtn();
+      renderList();
+      showToast('🗑 ลบรายการเรียบร้อย');
+  } catch(e) {
+      console.error("Error saving after delete", e);
+      showToast('⚠ เกิดข้อผิดพลาดในการลบ');
+  }
 }
 
 // ─── SUMMARY ────────────────────────────────────────────────
 function renderSummary() {
-  const totalH = logs.reduce((s,l)=>s+l.hours,0);
-  const totalPhotos = logs.reduce((s,l)=>s+(l.photosBefore?.length||0)+(l.photosAfter?.length||0),0);
+  const totalH = logs.reduce((s,l)=>s+(l.hours||0),0);
+  const totalPhotos = logs.reduce((s,l)=>s+(l.photosBefore?.length||0)+(l.photosAfter?.length||0)+(l.photos?.length||0),0);
   const finishCount = logs.filter(l=>l.status==='Finish').length;
-  const issueCount = logs.filter(l=>l.status==='Issue').length;
 
   document.getElementById('statsGrid').innerHTML = `
     <div class="stat-card blue">
       <div class="stat-label">รายการทั้งหมด</div>
       <div class="stat-value">${logs.length}</div>
-      <div class="stat-sub">งาน</div>
+      <div class="stat-sub">งานที่บันทึก</div>
     </div>
     <div class="stat-card green">
-      <div class="stat-label">ชั่วโมงรวม</div>
+      <div class="stat-label">ชั่วโมงทำงานรวม</div>
       <div class="stat-value">${totalH.toFixed(1)}</div>
       <div class="stat-sub">ชั่วโมง</div>
     </div>
     <div class="stat-card amber">
-      <div class="stat-label">รูปภาพ</div>
+      <div class="stat-label">รูปภาพแนบ</div>
       <div class="stat-value">${totalPhotos}</div>
-      <div class="stat-sub">ภาพ</div>
+      <div class="stat-sub">ภาพในระบบ</div>
     </div>
     <div class="stat-card purple">
-      <div class="stat-label">Finish</div>
+      <div class="stat-label">งานเสร็จสิ้น</div>
       <div class="stat-value">${finishCount}</div>
-      <div class="stat-sub">/ ${logs.length} งาน</div>
+      <div class="stat-sub">จาก ${logs.length} งาน (${logs.length>0?Math.round(finishCount/logs.length*100):0}%)</div>
     </div>
   `;
 
   // User hours chart
   const userHours = {};
   logs.forEach(l => {
-    l.user.split(',').map(u=>u.trim()).forEach(u => {
-      userHours[u] = (userHours[u]||0) + l.hours;
+    if(!l.user) return;
+    l.user.split(',').map(u=>u.trim()).filter(Boolean).forEach(u => {
+      userHours[u] = (userHours[u]||0) + (l.hours||0);
     });
   });
 
-  const maxH = Math.max(...Object.values(userHours));
+  const maxH = Math.max(0.1, ...Object.values(userHours)); // prevent div by zero
   const colors = { อัด:'var(--accent)', กุล:'var(--green)', วิท:'var(--amber)', หมี:'var(--accent2)', อัน:'var(--red)' };
 
-  document.getElementById('userChart').innerHTML = Object.entries(userHours)
+  const chartHtml = Object.entries(userHours)
     .sort((a,b)=>b[1]-a[1])
     .map(([u,h]) => `
-    <div style="display:grid;grid-template-columns:60px 1fr 50px;gap:10px;align-items:center;margin-bottom:10px">
-      <div style="font-size:13px;font-weight:600;color:${colors[u]||'var(--text2)'}">${u}</div>
-      <div style="background:var(--surface2);border-radius:4px;height:8px;overflow:hidden">
-        <div style="width:${(h/maxH*100).toFixed(1)}%;height:100%;background:${colors[u]||'var(--border2)'};border-radius:4px;transition:width 0.5s"></div>
+    <div style="display:grid;grid-template-columns:60px 1fr 60px;gap:12px;align-items:center;">
+      <div style="font-size:14px;font-weight:600;color:${colors[u]||'var(--text)'};">${u}</div>
+      <div style="background:var(--bg);border-radius:6px;height:12px;overflow:hidden;border:1px solid var(--border2)">
+        <div style="width:${(h/maxH*100).toFixed(1)}%;height:100%;background:${colors[u]||'var(--text3)'};border-radius:6px;transition:width 0.8s ease-out;box-shadow:inset 0 0 5px rgba(0,0,0,0.2)"></div>
       </div>
-      <div style="font-size:13px;font-family:var(--mono);color:var(--text2);text-align:right">${h.toFixed(1)}h</div>
+      <div style="font-size:14px;font-family:var(--mono);color:var(--text);text-align:right">${h.toFixed(1)}h</div>
     </div>`).join('');
+    
+  document.getElementById('userChart').innerHTML = chartHtml || '<div style="color:var(--text3);font-size:14px;text-align:center;padding:20px;">ยังไม่มีข้อมูลการทำงาน</div>';
 
   // Recent by date
   const byDate = {};
-  logs.forEach(l => { byDate[l.date] = byDate[l.date]||[]; byDate[l.date].push(l); });
-  const dates = Object.keys(byDate).sort().reverse().slice(0,5);
+  logs.forEach(l => { 
+      if(!l.date) return;
+      byDate[l.date] = byDate[l.date]||[]; 
+      byDate[l.date].push(l); 
+  });
+  const dates = Object.keys(byDate).sort().reverse().slice(0,5); // Top 5 days
 
   document.getElementById('recentByDate').innerHTML = dates.map(d => {
-    const dd = new Date(d+'T00:00:00');
-    const dStr = dd.toLocaleDateString('th-TH',{weekday:'short',day:'2-digit',month:'short'});
+    let dStr = d;
+    try {
+        const dd = new Date(d+'T00:00:00');
+        if(!isNaN(dd.getTime())) dStr = dd.toLocaleDateString('th-TH',{weekday:'short',day:'2-digit',month:'short',year:'numeric'});
+    } catch(e){}
+    
     const items = byDate[d];
-    const totalH = items.reduce((s,l)=>s+l.hours,0);
+    const totalDayH = items.reduce((s,l)=>s+(l.hours||0),0);
+    
     return `
-    <div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border)">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <span style="font-size:13px;font-weight:600;font-family:var(--mono);color:var(--text)">${dStr}</span>
-        <span style="font-size:11px;color:var(--text3);font-family:var(--mono)">${totalH.toFixed(1)}h · ${items.length} งาน</span>
+    <div style="margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border);last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <span style="font-size:14px;font-weight:600;color:var(--accent)">📅 ${dStr}</span>
+        <span style="font-size:12px;background:var(--surface2);padding:2px 8px;border-radius:12px;border:1px solid var(--border2);color:var(--text2);font-family:var(--mono)">${totalDayH.toFixed(1)}h · ${items.length} งาน</span>
       </div>
-      ${items.slice(0,3).map(l=>`<div style="font-size:12px;color:var(--text2);padding:3px 0;display:flex;gap:8px;align-items:flex-start">
-        <span style="color:var(--text3);flex-shrink:0;font-family:var(--mono)">${l.start}</span>
-        <span style="overflow:hidden;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical">${l.work}</span>
-      </div>`).join('')}
-      ${items.length>3?`<div style="font-size:11px;color:var(--text3);margin-top:4px">+${items.length-3} รายการ</div>`:''}
+      <div style="display:flex;flex-direction:column;gap:8px;">
+      ${items.slice(0,3).map(l=>`
+        <div style="font-size:13px;color:var(--text);background:var(--bg);padding:8px 12px;border-radius:var(--radius-sm);border:1px solid var(--border);display:flex;gap:12px;align-items:flex-start">
+          <span style="color:var(--text3);flex-shrink:0;font-family:var(--mono);font-size:12px;margin-top:2px;">${l.start||'--:--'}</span>
+          <div style="flex:1">
+            <div style="overflow:hidden;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;margin-bottom:4px;">${l.work}</div>
+            <div style="font-size:11px;color:var(--text2);">👤 ${l.user} ${l.status==='Finish'?'<span style="color:var(--green)">✓</span>':''}</div>
+          </div>
+        </div>`).join('')}
+      </div>
+      ${items.length>3?`<div style="font-size:12px;color:var(--accent);margin-top:8px;text-align:center;cursor:pointer;" onclick="document.getElementById('searchInput').value='${d}';switchPage('list');">ดูเพิ่มอีก ${items.length-3} รายการ →</div>`:''}
     </div>`;
-  }).join('') || '<div style="color:var(--text3);font-size:13px">ยังไม่มีข้อมูล</div>';
+  }).join('') || '<div style="color:var(--text3);font-size:14px;text-align:center;padding:20px;">ยังไม่มีประวัติการทำงาน</div>';
 }
 
 // ─── TOAST ──────────────────────────────────────────────────
 function showToast(msg) {
   const t = document.getElementById('toast');
   document.getElementById('toastMsg').textContent = msg;
+  
+  // Custom icon based on message
+  const icon = t.querySelector('.toast-icon');
+  if(msg.includes('⚠')) icon.textContent = '⚠';
+  else if(msg.includes('🗑')) icon.textContent = '🗑';
+  else if(msg.includes('📸')) icon.textContent = '📸';
+  else if(msg.includes('✓') || msg.includes('เรียบร้อย')) icon.textContent = '✅';
+  else icon.textContent = '✨';
+  
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
+  
+  // Clear any existing timeout to avoid flickering if called rapidly
+  if(t.hideTimeout) clearTimeout(t.hideTimeout);
+  
+  t.hideTimeout = setTimeout(() => {
+      t.classList.remove('show');
+  }, 3000);
 }
+
+// Ensure first page rendering is completely finished
+setTimeout(() => {
+    switchPage('add'); // Default view
+}, 100);
+
 </script>
 </body>
 </html>
