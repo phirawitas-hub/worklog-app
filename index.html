@@ -489,31 +489,30 @@
       <div class="card-title"><div class="card-title-icon">📌</div>สถานะงาน</div>
       <div class="chips">
         <button class="chip selected-Finish" onclick="selectStatus('Finish')" id="chip-Finish">✓ Finish</button>
-        <button class="chip" onclick="selectStatus('InProgress')" id="chip-InProgress">⏳ In Progress</button>
         <button class="chip" onclick="selectStatus('Pending')" id="chip-Pending">⏱ Pending</button>
-        <button class="chip" onclick="selectStatus('Issue')" id="chip-Issue">⚠️ มีปัญหา</button>
       </div>
 
-      <!-- FIX #6: Type Work dropdown with + button -->
+      <!-- FIX #3+#4: Type Work multi-select with tags + + button -->
       <div class="field" style="margin-top:24px">
-        <label>ประเภทงาน (Type Work)</label>
-        <div style="display:flex;gap:10px;align-items:center;">
+        <label>ประเภทงาน (Type Work) <span style="font-size:12px;color:var(--text3);font-weight:500;">(เลือกได้หลายรายการ)</span></label>
+        <div id="typeWorkTags" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;min-height:0;"></div>
+        <div style="display:flex;gap:10px;align-items:flex-start;">
           <div class="combo-wrap" style="flex:1;">
-            <input type="text" id="fTypeWork" placeholder="เลือกหรือพิมพ์ประเภทงาน..." readonly style="cursor:pointer;" onclick="toggleDropdown('typeWorkDrop')">
+            <input type="text" id="fTypeWork" placeholder="เลือกหรือพิมพ์ประเภทงาน..." style="cursor:pointer;" onclick="toggleDropdown('typeWorkDrop')" readonly>
             <button type="button" class="combo-toggle" onclick="toggleDropdown('typeWorkDrop')" style="top:8px;">▾</button>
             <div class="combo-dropdown" id="typeWorkDrop">
-              <div class="combo-option" onclick="pickTypeWork('Cycle Count')"><span>🔢</span>Cycle Count</div>
-              <div class="combo-option" onclick="pickTypeWork('Replenishment')"><span>🔄</span>Replenishment</div>
-              <div class="combo-option" onclick="pickTypeWork('Transfer-Putaway')"><span>📤</span>Transfer-Putaway</div>
-              <div class="combo-option" onclick="pickTypeWork('Audit / Verify')"><span>🔍</span>Audit / Verify</div>
-              <div class="combo-option" onclick="pickTypeWork('Report')"><span>📊</span>Report</div>
-              <div class="combo-option" onclick="pickTypeWork('5ส / Housekeeping')"><span>🧹</span>5ส / Housekeeping</div>
-              <div class="combo-option" onclick="pickTypeWork('Photo / Product Info')"><span>📷</span>Photo / Product Info</div>
-              <div class="combo-option" onclick="pickTypeWork('DMG & Disposal')"><span>❌</span>DMG & Disposal</div>
+              <div class="combo-option" onclick="addTypeWorkTag('Cycle Count')"><span>🔢</span>Cycle Count</div>
+              <div class="combo-option" onclick="addTypeWorkTag('Replenishment')"><span>🔄</span>Replenishment</div>
+              <div class="combo-option" onclick="addTypeWorkTag('Transfer-Putaway')"><span>📤</span>Transfer-Putaway</div>
+              <div class="combo-option" onclick="addTypeWorkTag('Audit / Verify')"><span>🔍</span>Audit / Verify</div>
+              <div class="combo-option" onclick="addTypeWorkTag('Report')"><span>📊</span>Report</div>
+              <div class="combo-option" onclick="addTypeWorkTag('5ส / Housekeeping')"><span>🧹</span>5ส / Housekeeping</div>
+              <div class="combo-option" onclick="addTypeWorkTag('Photo / Product Info')"><span>📷</span>Photo / Product Info</div>
+              <div class="combo-option" onclick="addTypeWorkTag('DMG & Disposal')"><span>❌</span>DMG & Disposal</div>
               <div class="combo-option combo-add-new" onclick="addNewTypeWorkItem()" style="background:var(--bg);border-top:2px solid var(--border2);font-weight:700;color:var(--accent);"><span>➕</span>+ เพิ่มประเภทใหม่</div>
             </div>
           </div>
-          <button class="btn btn-ghost btn-sm" onclick="addNewTypeWorkItem()" style="flex-shrink:0;white-space:nowrap;">＋ เพิ่ม</button>
+          <button class="btn btn-ghost btn-sm" onclick="addNewTypeWorkItem()" style="flex-shrink:0;white-space:nowrap;margin-top:2px;">＋ เพิ่ม</button>
         </div>
       </div>
 
@@ -795,28 +794,48 @@ function getRemarkValue() {
   return [tags, typed].filter(Boolean).join(', ');
 }
 
-// ── FIX #6: TypeWork dropdown + + button ───────────────────
-let customTypeWorkItems = JSON.parse(localStorage.getItem('wl_typework_items') || '[]');
-function pickTypeWork(val) {
-  document.getElementById('fTypeWork').value = val;
+// ── FIX #3: TypeWork multi-select tags ─────────────────────
+let selectedTypeWorkTags = [];
+function addTypeWorkTag(val) {
   document.getElementById('typeWorkDrop').classList.remove('open');
+  if (selectedTypeWorkTags.includes(val)) return;
+  selectedTypeWorkTags.push(val);
+  renderTypeWorkTags();
 }
+function removeTypeWorkTag(val) {
+  selectedTypeWorkTags = selectedTypeWorkTags.filter(x => x !== val);
+  renderTypeWorkTags();
+}
+function renderTypeWorkTags() {
+  const c = document.getElementById('typeWorkTags');
+  if (!c) return;
+  c.innerHTML = selectedTypeWorkTags.map(v =>
+    `<span class="sel-tag" style="background:var(--accent2);">${v}<button class="sel-tag-x" onclick="removeTypeWorkTag('${v.replace(/'/g,"\\'")}')">✕</button></span>`
+  ).join('');
+  c.style.marginBottom = selectedTypeWorkTags.length ? '8px' : '0';
+}
+function getTypeWorkValue() {
+  return selectedTypeWorkTags.join(', ');
+}
+let customTypeWorkItems = JSON.parse(localStorage.getItem('wl_typework_items') || '[]');
+function pickTypeWork(val) { addTypeWorkTag(val); }
 function addNewTypeWorkItem() {
   const val = prompt('พิมพ์ประเภทงานใหม่:');
   if (!val || !val.trim()) return;
   customTypeWorkItems.unshift(val.trim());
   localStorage.setItem('wl_typework_items', JSON.stringify(customTypeWorkItems));
   renderCustomTypeWorkOptions();
-  pickTypeWork(val.trim());
+  addTypeWorkTag(val.trim());
 }
 function renderCustomTypeWorkOptions() {
   document.querySelectorAll('#typeWorkDrop .combo-option-custom').forEach(el => el.remove());
   const addBtn = document.querySelector('#typeWorkDrop .combo-add-new');
+  if (!addBtn) return;
   customTypeWorkItems.forEach(item => {
     const div = document.createElement('div');
     div.className = 'combo-option combo-option-custom';
     div.innerHTML = `<span>🏷</span><span style="flex:1;">${item}</span><button onclick="event.stopPropagation();removeCustomTypeWork('${item.replace(/'/g,"\\'")}');" style="background:var(--red);color:white;border:none;border-radius:8px;padding:2px 8px;font-size:12px;cursor:pointer;">✕</button>`;
-    div.onclick = () => pickTypeWork(item);
+    div.onclick = () => addTypeWorkTag(item);
     addBtn.parentNode.insertBefore(div, addBtn);
   });
 }
@@ -890,7 +909,7 @@ async function pushToGAS(log) {
     date:         log.date,
     start:        log.start,
     end:          log.end,
-    hours:        log.hours,
+    hours:        parseFloat(log.hours) || 0,  // FIX #1: plain number
     timestamp:    ts,
     work:         log.work,
     location:     log.location,
@@ -900,8 +919,10 @@ async function pushToGAS(log) {
     typeWork:     log.typeWork || '',
     issue:        log.issue || '',
     remark:       log.remark,
-    photosBefore: log.photosBefore?.length || 0,
-    photosAfter:  log.photosAfter?.length  || 0,
+    photosBefore: log.photosBefore?.length || 0,  // N: Photo(ก่อน) — จำนวน
+    photosAfter:  log.photosAfter?.length  || 0,  // O: Photo(หลัง) — จำนวน
+    // P: Photo(data) — รวมจำนวนทั้งหมด (ใช้แสดงใน sheet col P)
+    photoTotal:   (log.photosBefore?.length || 0) + (log.photosAfter?.length || 0),
   };
   try {
     await fetch(GAS_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
@@ -934,27 +955,83 @@ async function fetchFromGAS() {
       return;
     }
 
-    // FIX #1: Map with correct column positions
-    // Headers: No, User, Date, Start, End, Hour, Timestamp, Work, Location, Item, Quantity, Status, Issue, Remark, PhotoBefore, PhotoAfter
+    // ── ใช้ header name แทน index เพื่อกันการ map ผิดเมื่อ column เปลี่ยน ──
+    // Sheet headers: No, User, Start, End, Hour, Timestamp, Work, Location, Item, Quantity, Status, Type Work, Remark, Photo(ก่อน), Photo(หลัง)
     const sheetLogs = rows.map((r, idx) => {
-      const keys = Object.keys(r);
-      const get  = (i) => r[keys[i]] ?? '';
-      const idVal = Number(get(0)) || (idx + 1);
+      // r เป็น object ที่ key คือชื่อ header จาก GAS
+      const g = (key, fallback='') => {
+        // ลองหาตามชื่อ header ก่อน (case-insensitive)
+        const found = Object.keys(r).find(k => k.trim().toLowerCase() === key.toLowerCase());
+        return found !== undefined ? r[found] : fallback;
+      };
+
+      const idVal = Number(g('No.') || g('No') || g('no')) || (idx + 1);
+
+      // แปลง Start/End จาก sheet — อาจมาเป็น "8:30" หรือ Date object
+      const parseSheetTime = (v) => {
+        if (!v && v !== 0) return '';
+        const s = String(v);
+        // ถ้าเป็น ISO date string (1899-12-30T...) แปลงเป็น HH:MM
+        if (s.includes('T') || s.includes('1899')) {
+          try {
+            const d = new Date(s);
+            if (!isNaN(d)) {
+              // ใช้ UTC hours/min เพราะ Google Sheets เก็บเวลาเป็น UTC
+              return String(d.getUTCHours()).padStart(2,'0') + ':' + String(d.getUTCMinutes()).padStart(2,'0');
+            }
+          } catch(e) {}
+        }
+        // ถ้าเป็น "8:30" หรือ "08:30" ใช้ตรงๆ
+        if (/^\d{1,2}:\d{2}/.test(s)) return s.substring(0, 5);
+        return s;
+      };
+
+      // แปลง Date — อาจมาเป็น "18/5/2026" หรือ ISO string
+      const parseSheetDate = (v) => {
+        if (!v) return '';
+        const s = String(v);
+        if (s.includes('T') || s.includes('1899')) {
+          try {
+            const d = new Date(s);
+            if (!isNaN(d)) {
+              return d.getUTCFullYear() + '-' + String(d.getUTCMonth()+1).padStart(2,'0') + '-' + String(d.getUTCDate()).padStart(2,'0');
+            }
+          } catch(e) {}
+        }
+        // DD/MM/YYYY → YYYY-MM-DD
+        if (/^\d{1,2}\/\d{1,2}\/\d{4}/.test(s)) {
+          const parts = s.split('/');
+          return parts[2] + '-' + parts[1].padStart(2,'0') + '-' + parts[0].padStart(2,'0');
+        }
+        return s.replace(/\//g,'-');
+      };
+
+      const startRaw = g('Start');
+      const endRaw   = g('End');
+      const start    = parseSheetTime(startRaw);
+      const end      = parseSheetTime(endRaw);
+
+      // คำนวณ hours ใหม่จาก start/end จริง เพื่อความถูกต้อง
+      const hoursCalc = (start && end) ? calcHours(start, end) : (parseFloat(g('Hour')) || 0);
+
+      // Timestamp column → แปลงเป็นวันที่แสดงผล
+      const tsRaw  = g('Timestamp');
+      const tsDate = parseSheetDate(tsRaw) || parseSheetDate(g('Date') || '');
+
       return {
         id:          idVal,
-        user:        String(get(1)  || ''),
-        date:        String(get(2)  || '').replace(/\//g, '-'),
-        start:       String(get(3)  || ''),
-        end:         String(get(4)  || ''),
-        hours:       parseFloat(get(5))  || 0,
-        // get(6) = Timestamp — not stored in local log object
-        work:        String(get(7)  || ''),
-        location:    String(get(8)  || '-'),
-        item:        String(get(9)  || '-'),
-        qtyActual:   parseFloat(get(10)) || 0,
-        status:      String(get(11) || 'Finish'),
-        issue:       String(get(12) || ''),
-        remark:      String(get(13) || ''),
+        user:        String(g('User') || ''),
+        date:        tsDate,
+        start,
+        end,
+        hours:       hoursCalc,
+        work:        String(g('Work') || ''),
+        location:    String(g('Location') || '-'),
+        item:        String(g('Item') || '-'),
+        qtyActual:   parseFloat(g('Quantity')) || 0,
+        status:      String(g('Status') || 'Finish'),
+        typeWork:    String(g('Type Work') || ''),
+        remark:      String(g('Remark') || ''),
         photosBefore: [],
         photosAfter:  [],
         _fromSheet:  true,
@@ -1090,8 +1167,9 @@ function switchPage(name) {
 
 function selectStatus(s) {
   currentStatus = s;
-  ['Finish', 'InProgress', 'Pending', 'Issue'].forEach(x => {
+  ['Finish', 'Pending'].forEach(x => {
     const c = document.getElementById('chip-' + x);
+    if (!c) return;
     c.className = 'chip' + (x === s ? ' selected-' + x : '');
   });
 }
@@ -1327,7 +1405,7 @@ async function saveLog() {
       item:         document.getElementById('fItem').value       || '0',
       qtyActual:    Number(document.getElementById('fQtyActual').value) || 0,
       status:       currentStatus,
-      typeWork:     document.getElementById('fTypeWork').value || '',
+      typeWork:     getTypeWorkValue(),
       issue:        '',
       remark:       getRemarkValue(),
       photos:       getAllPhotos(),
@@ -1383,7 +1461,7 @@ function resetForm() {
   document.getElementById('fRemark').value    = '';
   document.getElementById('fTypeWork').value  = '';
   document.getElementById('hourPreview').style.display = 'none';
-
+  selectedTypeWorkTags = []; renderTypeWorkTags();
   // Reset multi-select tags
   selectedWorkTags = []; renderWorkTags();
   selectedRemarkTags = []; renderRemarkTags();
