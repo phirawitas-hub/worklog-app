@@ -900,7 +900,7 @@ async function pushToGAS(log) {
     date:         log.date,
     start:        log.start,
     end:          log.end,
-    hours:        parseFloat(log.hours) || 0,
+    hours:        fmtH(parseFloat(log.hours) || 0),
     timestamp:    ts,
     work:         log.work,
     location:     log.location,
