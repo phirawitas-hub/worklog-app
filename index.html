@@ -386,7 +386,6 @@
       <div class="card-title"><div class="card-title-icon">📅</div>ข้อมูลพื้นฐาน</div>
       <div class="form-grid three">
         <div class="field"><label>วันที่</label><input type="date" id="fDate"></div>
-        <!-- FIX #3: custom 24hr time picker using HH:MM selects -->
         <div class="field">
           <label>เวลาเริ่ม</label>
           <div class="time-wrap" id="startWrap">
@@ -406,7 +405,6 @@
           </div>
         </div>
       </div>
-      <!-- Hour preview -->
       <div id="hourPreview" style="margin-top:14px;display:none;padding:10px 16px;background:var(--bg);border-radius:var(--radius-sm);border:2px solid var(--border);font-size:14px;font-weight:700;font-family:var(--mono);">
         ⏱ ชั่วโมงงาน: <span id="hourVal" style="color:var(--accent);font-size:18px;"></span> ชม.
       </div>
@@ -415,8 +413,6 @@
     <div class="card">
       <div class="card-title"><div class="card-title-icon">📝</div>รายละเอียดงาน</div>
       <div class="form-grid">
-
-        <!-- FIX #4: Multi-select user picker with + button -->
         <div class="field">
           <label>ผู้ปฏิบัติงาน <span style="font-size:12px;color:var(--text3);font-weight:500;">(เลือกได้หลายคน)</span></label>
           <div class="user-picker" id="userPicker">
@@ -429,10 +425,8 @@
           </div>
         </div>
 
-        <!-- FIX #5: Work multi-select with tags display -->
         <div class="field span2">
           <label>รายละเอียดการทำงาน <span style="font-size:12px;color:var(--text3);font-weight:500;">(เลือกได้หลายรายการ)</span></label>
-          <!-- selected tags -->
           <div id="workTags" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;min-height:0;"></div>
           <div class="combo-wrap">
             <textarea id="fWork" placeholder="พิมพ์เพิ่มเติม หรือเลือกจากรายการ..."></textarea>
@@ -456,7 +450,6 @@
         </div>
       </div>
 
-      <!-- FIX #5: Item, Location as number +/- ; Qty also +/- -->
       <div class="form-grid three" style="margin-top:20px">
         <div class="field">
           <label>รายการ (Item / SKU)</label>
@@ -492,7 +485,6 @@
         <button class="chip" onclick="selectStatus('Pending')" id="chip-Pending">⏱ Pending</button>
       </div>
 
-      <!-- FIX #3+#4: Type Work multi-select with tags + + button -->
       <div class="field" style="margin-top:24px">
         <label>ประเภทงาน (Type Work) <span style="font-size:12px;color:var(--text3);font-weight:500;">(เลือกได้หลายรายการ)</span></label>
         <div id="typeWorkTags" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;min-height:0;"></div>
@@ -516,7 +508,6 @@
         </div>
       </div>
 
-      <!-- FIX #5: Remark multi-select with tags -->
       <div class="field" style="margin-top:20px">
         <label>หมายเหตุ / Issue <span style="font-size:12px;color:var(--text3);font-weight:500;">(เลือกได้หลายรายการ)</span></label>
         <div id="remarkTags" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;min-height:0;"></div>
@@ -661,10 +652,9 @@ let nextId = logs.length > 0 ? Math.max(...logs.map(l => l.id || 0)) + 1 : 1;
 let currentStatus = 'Finish';
 let selectedUsers = new Set(['อัด']);
 
-// ── FIX #1/#2: parse HH:MM string safely (handles "08:30", never AM/PM) ──
+// ── parse HH:MM string safely ──────────────────────────────
 function parseHHMM(str) {
   if (!str) return null;
-  // strip any AM/PM just in case browser sends it
   const clean = str.replace(/\s*(AM|PM)/i,'').trim();
   const parts  = clean.split(':');
   if (parts.length < 2) return null;
@@ -674,22 +664,31 @@ function parseHHMM(str) {
   return h * 60 + m;
 }
 
-// ── FIX #2: calcHours uses parseHHMM + lunch deduction ──
+// ── calcHours: คืนค่า decimal hours ───────────────────────
 function calcHours(start, end) {
   const sMin = parseHHMM(start);
   const eMin = parseHHMM(end);
   if (sMin === null || eMin === null) return 0;
   if (eMin <= sMin) return 0;
   let diff = eMin - sMin;
-  if (sMin < 12 * 60 && eMin > 13 * 60) diff -= 60; // lunch deduction
+  if (sMin < 12 * 60 && eMin > 13 * 60) diff -= 60; // หัก lunch
   return Math.max(0, diff / 60);
 }
 
-// ── FIX #3: Build 24hr time selectors ──────────────────────
+// ══════════════════════════════════════════════
+// ✅ FIX #2: fmtH — แสดงเวลาเป็น H.MM
+//    เช่น 2h 4min → "2.04"  ไม่ใช่ "2.07" (decimal)
+// ══════════════════════════════════════════════
+function fmtH(decimalHours) {
+  if (!decimalHours || decimalHours <= 0) return '0.00';
+  const h = Math.floor(decimalHours);
+  const m = Math.round((decimalHours - h) * 60);
+  return h + '.' + String(m).padStart(2, '0');
+}
+
+// ── Build 24hr time selectors ──────────────────────────────
 function buildTimeSelects() {
-  const hSel = ['fStartH','fEndH'];
-  const mSel = ['fStartM','fEndM'];
-  hSel.forEach(id => {
+  ['fStartH','fEndH'].forEach(id => {
     const el = document.getElementById(id);
     for (let h = 0; h < 24; h++) {
       const o = document.createElement('option');
@@ -698,16 +697,15 @@ function buildTimeSelects() {
       el.appendChild(o);
     }
   });
-  mSel.forEach(id => {
+  ['fStartM','fEndM'].forEach(id => {
     const el = document.getElementById(id);
-    for (let m = 0; m < 60; m += 1) {
+    for (let m = 0; m < 60; m++) {
       const o = document.createElement('option');
       o.value = String(m).padStart(2,'0');
       o.textContent = String(m).padStart(2,'0');
       el.appendChild(o);
     }
   });
-  // Set defaults to now
   document.getElementById('fStartH').value = nowH;
   document.getElementById('fStartM').value = nowM;
 }
@@ -738,13 +736,14 @@ function onTimeChange() {
   const prev = document.getElementById('hourPreview');
   if (s && e && h >= 0) {
     prev.style.display = 'block';
-    document.getElementById('hourVal').textContent = h.toFixed(2);
+    // ✅ ใช้ fmtH แทน toFixed(2)
+    document.getElementById('hourVal').textContent = fmtH(h);
   } else {
     prev.style.display = 'none';
   }
 }
 
-// ── FIX #5: Work multi-select tags ─────────────────────────
+// ── Work multi-select tags ─────────────────────────────────
 let selectedWorkTags = [];
 function addWorkTag(val) {
   document.getElementById('workDrop').classList.remove('open');
@@ -769,7 +768,7 @@ function getWorkValue() {
   return [tags, typed].filter(Boolean).join(' / ');
 }
 
-// ── FIX #5: Remark multi-select tags ───────────────────────
+// ── Remark multi-select tags ───────────────────────────────
 let selectedRemarkTags = [];
 function addRemarkTag(val) {
   document.getElementById('remarkDrop').classList.remove('open');
@@ -794,7 +793,7 @@ function getRemarkValue() {
   return [tags, typed].filter(Boolean).join(', ');
 }
 
-// ── FIX #3: TypeWork multi-select tags ─────────────────────
+// ── TypeWork multi-select tags ─────────────────────────────
 let selectedTypeWorkTags = [];
 function addTypeWorkTag(val) {
   document.getElementById('typeWorkDrop').classList.remove('open');
@@ -818,7 +817,6 @@ function getTypeWorkValue() {
   return selectedTypeWorkTags.join(', ');
 }
 let customTypeWorkItems = JSON.parse(localStorage.getItem('wl_typework_items') || '[]');
-function pickTypeWork(val) { addTypeWorkTag(val); }
 function addNewTypeWorkItem() {
   const val = prompt('พิมพ์ประเภทงานใหม่:');
   if (!val || !val.trim()) return;
@@ -845,7 +843,7 @@ function removeCustomTypeWork(item) {
   renderCustomTypeWorkOptions();
 }
 
-// ── FIX #4: Toggle user selection ──────────────────────────
+// ── Toggle user selection ──────────────────────────────────
 function toggleUser(name) {
   if (selectedUsers.has(name)) {
     if (selectedUsers.size === 1) { showToast('⚠ ต้องเลือกอย่างน้อย 1 คน'); return; }
@@ -864,14 +862,12 @@ function renderUserPicker() {
   });
 }
 
-// FIX #4: Add new user with + button
 function addNewUser() {
   const val = prompt('พิมพ์ชื่อพนักงานใหม่:');
   if (!val || !val.trim()) return;
   const name = val.trim();
   const picker = document.getElementById('userPicker');
   const addBtn = picker.querySelector('.add-user-btn');
-  // Create pill
   const pill = document.createElement('div');
   pill.className = 'user-pill sel-default';
   pill.dataset.user = name;
@@ -884,21 +880,16 @@ function addNewUser() {
   showToast(`✅ เพิ่ม "${name}" แล้ว`);
 }
 
-// FIX #5: nudge +/- for number inputs
 function nudge(id, delta) {
   const el = document.getElementById(id);
   const val = parseInt(el.value) || 0;
   el.value = Math.max(0, val + delta);
 }
 
-// ── SYNC ─────────────────────────────────────────────────────
-
-// FIX #1 & #7: Correct column order matching sheet headers
-// Sheet: No | User | Date | Start | End | Hour | Timestamp | Work | Location | Item | Quantity | Status | Issue | Remark | Photo(before) | Photo(after)
+// ── SYNC ──────────────────────────────────────────────────
 async function pushToGAS(log) {
   if (!GAS_URL) return { ok: false, error: 'ยังไม่ได้ใส่ GAS URL' };
 
-  // Format timestamp as DD/MM/YYYY to match existing data
   const now = new Date();
   const ts = `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}`;
 
@@ -909,7 +900,7 @@ async function pushToGAS(log) {
     date:         log.date,
     start:        log.start,
     end:          log.end,
-    hours:        parseFloat(log.hours) || 0,  // FIX #1: plain number
+    hours:        parseFloat(log.hours) || 0,
     timestamp:    ts,
     work:         log.work,
     location:     log.location,
@@ -919,9 +910,8 @@ async function pushToGAS(log) {
     typeWork:     log.typeWork || '',
     issue:        log.issue || '',
     remark:       log.remark,
-    photosBefore: log.photosBefore?.length || 0,  // N: Photo(ก่อน) — จำนวน
-    photosAfter:  log.photosAfter?.length  || 0,  // O: Photo(หลัง) — จำนวน
-    // P: Photo(data) — รวมจำนวนทั้งหมด (ใช้แสดงใน sheet col P)
+    photosBefore: log.photosBefore?.length || 0,
+    photosAfter:  log.photosAfter?.length  || 0,
     photoTotal:   (log.photosBefore?.length || 0) + (log.photosAfter?.length || 0),
   };
   try {
@@ -932,8 +922,6 @@ async function pushToGAS(log) {
   }
 }
 
-// FIX #1: fetchFromGAS maps columns correctly
-// Sheet column order: No(0) User(1) Date(2) Start(3) End(4) Hour(5) Timestamp(6) Work(7) Location(8) Item(9) Quantity(10) Status(11) Issue(12) Remark(13) PhotoBefore(14) PhotoAfter(15)
 async function fetchFromGAS() {
   if (!GAS_URL) return;
   const badge = document.getElementById('syncBadge');
@@ -955,38 +943,36 @@ async function fetchFromGAS() {
       return;
     }
 
-    // ── ใช้ header name แทน index เพื่อกันการ map ผิดเมื่อ column เปลี่ยน ──
-    // Sheet headers: No, User, Start, End, Hour, Timestamp, Work, Location, Item, Quantity, Status, Type Work, Remark, Photo(ก่อน), Photo(หลัง)
     const sheetLogs = rows.map((r, idx) => {
-      // r เป็น object ที่ key คือชื่อ header จาก GAS
       const g = (key, fallback='') => {
-        // ลองหาตามชื่อ header ก่อน (case-insensitive)
         const found = Object.keys(r).find(k => k.trim().toLowerCase() === key.toLowerCase());
         return found !== undefined ? r[found] : fallback;
       };
 
       const idVal = Number(g('No.') || g('No') || g('no')) || (idx + 1);
 
-      // แปลง Start/End จาก sheet — อาจมาเป็น "8:30" หรือ Date object
+      // ✅ FIX #1: parseSheetTime — รับ plain text "08:30" จาก sheet ได้ตรงๆ
+      // (หลังแก้ GAS ให้ force text format แล้ว ค่าจะมาเป็น string "08:30" เสมอ)
       const parseSheetTime = (v) => {
         if (!v && v !== 0) return '';
-        const s = String(v);
-        // ถ้าเป็น ISO date string (1899-12-30T...) แปลงเป็น HH:MM
+        const s = String(v).trim();
+        // กรณี text ธรรมดา เช่น "8:30" หรือ "08:30"
+        if (/^\d{1,2}:\d{2}/.test(s)) {
+          const parts = s.split(':');
+          return String(parseInt(parts[0],10)).padStart(2,'0') + ':' + parts[1].substring(0,2);
+        }
+        // กรณี old data ที่ยังเป็น ISO date string (1899-12-30T...)
         if (s.includes('T') || s.includes('1899')) {
           try {
             const d = new Date(s);
             if (!isNaN(d)) {
-              // ใช้ UTC hours/min เพราะ Google Sheets เก็บเวลาเป็น UTC
               return String(d.getUTCHours()).padStart(2,'0') + ':' + String(d.getUTCMinutes()).padStart(2,'0');
             }
           } catch(e) {}
         }
-        // ถ้าเป็น "8:30" หรือ "08:30" ใช้ตรงๆ
-        if (/^\d{1,2}:\d{2}/.test(s)) return s.substring(0, 5);
         return s;
       };
 
-      // แปลง Date — อาจมาเป็น "18/5/2026" หรือ ISO string
       const parseSheetDate = (v) => {
         if (!v) return '';
         const s = String(v);
@@ -998,7 +984,6 @@ async function fetchFromGAS() {
             }
           } catch(e) {}
         }
-        // DD/MM/YYYY → YYYY-MM-DD
         if (/^\d{1,2}\/\d{1,2}\/\d{4}/.test(s)) {
           const parts = s.split('/');
           return parts[2] + '-' + parts[1].padStart(2,'0') + '-' + parts[0].padStart(2,'0');
@@ -1006,17 +991,10 @@ async function fetchFromGAS() {
         return s.replace(/\//g,'-');
       };
 
-      const startRaw = g('Start');
-      const endRaw   = g('End');
-      const start    = parseSheetTime(startRaw);
-      const end      = parseSheetTime(endRaw);
-
-      // คำนวณ hours ใหม่จาก start/end จริง เพื่อความถูกต้อง
+      const start = parseSheetTime(g('Start'));
+      const end   = parseSheetTime(g('End'));
       const hoursCalc = (start && end) ? calcHours(start, end) : (parseFloat(g('Hour')) || 0);
-
-      // Timestamp column → แปลงเป็นวันที่แสดงผล
-      const tsRaw  = g('Timestamp');
-      const tsDate = parseSheetDate(tsRaw) || parseSheetDate(g('Date') || '');
+      const tsDate = parseSheetDate(g('Timestamp') || '') || parseSheetDate(g('Date') || '');
 
       return {
         id:          idVal,
@@ -1059,7 +1037,7 @@ async function fetchFromGAS() {
   }
 }
 
-// ── INIT ─────────────────────────────────────────────────────
+// ── INIT ──────────────────────────────────────────────────
 const today    = new Date();
 const todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
 const nowH     = String(today.getHours()).padStart(2, '0');
@@ -1067,7 +1045,7 @@ const nowM     = String(today.getMinutes()).padStart(2, '0');
 
 document.getElementById('headerDate').textContent = today.toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: 'numeric' });
 document.getElementById('fDate').value  = todayStr;
-buildTimeSelects(); // FIX #3
+buildTimeSelects();
 
 let facingMode = 'environment';
 let activeSec  = null;
@@ -1087,14 +1065,13 @@ document.addEventListener('click', e => {
   }
 });
 
-// ── DROPDOWN HELPERS ─────────────────────────────────────────
+// ── DROPDOWN HELPERS ──────────────────────────────────────
 function toggleDropdown(id) {
   const el = document.getElementById(id);
   const wasOpen = el.classList.contains('open');
   document.querySelectorAll('.combo-dropdown.open').forEach(d => d.classList.remove('open'));
   if (!wasOpen) el.classList.add('open');
 }
-// keep old pickWork/pickRemark as aliases for custom items
 function pickWork(val)   { addWorkTag(val); }
 function pickRemark(val) { addRemarkTag(val); }
 
@@ -1155,7 +1132,7 @@ function removeCustomRemark(item) {
   renderCustomRemarkOptions();
 }
 
-// ── PAGE SWITCH ───────────────────────────────────────────────
+// ── PAGE SWITCH ───────────────────────────────────────────
 function switchPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
@@ -1174,8 +1151,7 @@ function selectStatus(s) {
   });
 }
 
-// ── CAMERA & PHOTOS ──────────────────────────────────────────
-
+// ── CAMERA & PHOTOS ───────────────────────────────────────
 function initSlots() { renderSlots('before'); renderSlots('after'); }
 
 function renderSlots(sec) {
@@ -1333,7 +1309,7 @@ function getAllPhotos() {
   ];
 }
 
-// ── SAVE ─────────────────────────────────────────────────────
+// ── SAVE ──────────────────────────────────────────────────
 function setSaveUI(icon, title, desc, errorMsg = null) {
   const spinner = document.getElementById('saveSpinner');
   const btnWrap = document.getElementById('saveBtnWrap');
@@ -1373,7 +1349,6 @@ async function saveLog() {
     const end   = getTimeVal('fEnd');
     const work  = getWorkValue();
 
-    // FIX #4: get user from selectedUsers set
     const userArr = Array.from(selectedUsers);
     if (!date || userArr.length === 0 || !work) {
       if (userArr.length === 0) {
@@ -1390,7 +1365,6 @@ async function saveLog() {
       return;
     }
 
-    // FIX #2: use corrected calcHours
     const hours = calcHours(start, end);
 
     const log = {
@@ -1462,14 +1436,10 @@ function resetForm() {
   document.getElementById('fTypeWork').value  = '';
   document.getElementById('hourPreview').style.display = 'none';
   selectedTypeWorkTags = []; renderTypeWorkTags();
-  // Reset multi-select tags
   selectedWorkTags = []; renderWorkTags();
   selectedRemarkTags = []; renderRemarkTags();
-
-  // Reset user to first user only
   selectedUsers = new Set(['อัด']);
   renderUserPicker();
-
   photos = { before: Array(5).fill(null), after: Array(5).fill(null) };
   initSlots();
   selectStatus('Finish');
@@ -1477,7 +1447,7 @@ function resetForm() {
   facingMode = 'environment';
 }
 
-// ── LIST ─────────────────────────────────────────────────────
+// ── LIST ──────────────────────────────────────────────────
 function renderList() {
   const q = document.getElementById('searchInput').value.toLowerCase();
   const u = document.getElementById('filterUser').value;
@@ -1503,15 +1473,14 @@ function renderList() {
   }
 
   list.innerHTML = filtered.map(l => {
-    // For multi-user, pick first user for avatar color
     const firstUser = (l.user || '').split(',')[0].trim();
     const avatarClass = ['อัด','กุล','วิท','หมี','อัน'].includes(firstUser) ? firstUser : 'default';
     let dateStr = l.date;
     try { const d = new Date(l.date + 'T00:00:00'); if (!isNaN(d)) dateStr = d.toLocaleDateString('th-TH', { day: '2-digit', month: 'short' }); } catch (e) {}
     const cnt = (l.photosBefore?.length || 0) + (l.photosAfter?.length || 0);
 
-    // FIX #2: display hours correctly
-    const hDisp = l.hours > 0 ? (l.hours >= 1 ? l.hours.toFixed(1) + 'h' : Math.round(l.hours * 60) + 'm') : '';
+    // ✅ FIX #2: ใช้ fmtH แทน toFixed
+    const hDisp = l.hours > 0 ? fmtH(l.hours) + 'h' : '';
 
     return `
     <div class="log-item" onclick="openLog(${l.id})">
@@ -1532,13 +1501,13 @@ function renderList() {
       </div>
       <div class="log-right">
         <span class="status-badge status-${l.status}">${l.status}</span>
-        ${l.hours > 0 ? `<div style="font-size:22px;font-weight:700;font-family:var(--mono);">${l.hours.toFixed(2)}<span style="font-size:13px;color:var(--text3);margin-left:4px;">h</span></div>` : ''}
+        ${l.hours > 0 ? `<div style="font-size:22px;font-weight:700;font-family:var(--mono);">${fmtH(l.hours)}<span style="font-size:13px;color:var(--text3);margin-left:4px;">h</span></div>` : ''}
       </div>
     </div>`;
   }).join('');
 }
 
-// ── MODAL ────────────────────────────────────────────────────
+// ── MODAL ─────────────────────────────────────────────────
 function openLog(id) {
   const l = logs.find(x => x.id === id);
   if (!l) return;
@@ -1549,15 +1518,16 @@ function openLog(id) {
   try { const d = new Date(l.date + 'T00:00:00'); if (!isNaN(d)) dateStr = d.toLocaleDateString('th-TH', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' }); } catch (e) {}
 
   const rows = [
-    ['วันที่',     dateStr],
-    ['เวลา',      `${l.start || '-'} – ${l.end || '-'} (${(l.hours || 0).toFixed(2)} ชม.)`],
-    ['สถานะ',     `<span class="status-badge status-${l.status}">${l.status}</span>`],
-    ['Type Work',  l.typeWork ? `<span class="tag">${l.typeWork}</span>` : '-'],
-    ['Location',   l.location || '-'],
+    ['วันที่',        dateStr],
+    // ✅ FIX #2: ใช้ fmtH ใน modal detail
+    ['เวลา',         `${l.start || '-'} – ${l.end || '-'} (${fmtH(l.hours || 0)} ชม.)`],
+    ['สถานะ',        `<span class="status-badge status-${l.status}">${l.status}</span>`],
+    ['Type Work',    l.typeWork ? `<span class="tag">${l.typeWork}</span>` : '-'],
+    ['Location',     l.location || '-'],
     ['สินค้า (Item)', l.item || '-'],
-    ['จำนวนจริง',  l.qtyActual ? Number(l.qtyActual).toLocaleString() : '0'],
-    ['รายละเอียด', `<div style="background:var(--bg);padding:16px;border-radius:var(--radius-sm);border:2px solid var(--border);line-height:1.7;">${(l.work || '').replace(/\n/g, '<br>')}</div>`],
-    ['หมายเหตุ',   l.remark ? `<span style="color:var(--red);font-weight:600;">${l.remark}</span>` : '-'],
+    ['จำนวนจริง',    l.qtyActual ? Number(l.qtyActual).toLocaleString() : '0'],
+    ['รายละเอียด',   `<div style="background:var(--bg);padding:16px;border-radius:var(--radius-sm);border:2px solid var(--border);line-height:1.7;">${(l.work || '').replace(/\n/g, '<br>')}</div>`],
+    ['หมายเหตุ',     l.remark ? `<span style="color:var(--red);font-weight:600;">${l.remark}</span>` : '-'],
   ];
 
   const photosHtml = (l.photosBefore?.length || l.photosAfter?.length) ? `
@@ -1594,12 +1564,9 @@ function deleteLog(id) {
   showToast('🗑 ลบรายการเรียบร้อย');
 }
 
-// ── SUMMARY ──────────────────────────────────────────────────
-// FIX #3: correct total hours calculation
+// ── SUMMARY ───────────────────────────────────────────────
 function renderSummary() {
-  // FIX #3: recalculate hours from start/end if available, else use stored hours
   const totalH = logs.reduce((s, l) => {
-    // prefer recalculated hours if we have start/end
     if (l.start && l.end && l.start !== '' && l.end !== '') {
       return s + calcHours(l.start, l.end);
     }
@@ -1611,11 +1578,10 @@ function renderSummary() {
 
   document.getElementById('statsGrid').innerHTML = `
     <div class="stat-card blue"><div class="stat-icon">📄</div><div class="stat-label">รายการทั้งหมด</div><div class="stat-value">${logs.length}</div><div class="stat-sub">งาน</div></div>
-    <div class="stat-card green"><div class="stat-icon">⏱</div><div class="stat-label">ชั่วโมงรวม</div><div class="stat-value">${totalH.toFixed(1)}</div><div class="stat-sub">ชั่วโมง</div></div>
+    <div class="stat-card green"><div class="stat-icon">⏱</div><div class="stat-label">ชั่วโมงรวม</div><div class="stat-value">${fmtH(totalH)}</div><div class="stat-sub">ชั่วโมง</div></div>
     <div class="stat-card amber"><div class="stat-icon">🖼</div><div class="stat-label">รูปภาพ</div><div class="stat-value">${totalPhotos}</div><div class="stat-sub">ภาพ</div></div>
     <div class="stat-card purple"><div class="stat-icon">✅</div><div class="stat-label">Finish</div><div class="stat-value">${finishCount}</div><div class="stat-sub">จาก ${logs.length} (${logs.length > 0 ? Math.round(finishCount / logs.length * 100) : 0}%)</div></div>`;
 
-  // Per-user hours — also recalculate
   const userHours = {};
   logs.forEach(l => {
     const h = (l.start && l.end && l.start !== '' && l.end !== '')
@@ -1631,19 +1597,21 @@ function renderSummary() {
   const maxH = Math.max(0.1, ...Object.values(userHours));
   const colors = { อัด: 'var(--accent)', กุล: 'var(--green)', วิท: 'var(--amber)', หมี: 'var(--accent2)', อัน: 'var(--red)' };
 
+  // ✅ FIX #2: ใช้ fmtH ใน userChart
   document.getElementById('userChart').innerHTML = Object.entries(userHours).sort((a, b) => b[1] - a[1]).map(([u, h]) => `
     <div style="display:grid;grid-template-columns:70px 1fr 70px;gap:16px;align-items:center;">
       <div style="font-size:15px;font-weight:700;">${u}</div>
       <div style="background:var(--bg);border-radius:10px;height:16px;overflow:hidden;border:2px solid var(--border);">
         <div style="width:${(h / maxH * 100).toFixed(1)}%;height:100%;background:${colors[u] || 'var(--text3)'};border-radius:8px;transition:width 0.8s;"></div>
       </div>
-      <div style="font-size:15px;font-weight:700;font-family:var(--mono);text-align:right;">${h.toFixed(2)}h</div>
+      <div style="font-size:15px;font-weight:700;font-family:var(--mono);text-align:right;">${fmtH(h)}h</div>
     </div>`).join('') || '<div style="text-align:center;padding:24px;color:var(--text3);font-weight:600;">ยังไม่มีข้อมูล</div>';
 
   const byDate = {};
   logs.forEach(l => { if (!l.date) return; byDate[l.date] = byDate[l.date] || []; byDate[l.date].push(l); });
   const dates = Object.keys(byDate).sort().reverse().slice(0, 5);
 
+  // ✅ FIX #2: ใช้ fmtH ใน recentByDate
   document.getElementById('recentByDate').innerHTML = dates.map(d => {
     let dStr = d;
     try { const dd = new Date(d + 'T00:00:00'); if (!isNaN(dd)) dStr = dd.toLocaleDateString('th-TH', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }); } catch (e) {}
@@ -1656,7 +1624,7 @@ function renderSummary() {
     <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:2px dashed var(--border2);">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
         <span style="font-size:16px;font-weight:700;">${dStr}</span>
-        <span style="font-size:13px;font-weight:700;background:var(--surface);padding:4px 12px;border-radius:16px;border:2px solid var(--border);font-family:var(--mono);box-shadow:2px 2px 0px var(--border);">${tH.toFixed(2)}h · ${items.length} งาน</span>
+        <span style="font-size:13px;font-weight:700;background:var(--surface);padding:4px 12px;border-radius:16px;border:2px solid var(--border);font-family:var(--mono);box-shadow:2px 2px 0px var(--border);">${fmtH(tH)}h · ${items.length} งาน</span>
       </div>
       <div style="display:flex;flex-direction:column;gap:10px;">
         ${items.slice(0, 3).map(l => `
@@ -1674,7 +1642,7 @@ function renderSummary() {
   }).join('') || '<div style="text-align:center;padding:24px;color:var(--text3);font-weight:600;">ยังไม่มีประวัติ</div>';
 }
 
-// ── TOAST ─────────────────────────────────────────────────────
+// ── TOAST ──────────────────────────────────────────────────
 function showToast(msg) {
   const t   = document.getElementById('toast');
   const ico = t.querySelector('.toast-icon');
