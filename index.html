@@ -599,6 +599,13 @@ document.getElementById('headerDate').textContent = today.toLocaleDateString('th
 document.getElementById('fDate').value  = todayStr;
 document.getElementById('fStart').value = `${nowH}:${nowM}`;
 
+// ── ตัวแปรกล้อง & รูปภาพ — ต้องประกาศก่อน initSlots() ──────
+let facingMode = 'environment';
+let activeSec  = null;
+let camStream  = null;
+const MAX_PHOTOS = 5;
+let photos = { before: Array(5).fill(null), after: Array(5).fill(null) };
+
 initSlots();
 renderList();
 renderSummary();
@@ -639,11 +646,6 @@ function selectStatus(s) {
 }
 
 // ── CAMERA & PHOTOS ──────────────────────────────────────────
-let facingMode = 'environment';
-let activeSec  = null;
-let camStream  = null;
-const MAX_PHOTOS = 5;
-let photos = { before: Array(5).fill(null), after: Array(5).fill(null) };
 
 function initSlots() { renderSlots('before'); renderSlots('after'); }
 
