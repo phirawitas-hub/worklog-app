@@ -328,7 +328,7 @@
     <span style="color:var(--text3);font-weight:500;font-size:14px;">/ INVENTORY</span>
   </div>
   <div class="header-right">
-    <div id="syncBadge" style="display:none;font-size:12px;font-weight:600;padding:6px 14px;border-radius:20px;border:2px solid var(--border);transition:all 0.3s;box-shadow:2px 2px 0px var(--border);"></div>
+    <div id="syncBadge" style="display:none;font-size:12px;font-weight:600;padding:6px 14px;border-radius:20px;border:2px solid var(--border);transition:all 0.3s;box-shadow:2px 2px 0px var(--border);color:var(--text);"></div>
     <div class="date-badge" id="headerDate"></div>
   </div>
 </header>
@@ -347,8 +347,8 @@
       <div class="card-title"><div class="card-title-icon">📅</div>ข้อมูลพื้นฐาน</div>
       <div class="form-grid three">
         <div class="field"><label>วันที่</label><input type="date" id="fDate"></div>
-        <div class="field"><label>เวลาเริ่ม</label><input type="time" id="fStart"></div>
-        <div class="field"><label>เวลาสิ้นสุด</label><input type="time" id="fEnd"></div>
+        <div class="field"><label>เวลาเริ่ม</label><input type="time" id="fStart" step="60"></div>
+        <div class="field"><label>เวลาสิ้นสุด</label><input type="time" id="fEnd" step="60"></div>
       </div>
     </div>
 
@@ -365,10 +365,6 @@
             <option value="หมี">หมี</option>
             <option value="อัน">อัน</option>
           </select>
-        </div>
-        <div class="field">
-          <label>จำนวน Work</label>
-          <input type="number" id="fQtyWork" placeholder="0" min="0">
         </div>
         <div class="field span2">
           <label>รายละเอียดการทำงาน</label>
@@ -388,6 +384,7 @@
               <div class="combo-option" onclick="pickWork('ตรวจสอบสินค้า DMG & Disposal ')"><span>🔍</span>ตรวจสอบสินค้า DMG & Disposal</div>
               <div class="combo-option" onclick="pickWork('เปลี่ยน Status สินค้า ')"><span>🔁</span>เปลี่ยน Status สินค้า</div>
               <div class="combo-option" onclick="pickWork('ตรวจเช็คงาน Location ')"><span>📍</span>ตรวจเช็คงาน Location</div>
+              <div class="combo-option combo-add-new" onclick="addNewWorkItem()" style="background:var(--bg);border-top:2px solid var(--border2);font-weight:700;color:var(--accent);"><span>➕</span>+ เพิ่มรายการใหม่</div>
             </div>
           </div>
         </div>
@@ -417,6 +414,7 @@
             <div class="combo-option" onclick="pickRemark('สินค้าจำนวนไม่ตรงกับระบบ')"><span>⚠️</span>สินค้าจำนวนไม่ตรงกับระบบ</div>
             <div class="combo-option" onclick="pickRemark('หาสินค้าไม่พบใน Location ที่ระบุ')"><span>🔍</span>หาสินค้าไม่พบใน Location ที่ระบุ</div>
             <div class="combo-option" onclick="pickRemark('สินค้า Damage ไม่สามารถจำหน่ายได้')"><span>❌</span>สินค้า Damage ไม่สามารถจำหน่ายได้</div>
+            <div class="combo-option combo-add-new" onclick="addNewRemarkItem()" style="background:var(--bg);border-top:2px solid var(--border2);font-weight:700;color:var(--accent);"><span>➕</span>+ เพิ่มรายการใหม่</div>
           </div>
         </div>
       </div>
@@ -549,43 +547,95 @@ let nextId = logs.length > 0 ? Math.max(...logs.map(l => l.id || 0)) + 1 : 1;
 let currentStatus = 'Finish';
 
 // ── SYNC ─────────────────────────────────────────────────────
-// ✅ แก้แล้ว: เพิ่ม redirect:'follow' และ headers ที่ถูกต้อง
-async function pushToGAS(log) {
-  if (!GAS_URL) return { ok: false, error: 'ยังไม่ได้ใส่ URL ของ Google Apps Script' };
 
+// ✅ ส่งข้อมูลไป GAS (POST, no-cors)
+async function pushToGAS(log) {
+  if (!GAS_URL) return { ok: false, error: 'ยังไม่ได้ใส่ GAS URL' };
   const payload = {
-    action:       'save',
-    id:           log.id,
-    user:         log.user,
-    date:         log.date,
-    start:        log.start,
-    end:          log.end,
-    hours:        log.hours,
-    work:         log.work,
-    location:     log.location,
-    item:         log.item,
-    qtyWork:      log.qtyWork,
-    qtyActual:    log.qtyActual,
-    status:       log.status,
-    remark:       log.remark,
+    action: 'save',
+    id: log.id, user: log.user, date: log.date,
+    start: log.start, end: log.end, hours: log.hours,
+    work: log.work, location: log.location, item: log.item,
+    qtyActual: log.qtyActual,
+    status: log.status, remark: log.remark,
     photosBefore: log.photosBefore?.length || 0,
     photosAfter:  log.photosAfter?.length  || 0,
-    savedAt:      new Date().toISOString(),
   };
-
   try {
-    // ✅ ใช้ mode:'no-cors' — วิธีเดียวที่ทำงานได้จริงกับ Google Apps Script
-    // GAS จะได้รับข้อมูลและบันทึกลง Sheet เรียบร้อย
-    // แต่ browser จะอ่าน response ไม่ได้ (opaque) ซึ่งเป็นเรื่องปกติของ GAS
-    await fetch(GAS_URL, {
-      method: 'POST',
-      mode:   'no-cors',
-      body:   JSON.stringify(payload),
-    });
-    // ถ้า fetch ไม่ throw = ส่งสำเร็จ
+    await fetch(GAS_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
     return { ok: true };
   } catch (e) {
     return { ok: false, error: `เชื่อมต่อล้มเหลว: ${e.message}` };
+  }
+}
+
+// ✅ ดึงข้อมูลจาก Sheets มาแสดง (GET, รองรับ CORS ของ GAS)
+async function fetchFromGAS() {
+  if (!GAS_URL) return;
+  const badge = document.getElementById('syncBadge');
+  badge.style.display = 'block';
+  badge.style.background = '#fef9c3';
+  badge.style.borderColor = '#ca8a04';
+  badge.textContent = '⏳ กำลังซิงก์...';
+
+  try {
+    const res  = await fetch(GAS_URL + '?action=getAll', { method: 'GET' });
+    const text = await res.text();
+    const rows = JSON.parse(text);
+
+    if (!Array.isArray(rows) || rows.length === 0) {
+      badge.textContent = '✓ ซิงก์แล้ว (ไม่มีข้อมูลใหม่)';
+      badge.style.background = '#dcfce7';
+      badge.style.borderColor = '#16a34a';
+      setTimeout(() => badge.style.display = 'none', 2500);
+      return;
+    }
+
+    // Map sheet rows (headers: No,User,Date,Start,End,Hour,Work,Location,Item,QtyActual,Status,Issue,Remark,PhotosBefore,PhotosAfter,Timestamp)
+    const sheetLogs = rows.map((r, idx) => {
+      // r is object keyed by header row
+      const keys = Object.keys(r);
+      const get  = (i) => r[keys[i]] ?? '';
+      const idVal = Number(get(0)) || (idx + 1);
+      return {
+        id:         idVal,
+        user:       String(get(1) || ''),
+        date:       String(get(2) || '').replace(/\//g, '-'),
+        start:      String(get(3) || ''),
+        end:        String(get(4) || ''),
+        hours:      parseFloat(get(5)) || 0,
+        work:       String(get(6) || ''),
+        location:   String(get(7) || '-'),
+        item:       String(get(8) || '-'),
+        qtyActual:  parseFloat(get(9)) || 0,
+        status:     String(get(10) || 'Finish'),
+        remark:     String(get(12) || ''),
+        photosBefore: [],
+        photosAfter:  [],
+        _fromSheet: true,
+      };
+    }).filter(l => l.work && l.user); // skip empty rows
+
+    // Merge: sheet data + local-only data (not in sheet)
+    const sheetIds = new Set(sheetLogs.map(l => l.id));
+    const localOnly = logs.filter(l => !l._fromSheet && !sheetIds.has(l.id));
+    logs = [...localOnly, ...sheetLogs].sort((a, b) => b.id - a.id);
+
+    nextId = logs.length > 0 ? Math.max(...logs.map(l => l.id || 0)) + 1 : 1;
+
+    renderList();
+    renderSummary();
+
+    badge.textContent = `✓ ซิงก์แล้ว ${sheetLogs.length} รายการ`;
+    badge.style.background = '#dcfce7';
+    badge.style.borderColor = '#16a34a';
+    setTimeout(() => badge.style.display = 'none', 3000);
+
+  } catch (e) {
+    badge.textContent = '⚠ ซิงก์ไม่ได้';
+    badge.style.background = '#fee2e2';
+    badge.style.borderColor = '#dc2626';
+    setTimeout(() => badge.style.display = 'none', 4000);
   }
 }
 
@@ -609,6 +659,9 @@ let photos = { before: Array(5).fill(null), after: Array(5).fill(null) };
 initSlots();
 renderList();
 renderSummary();
+fetchFromGAS(); // ดึงข้อมูลจาก Sheets เมื่อเปิดแอป
+// init custom dropdown items (after functions are defined — use setTimeout)
+setTimeout(() => { renderCustomWorkOptions(); renderCustomRemarkOptions(); }, 0);
 
 // ปิด dropdown เมื่อคลิกข้างนอก
 document.addEventListener('click', e => {
@@ -627,14 +680,74 @@ function toggleDropdown(id) {
 function pickWork(val)   { document.getElementById('fWork').value = val; document.getElementById('workDrop').classList.remove('open'); }
 function pickRemark(val) { document.getElementById('fRemark').value = val; document.getElementById('remarkDrop').classList.remove('open'); }
 
+// ── เพิ่มรายการใหม่ในดรอปดาวน์ ─────────────────────────────
+let customWorkItems   = JSON.parse(localStorage.getItem('wl_work_items') || '[]');
+let customRemarkItems = JSON.parse(localStorage.getItem('wl_remark_items') || '[]');
+
+function renderCustomWorkOptions() {
+  const existingCustom = document.querySelectorAll('#workDrop .combo-option-custom');
+  existingCustom.forEach(el => el.remove());
+  const addBtn = document.querySelector('#workDrop .combo-add-new');
+  customWorkItems.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'combo-option combo-option-custom';
+    div.innerHTML = `<span>📝</span><span style="flex:1;">${item}</span><button onclick="event.stopPropagation();removeCustomWork('${item.replace(/'/g,"\\'")}');" style="background:var(--red);color:white;border:none;border-radius:8px;padding:2px 8px;font-size:12px;cursor:pointer;">✕</button>`;
+    div.onclick = () => pickWork(item);
+    addBtn.parentNode.insertBefore(div, addBtn);
+  });
+}
+
+function renderCustomRemarkOptions() {
+  const existingCustom = document.querySelectorAll('#remarkDrop .combo-option-custom');
+  existingCustom.forEach(el => el.remove());
+  const addBtn = document.querySelector('#remarkDrop .combo-add-new');
+  customRemarkItems.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'combo-option combo-option-custom';
+    div.innerHTML = `<span>📝</span><span style="flex:1;">${item}</span><button onclick="event.stopPropagation();removeCustomRemark('${item.replace(/'/g,"\\'")}');" style="background:var(--red);color:white;border:none;border-radius:8px;padding:2px 8px;font-size:12px;cursor:pointer;">✕</button>`;
+    div.onclick = () => pickRemark(item);
+    addBtn.parentNode.insertBefore(div, addBtn);
+  });
+}
+
+function addNewWorkItem() {
+  const val = prompt('พิมพ์รายการงานใหม่:');
+  if (!val || !val.trim()) return;
+  customWorkItems.unshift(val.trim());
+  localStorage.setItem('wl_work_items', JSON.stringify(customWorkItems));
+  renderCustomWorkOptions();
+  pickWork(val.trim());
+}
+
+function addNewRemarkItem() {
+  const val = prompt('พิมพ์หมายเหตุใหม่:');
+  if (!val || !val.trim()) return;
+  customRemarkItems.unshift(val.trim());
+  localStorage.setItem('wl_remark_items', JSON.stringify(customRemarkItems));
+  renderCustomRemarkOptions();
+  pickRemark(val.trim());
+}
+
+function removeCustomWork(item) {
+  customWorkItems = customWorkItems.filter(x => x !== item);
+  localStorage.setItem('wl_work_items', JSON.stringify(customWorkItems));
+  renderCustomWorkOptions();
+}
+
+function removeCustomRemark(item) {
+  customRemarkItems = customRemarkItems.filter(x => x !== item);
+  localStorage.setItem('wl_remark_items', JSON.stringify(customRemarkItems));
+  renderCustomRemarkOptions();
+}
+
 // ── PAGE SWITCH ───────────────────────────────────────────────
 function switchPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
   document.getElementById('tab-' + name).classList.add('active');
-  if (name === 'list')    renderList();
-  if (name === 'summary') renderSummary();
+  if (name === 'list')    { renderList(); fetchFromGAS(); }
+  if (name === 'summary') { renderSummary(); fetchFromGAS(); }
 }
 
 function selectStatus(s) {
@@ -873,7 +986,6 @@ async function saveLog() {
     work,
     location:  document.getElementById('fLocation').value   || '-',
     item:      document.getElementById('fItem').value        || '-',
-    qtyWork:   Number(document.getElementById('fQtyWork').value)   || 0,
     qtyActual: Number(document.getElementById('fQtyActual').value) || 0,
     status:    currentStatus,
     remark:    document.getElementById('fRemark').value,
@@ -939,7 +1051,6 @@ function resetForm() {
   document.getElementById('fWork').value      = '';
   document.getElementById('fLocation').value  = '';
   document.getElementById('fItem').value      = '';
-  document.getElementById('fQtyWork').value   = '';
   document.getElementById('fQtyActual').value = '';
   document.getElementById('fRemark').value    = '';
 
@@ -1022,7 +1133,6 @@ function openLog(id) {
     ['สถานะ',     `<span class="status-badge status-${l.status}">${l.status}</span>`],
     ['Location',   l.location || '-'],
     ['สินค้า',    l.item || '-'],
-    ['จำนวน Work', l.qtyWork ? l.qtyWork.toLocaleString() : '0'],
     ['จำนวนจริง',  l.qtyActual ? l.qtyActual.toLocaleString() : '0'],
     ['รายละเอียด', `<div style="background:var(--bg);padding:16px;border-radius:var(--radius-sm);border:2px solid var(--border);line-height:1.7;">${(l.work || '').replace(/\n/g, '<br>')}</div>`],
     ['หมายเหตุ',   l.remark ? `<span style="color:var(--red);font-weight:600;">${l.remark}</span>` : '-'],
