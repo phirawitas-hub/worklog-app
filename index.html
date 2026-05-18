@@ -193,6 +193,32 @@
   textarea { resize: vertical; min-height: 100px; }
   select option { background: var(--surface); color: var(--text); }
 
+  /* ── Number input with +/- ── */
+  .num-wrap { display: flex; align-items: stretch; border: 2px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; background: var(--surface); transition: all 0.2s; }
+  .num-wrap:focus-within { transform: translate(-2px, -2px); box-shadow: var(--shadow-sm); }
+  .num-wrap input[type=number] { border: none; box-shadow: none; border-radius: 0; text-align: center; flex: 1; min-width: 0; padding: 14px 8px; -moz-appearance: textfield; }
+  .num-wrap input[type=number]::-webkit-outer-spin-button,
+  .num-wrap input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .num-wrap input[type=number]:focus { transform: none; box-shadow: none; }
+  .num-btn { background: var(--surface2); border: none; padding: 0 18px; font-size: 22px; font-weight: 700; cursor: pointer; color: var(--text); font-family: var(--mono); transition: background 0.15s; flex-shrink: 0; }
+  .num-btn:hover { background: var(--border); color: white; }
+  .num-btn:active { background: var(--accent); color: white; }
+  .num-btn.minus { border-right: 2px solid var(--border); }
+  .num-btn.plus  { border-left:  2px solid var(--border); }
+
+  /* ── Multi-select user picker ── */
+  .user-picker { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px; border: 2px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); min-height: 52px; cursor: pointer; transition: all 0.2s; }
+  .user-picker:focus-within { transform: translate(-2px, -2px); box-shadow: var(--shadow-sm); }
+  .user-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 700; border: 2px solid var(--border); box-shadow: 1px 1px 0px var(--border); cursor: pointer; transition: all 0.15s; user-select: none; }
+  .user-pill:hover { transform: translate(-1px,-1px); box-shadow: 2px 2px 0px var(--border); }
+  .user-pill.sel-อัด  { background: #bae6fd; color: #0369a1; }
+  .user-pill.sel-กุล  { background: #a7f3d0; color: #047857; }
+  .user-pill.sel-วิท  { background: #fde68a; color: #b45309; }
+  .user-pill.sel-หมี  { background: #ddd6fe; color: #6d28d9; }
+  .user-pill.sel-อัน  { background: #fecaca; color: #b91c1c; }
+  .user-pill.unsel   { background: var(--surface2); color: var(--text3); opacity: 0.6; }
+  .user-pill.unsel:hover { opacity: 1; }
+
   .combo-wrap { position: relative; }
   .combo-wrap textarea, .combo-wrap input[type=text] { padding-right: 48px; }
   .combo-toggle { position: absolute; top: 12px; right: 12px; background: var(--surface2); border: 2px solid var(--border); border-radius: 8px; width: 32px; height: 32px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; transition: all 0.15s; z-index: 2; }
@@ -247,7 +273,7 @@
   .log-list { display: flex; flex-direction: column; gap: 16px; }
   .log-item { background: var(--surface); border: 3px solid var(--border); border-radius: var(--radius); padding: 24px; cursor: pointer; transition: all 0.2s; display: grid; grid-template-columns: auto 1fr auto; gap: 20px; align-items: start; box-shadow: var(--shadow); }
   .log-item:hover { transform: translate(-4px, -4px); box-shadow: 8px 8px 0px var(--border); border-color: var(--accent); }
-  .log-avatar { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; flex-shrink: 0; border: 2px solid var(--border); box-shadow: 2px 2px 0px var(--border); }
+  .log-avatar { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; flex-shrink: 0; border: 2px solid var(--border); box-shadow: 2px 2px 0px var(--border); }
   .log-body { min-width: 0; }
   .log-meta { display: flex; gap: 12px; align-items: center; margin-bottom: 8px; flex-wrap: wrap; }
   .log-user { font-size: 16px; font-weight: 700; color: var(--text); }
@@ -281,7 +307,6 @@
   .modal-photo:hover { transform: translate(-4px,-4px); box-shadow: 7px 7px 0px var(--border); }
   .modal-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-  /* Save Loading UI */
   .save-modal { max-width: 400px; text-align: center; padding: 40px 24px; display: flex; flex-direction: column; align-items: center; }
   .spinner-icon { font-size: 48px; display: inline-block; animation: spin 1s linear infinite; }
   @keyframes spin { 100% { transform: rotate(360deg); } }
@@ -293,6 +318,7 @@
   .toast.show { transform: translateY(0); opacity: 1; }
   .toast .toast-icon { font-size: 20px; }
 
+  /* user avatar colors */
   .user-อัด { background: #bae6fd; color: #0369a1; }
   .user-กุล { background: #a7f3d0; color: #047857; }
   .user-วิท { background: #fde68a; color: #b45309; }
@@ -345,27 +371,37 @@
   <div class="page active" id="page-add">
     <div class="card">
       <div class="card-title"><div class="card-title-icon">📅</div>ข้อมูลพื้นฐาน</div>
+      <!-- FIX #6: column order matches sheet: No | User | Date | Start | End | Hour | Timestamp -->
       <div class="form-grid three">
         <div class="field"><label>วันที่</label><input type="date" id="fDate"></div>
-        <div class="field"><label>เวลาเริ่ม</label><input type="time" id="fStart" step="60"></div>
-        <div class="field"><label>เวลาสิ้นสุด</label><input type="time" id="fEnd" step="60"></div>
+        <!-- FIX #6: 24h time input with explicit step and pattern -->
+        <div class="field">
+          <label>เวลาเริ่ม (HH:MM)</label>
+          <input type="time" id="fStart" step="60">
+        </div>
+        <div class="field">
+          <label>เวลาสิ้นสุด (HH:MM)</label>
+          <input type="time" id="fEnd" step="60">
+        </div>
       </div>
     </div>
 
     <div class="card">
       <div class="card-title"><div class="card-title-icon">📝</div>รายละเอียดงาน</div>
       <div class="form-grid">
+
+        <!-- FIX #4: Multi-select user picker -->
         <div class="field">
-          <label>ผู้ปฏิบัติงาน</label>
-          <select id="fUser">
-            <option value="">— เลือกพนักงาน —</option>
-            <option value="อัด">อัด</option>
-            <option value="กุล">กุล</option>
-            <option value="วิท">วิท</option>
-            <option value="หมี">หมี</option>
-            <option value="อัน">อัน</option>
-          </select>
+          <label>ผู้ปฏิบัติงาน <span style="font-size:12px;color:var(--text3);font-weight:500;">(เลือกได้หลายคน)</span></label>
+          <div class="user-picker" id="userPicker">
+            <div class="user-pill sel-อัด" data-user="อัด" onclick="toggleUser('อัด')">อัด</div>
+            <div class="user-pill sel-กุล unsel" data-user="กุล" onclick="toggleUser('กุล')">กุล</div>
+            <div class="user-pill sel-วิท unsel" data-user="วิท" onclick="toggleUser('วิท')">วิท</div>
+            <div class="user-pill sel-หมี unsel" data-user="หมี" onclick="toggleUser('หมี')">หมี</div>
+            <div class="user-pill sel-อัน unsel" data-user="อัน" onclick="toggleUser('อัน')">อัน</div>
+          </div>
         </div>
+
         <div class="field span2">
           <label>รายละเอียดการทำงาน</label>
           <div class="combo-wrap">
@@ -389,10 +425,33 @@
           </div>
         </div>
       </div>
+
+      <!-- FIX #5: Item, Location as number +/- ; Qty also +/- -->
       <div class="form-grid three" style="margin-top:20px">
-        <div class="field"><label>รายการ (Item / SKU)</label><input type="text" id="fItem" placeholder="รหัสสินค้า"></div>
-        <div class="field"><label>Location</label><input type="text" id="fLocation" placeholder="เช่น B-11-001-A"></div>
-        <div class="field"><label>จำนวนจริง</label><input type="number" id="fQtyActual" placeholder="0" min="0"></div>
+        <div class="field">
+          <label>รายการ (Item / SKU)</label>
+          <div class="num-wrap">
+            <button class="num-btn minus" onclick="nudge('fItem',-1)">−</button>
+            <input type="number" id="fItem" placeholder="0" min="0" value="0">
+            <button class="num-btn plus"  onclick="nudge('fItem',1)">+</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Location</label>
+          <div class="num-wrap">
+            <button class="num-btn minus" onclick="nudge('fLocation',-1)">−</button>
+            <input type="number" id="fLocation" placeholder="0" min="0" value="0">
+            <button class="num-btn plus"  onclick="nudge('fLocation',1)">+</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>จำนวนจริง</label>
+          <div class="num-wrap">
+            <button class="num-btn minus" onclick="nudge('fQtyActual',-1)">−</button>
+            <input type="number" id="fQtyActual" placeholder="0" min="0" value="0">
+            <button class="num-btn plus"  onclick="nudge('fQtyActual',1)">+</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -546,18 +605,81 @@ try {
 let nextId = logs.length > 0 ? Math.max(...logs.map(l => l.id || 0)) + 1 : 1;
 let currentStatus = 'Finish';
 
+// FIX #4: Multi-select users set
+let selectedUsers = new Set(['อัด']);
+
+// ── FIX #2: calcHours with lunch deduction ──────────────────
+// Mirrors: =IF(C="","",IF(AND(C<12:00, D>13:00), D-C-1h, D-C))
+function calcHours(start, end) {
+  if (!start || !end) return 0;
+  const toMin = t => { const [h,m] = t.split(':').map(Number); return h * 60 + m; };
+  const sMin = toMin(start);
+  const eMin = toMin(end);
+  if (eMin <= sMin) return 0;
+  let diff = eMin - sMin; // in minutes
+  // Deduct 1 hour if work spans full lunch break (before 12:00 start AND after 13:00 end)
+  if (sMin < 12 * 60 && eMin > 13 * 60) {
+    diff -= 60;
+  }
+  return Math.max(0, diff / 60);
+}
+
+// ── FIX #4: Toggle user selection ──────────────────────────
+function toggleUser(name) {
+  if (selectedUsers.has(name)) {
+    if (selectedUsers.size === 1) { showToast('⚠ ต้องเลือกอย่างน้อย 1 คน'); return; }
+    selectedUsers.delete(name);
+  } else {
+    selectedUsers.add(name);
+  }
+  renderUserPicker();
+}
+
+function renderUserPicker() {
+  document.querySelectorAll('#userPicker .user-pill').forEach(pill => {
+    const u = pill.dataset.user;
+    if (selectedUsers.has(u)) {
+      pill.classList.remove('unsel');
+    } else {
+      pill.classList.add('unsel');
+    }
+  });
+}
+
+// FIX #5: nudge +/- for number inputs
+function nudge(id, delta) {
+  const el = document.getElementById(id);
+  const val = parseInt(el.value) || 0;
+  el.value = Math.max(0, val + delta);
+}
+
 // ── SYNC ─────────────────────────────────────────────────────
 
-// ✅ ส่งข้อมูลไป GAS (POST, no-cors)
+// FIX #1 & #7: Correct column order matching sheet headers
+// Sheet: No | User | Date | Start | End | Hour | Timestamp | Work | Location | Item | Quantity | Status | Issue | Remark | Photo(before) | Photo(after)
 async function pushToGAS(log) {
   if (!GAS_URL) return { ok: false, error: 'ยังไม่ได้ใส่ GAS URL' };
+
+  // Format timestamp as DD/MM/YYYY to match existing data
+  const now = new Date();
+  const ts = `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}`;
+
   const payload = {
-    action: 'save',
-    id: log.id, user: log.user, date: log.date,
-    start: log.start, end: log.end, hours: log.hours,
-    work: log.work, location: log.location, item: log.item,
-    qtyActual: log.qtyActual,
-    status: log.status, remark: log.remark,
+    action:       'save',
+    id:           log.id,
+    user:         log.user,
+    date:         log.date,
+    start:        log.start,
+    end:          log.end,
+    hours:        log.hours,
+    timestamp:    ts,
+    work:         log.work,
+    location:     log.location,
+    item:         log.item,
+    qtyActual:    log.qtyActual,
+    status:       log.status,
+    issue:        log.issue || '',
+    remark:       log.remark,
     photosBefore: log.photosBefore?.length || 0,
     photosAfter:  log.photosAfter?.length  || 0,
   };
@@ -569,7 +691,8 @@ async function pushToGAS(log) {
   }
 }
 
-// ✅ ดึงข้อมูลจาก Sheets มาแสดง (GET, รองรับ CORS ของ GAS)
+// FIX #1: fetchFromGAS maps columns correctly
+// Sheet column order: No(0) User(1) Date(2) Start(3) End(4) Hour(5) Timestamp(6) Work(7) Location(8) Item(9) Quantity(10) Status(11) Issue(12) Remark(13) PhotoBefore(14) PhotoAfter(15)
 async function fetchFromGAS() {
   if (!GAS_URL) return;
   const badge = document.getElementById('syncBadge');
@@ -591,36 +714,36 @@ async function fetchFromGAS() {
       return;
     }
 
-    // Map sheet rows (headers: No,User,Date,Start,End,Hour,Work,Location,Item,QtyActual,Status,Issue,Remark,PhotosBefore,PhotosAfter,Timestamp)
+    // FIX #1: Map with correct column positions
+    // Headers: No, User, Date, Start, End, Hour, Timestamp, Work, Location, Item, Quantity, Status, Issue, Remark, PhotoBefore, PhotoAfter
     const sheetLogs = rows.map((r, idx) => {
-      // r is object keyed by header row
       const keys = Object.keys(r);
       const get  = (i) => r[keys[i]] ?? '';
       const idVal = Number(get(0)) || (idx + 1);
       return {
-        id:         idVal,
-        user:       String(get(1) || ''),
-        date:       String(get(2) || '').replace(/\//g, '-'),
-        start:      String(get(3) || ''),
-        end:        String(get(4) || ''),
-        hours:      parseFloat(get(5)) || 0,
-        work:       String(get(6) || ''),
-        location:   String(get(7) || '-'),
-        item:       String(get(8) || '-'),
-        qtyActual:  parseFloat(get(9)) || 0,
-        status:     String(get(10) || 'Finish'),
-        remark:     String(get(12) || ''),
+        id:          idVal,
+        user:        String(get(1)  || ''),
+        date:        String(get(2)  || '').replace(/\//g, '-'),
+        start:       String(get(3)  || ''),
+        end:         String(get(4)  || ''),
+        hours:       parseFloat(get(5))  || 0,
+        // get(6) = Timestamp — not stored in local log object
+        work:        String(get(7)  || ''),
+        location:    String(get(8)  || '-'),
+        item:        String(get(9)  || '-'),
+        qtyActual:   parseFloat(get(10)) || 0,
+        status:      String(get(11) || 'Finish'),
+        issue:       String(get(12) || ''),
+        remark:      String(get(13) || ''),
         photosBefore: [],
         photosAfter:  [],
-        _fromSheet: true,
+        _fromSheet:  true,
       };
-    }).filter(l => l.work && l.user); // skip empty rows
+    }).filter(l => l.work && l.user);
 
-    // Merge: sheet data + local-only data (not in sheet)
-    const sheetIds = new Set(sheetLogs.map(l => l.id));
+    const sheetIds  = new Set(sheetLogs.map(l => l.id));
     const localOnly = logs.filter(l => !l._fromSheet && !sheetIds.has(l.id));
     logs = [...localOnly, ...sheetLogs].sort((a, b) => b.id - a.id);
-
     nextId = logs.length > 0 ? Math.max(...logs.map(l => l.id || 0)) + 1 : 1;
 
     renderList();
@@ -649,7 +772,6 @@ document.getElementById('headerDate').textContent = today.toLocaleDateString('th
 document.getElementById('fDate').value  = todayStr;
 document.getElementById('fStart').value = `${nowH}:${nowM}`;
 
-// ── ตัวแปรกล้อง & รูปภาพ — ต้องประกาศก่อน initSlots() ──────
 let facingMode = 'environment';
 let activeSec  = null;
 let camStream  = null;
@@ -659,11 +781,9 @@ let photos = { before: Array(5).fill(null), after: Array(5).fill(null) };
 initSlots();
 renderList();
 renderSummary();
-fetchFromGAS(); // ดึงข้อมูลจาก Sheets เมื่อเปิดแอป
-// init custom dropdown items (after functions are defined — use setTimeout)
+fetchFromGAS();
 setTimeout(() => { renderCustomWorkOptions(); renderCustomRemarkOptions(); }, 0);
 
-// ปิด dropdown เมื่อคลิกข้างนอก
 document.addEventListener('click', e => {
   if (!e.target.closest('.combo-wrap')) {
     document.querySelectorAll('.combo-dropdown.open').forEach(d => d.classList.remove('open'));
@@ -672,7 +792,7 @@ document.addEventListener('click', e => {
 
 // ── DROPDOWN HELPERS ─────────────────────────────────────────
 function toggleDropdown(id) {
-  const el     = document.getElementById(id);
+  const el = document.getElementById(id);
   const wasOpen = el.classList.contains('open');
   document.querySelectorAll('.combo-dropdown.open').forEach(d => d.classList.remove('open'));
   if (!wasOpen) el.classList.add('open');
@@ -680,13 +800,11 @@ function toggleDropdown(id) {
 function pickWork(val)   { document.getElementById('fWork').value = val; document.getElementById('workDrop').classList.remove('open'); }
 function pickRemark(val) { document.getElementById('fRemark').value = val; document.getElementById('remarkDrop').classList.remove('open'); }
 
-// ── เพิ่มรายการใหม่ในดรอปดาวน์ ─────────────────────────────
 let customWorkItems   = JSON.parse(localStorage.getItem('wl_work_items') || '[]');
 let customRemarkItems = JSON.parse(localStorage.getItem('wl_remark_items') || '[]');
 
 function renderCustomWorkOptions() {
-  const existingCustom = document.querySelectorAll('#workDrop .combo-option-custom');
-  existingCustom.forEach(el => el.remove());
+  document.querySelectorAll('#workDrop .combo-option-custom').forEach(el => el.remove());
   const addBtn = document.querySelector('#workDrop .combo-add-new');
   customWorkItems.forEach(item => {
     const div = document.createElement('div');
@@ -698,8 +816,7 @@ function renderCustomWorkOptions() {
 }
 
 function renderCustomRemarkOptions() {
-  const existingCustom = document.querySelectorAll('#remarkDrop .combo-option-custom');
-  existingCustom.forEach(el => el.remove());
+  document.querySelectorAll('#remarkDrop .combo-option-custom').forEach(el => el.remove());
   const addBtn = document.querySelector('#remarkDrop .combo-add-new');
   customRemarkItems.forEach(item => {
     const div = document.createElement('div');
@@ -927,7 +1044,7 @@ function setSaveUI(icon, title, desc, errorMsg = null) {
   document.getElementById('saveDesc').textContent  = desc;
 
   if (icon === '⏳') {
-    spinner.textContent   = '⏳';
+    spinner.textContent     = '⏳';
     spinner.style.animation = 'spin 1s linear infinite';
     btnWrap.style.display   = 'none';
   } else {
@@ -937,10 +1054,10 @@ function setSaveUI(icon, title, desc, errorMsg = null) {
   }
 
   if (errorMsg) {
-    details.textContent    = errorMsg;
-    details.style.display  = 'block';
+    details.textContent   = errorMsg;
+    details.style.display = 'block';
   } else {
-    details.style.display  = 'none';
+    details.style.display = 'none';
   }
 
   document.getElementById('saveOverlay').classList.add('open');
@@ -952,107 +1069,100 @@ function closeSaveOverlay() {
 
 async function saveLog() {
   try {
+    const date  = document.getElementById('fDate').value;
+    const work  = document.getElementById('fWork').value.trim();
+    const start = document.getElementById('fStart').value;
+    const end   = document.getElementById('fEnd').value;
 
-  const date  = document.getElementById('fDate').value;
-  const user  = document.getElementById('fUser').value;
-  const work  = document.getElementById('fWork').value.trim();
-  const start = document.getElementById('fStart').value;
-  const end   = document.getElementById('fEnd').value;
-
-  // Validation — เลื่อนไปหาฟิลด์ที่ยังไม่กรอก
-  if (!date || !user || !work) {
-    if (!user) {
-      const el = document.getElementById('fUser');
-      el.style.borderColor = 'var(--red)';
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      setTimeout(() => el.style.borderColor = 'var(--border)', 3000);
-      showToast('⚠ กรุณาเลือกผู้ปฏิบัติงาน');
-    } else if (!work) {
-      const el = document.getElementById('fWork');
-      el.style.borderColor = 'var(--red)';
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      setTimeout(() => el.style.borderColor = 'var(--border)', 3000);
-      showToast('⚠ กรุณากรอกรายละเอียดงาน');
-    } else {
-      showToast('⚠ กรุณากรอกวันที่');
+    // FIX #4: get user from selectedUsers set
+    const userArr = Array.from(selectedUsers);
+    if (!date || userArr.length === 0 || !work) {
+      if (userArr.length === 0) {
+        showToast('⚠ กรุณาเลือกผู้ปฏิบัติงาน');
+      } else if (!work) {
+        const el = document.getElementById('fWork');
+        el.style.borderColor = 'var(--red)';
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setTimeout(() => el.style.borderColor = 'var(--border)', 3000);
+        showToast('⚠ กรุณากรอกรายละเอียดงาน');
+      } else {
+        showToast('⚠ กรุณากรอกวันที่');
+      }
+      return;
     }
-    return;
-  }
 
-  const log = {
-    id:        nextId++,
-    user, date, start, end,
-    hours:     calcHours(start, end),
-    work,
-    location:  document.getElementById('fLocation').value   || '-',
-    item:      document.getElementById('fItem').value        || '-',
-    qtyActual: Number(document.getElementById('fQtyActual').value) || 0,
-    status:    currentStatus,
-    remark:    document.getElementById('fRemark').value,
-    photos:    getAllPhotos(),
-    photosBefore: photos.before.filter(Boolean),
-    photosAfter:  photos.after.filter(Boolean),
-  };
+    // FIX #2: use corrected calcHours
+    const hours = calcHours(start, end);
 
-  // 1. เปิด loading
-  setSaveUI('⏳', 'กำลังประมวลผล...', 'กำลังบันทึกข้อมูลลงในระบบของเครื่อง');
+    const log = {
+      id:           nextId++,
+      user:         userArr.join(', '),
+      date,
+      start,
+      end,
+      hours,
+      work,
+      location:     document.getElementById('fLocation').value  || '0',
+      item:         document.getElementById('fItem').value       || '0',
+      qtyActual:    Number(document.getElementById('fQtyActual').value) || 0,
+      status:       currentStatus,
+      issue:        '',
+      remark:       document.getElementById('fRemark').value,
+      photos:       getAllPhotos(),
+      photosBefore: photos.before.filter(Boolean),
+      photosAfter:  photos.after.filter(Boolean),
+    };
 
-  // 2. บันทึก LocalStorage
-  logs.unshift(log);
-  let savedLocally = false;
-  while (!savedLocally && logs.length > 0) {
-    try {
-      localStorage.setItem('wl_logs', JSON.stringify(logs));
-      savedLocally = true;
-    } catch (e) {
-      if (logs.length > 1) { logs.pop(); }
-      else {
-        setSaveUI('❌', 'พื้นที่เครื่องเต็ม', 'รูปภาพอาจมีขนาดใหญ่เกินไป ไม่สามารถบันทึกได้');
-        logs.shift();
-        return;
+    setSaveUI('⏳', 'กำลังประมวลผล...', 'กำลังบันทึกข้อมูลลงในระบบของเครื่อง');
+
+    logs.unshift(log);
+    let savedLocally = false;
+    while (!savedLocally && logs.length > 0) {
+      try {
+        localStorage.setItem('wl_logs', JSON.stringify(logs));
+        savedLocally = true;
+      } catch (e) {
+        if (logs.length > 1) { logs.pop(); }
+        else {
+          setSaveUI('❌', 'พื้นที่เครื่องเต็ม', 'รูปภาพอาจมีขนาดใหญ่เกินไป ไม่สามารถบันทึกได้');
+          logs.shift();
+          return;
+        }
       }
     }
-  }
 
-  // 3. ส่งไป Google Sheets
-  setSaveUI('⏳', 'กำลังเชื่อมต่อ...', 'กำลังส่งข้อมูลไปยัง Google Sheets...');
-  const res = await pushToGAS(log);
+    setSaveUI('⏳', 'กำลังเชื่อมต่อ...', 'กำลังส่งข้อมูลไปยัง Google Sheets...');
+    const res = await pushToGAS(log);
 
-  // 4. แสดงผลลัพธ์
-  if (res.ok) {
-    setSaveUI('✅', 'บันทึกข้อมูลสำเร็จ!', 'ข้อมูลถูกส่งเข้า Google Sheets เรียบร้อยแล้ว');
-    document.getElementById('saveBtnWrap').style.display = 'none';
-    setTimeout(() => { closeSaveOverlay(); resetForm(); switchPage('list'); }, 1500);
-  } else {
-    setSaveUI('⚠️', 'ส่งข้อมูลไป Google Sheet ไม่สำเร็จ', 'บันทึกลงแอปเรียบร้อย แต่เชื่อมต่อ Google Sheet พลาด', res.error);
-    const btn = document.querySelector('#saveBtnWrap button');
-    btn.textContent = 'รับทราบ';
-    btn.onclick = function () { closeSaveOverlay(); resetForm(); switchPage('list'); };
-  }
+    if (res.ok) {
+      setSaveUI('✅', 'บันทึกข้อมูลสำเร็จ!', 'ข้อมูลถูกส่งเข้า Google Sheets เรียบร้อยแล้ว');
+      document.getElementById('saveBtnWrap').style.display = 'none';
+      setTimeout(() => { closeSaveOverlay(); resetForm(); switchPage('list'); }, 1500);
+    } else {
+      setSaveUI('⚠️', 'ส่งข้อมูลไป Google Sheet ไม่สำเร็จ', 'บันทึกลงแอปเรียบร้อย แต่เชื่อมต่อ Google Sheet พลาด', res.error);
+      const btn = document.querySelector('#saveBtnWrap button');
+      btn.textContent = 'รับทราบ';
+      btn.onclick = function () { closeSaveOverlay(); resetForm(); switchPage('list'); };
+    }
 
   } catch (fatalErr) {
-    // จับ JS Error ที่อาจเกิดเงียบๆ ให้แสดงผลแทน
     setSaveUI('❌', 'เกิดข้อผิดพลาด', 'กรุณาแจ้ง Admin', String(fatalErr));
   }
 }
 
-function calcHours(start, end) {
-  if (!start || !end) return 0;
-  const [sh, sm] = start.split(':').map(Number);
-  const [eh, em] = end.split(':').map(Number);
-  return Math.max(0, ((eh * 60 + em) - (sh * 60 + sm)) / 60);
-}
-
 function resetForm() {
   document.getElementById('fDate').value      = todayStr;
-  document.getElementById('fUser').value      = '';
   document.getElementById('fStart').value     = `${nowH}:${nowM}`;
   document.getElementById('fEnd').value       = '';
   document.getElementById('fWork').value      = '';
-  document.getElementById('fLocation').value  = '';
-  document.getElementById('fItem').value      = '';
-  document.getElementById('fQtyActual').value = '';
+  document.getElementById('fLocation').value  = '0';
+  document.getElementById('fItem').value      = '0';
+  document.getElementById('fQtyActual').value = '0';
   document.getElementById('fRemark').value    = '';
+
+  // Reset user to first user only
+  selectedUsers = new Set(['อัด']);
+  renderUserPicker();
 
   photos = { before: Array(5).fill(null), after: Array(5).fill(null) };
   initSlots();
@@ -1087,14 +1197,19 @@ function renderList() {
   }
 
   list.innerHTML = filtered.map(l => {
-    const userKey = (l.user || '').includes(',') ? 'default' : l.user;
+    // For multi-user, pick first user for avatar color
+    const firstUser = (l.user || '').split(',')[0].trim();
+    const avatarClass = ['อัด','กุล','วิท','หมี','อัน'].includes(firstUser) ? firstUser : 'default';
     let dateStr = l.date;
     try { const d = new Date(l.date + 'T00:00:00'); if (!isNaN(d)) dateStr = d.toLocaleDateString('th-TH', { day: '2-digit', month: 'short' }); } catch (e) {}
     const cnt = (l.photosBefore?.length || 0) + (l.photosAfter?.length || 0);
 
+    // FIX #2: display hours correctly
+    const hDisp = l.hours > 0 ? (l.hours >= 1 ? l.hours.toFixed(1) + 'h' : Math.round(l.hours * 60) + 'm') : '';
+
     return `
     <div class="log-item" onclick="openLog(${l.id})">
-      <div class="log-avatar user-${userKey}">${(l.user || '??').slice(0, 2)}</div>
+      <div class="log-avatar user-${avatarClass}">${(firstUser || '??').slice(0, 2)}</div>
       <div class="log-body">
         <div class="log-meta">
           <span class="log-user">${l.user || 'ไม่มีชื่อ'}</span>
@@ -1103,15 +1218,15 @@ function renderList() {
         </div>
         <div class="log-work">${l.work || '-'}</div>
         <div class="log-tags">
-          ${l.hours > 0 ? `<span class="tag">⏱ ${l.hours >= 1 ? l.hours.toFixed(1) + 'h' : Math.round(l.hours * 60) + 'm'}</span>` : ''}
-          ${l.qtyActual > 0 ? `<span class="tag">📦 ${l.qtyActual.toLocaleString()}</span>` : ''}
+          ${l.hours > 0 ? `<span class="tag">⏱ ${hDisp}</span>` : ''}
+          ${l.qtyActual > 0 ? `<span class="tag">📦 ${Number(l.qtyActual).toLocaleString()}</span>` : ''}
           ${cnt > 0 ? `<span class="tag">📸 ${cnt}</span>` : ''}
-          ${l.location && l.location !== '-' ? `<span class="tag">📍 ${l.location}</span>` : ''}
+          ${l.location && l.location !== '-' && l.location !== '0' ? `<span class="tag">📍 ${l.location}</span>` : ''}
         </div>
       </div>
       <div class="log-right">
         <span class="status-badge status-${l.status}">${l.status}</span>
-        ${l.hours > 0 ? `<div style="font-size:22px;font-weight:700;font-family:var(--mono);">${l.hours.toFixed(1)}<span style="font-size:13px;color:var(--text3);margin-left:4px;">h</span></div>` : ''}
+        ${l.hours > 0 ? `<div style="font-size:22px;font-weight:700;font-family:var(--mono);">${l.hours.toFixed(2)}<span style="font-size:13px;color:var(--text3);margin-left:4px;">h</span></div>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -1132,8 +1247,8 @@ function openLog(id) {
     ['เวลา',      `${l.start || '-'} – ${l.end || '-'} (${(l.hours || 0).toFixed(2)} ชม.)`],
     ['สถานะ',     `<span class="status-badge status-${l.status}">${l.status}</span>`],
     ['Location',   l.location || '-'],
-    ['สินค้า',    l.item || '-'],
-    ['จำนวนจริง',  l.qtyActual ? l.qtyActual.toLocaleString() : '0'],
+    ['สินค้า (Item)', l.item || '-'],
+    ['จำนวนจริง',  l.qtyActual ? Number(l.qtyActual).toLocaleString() : '0'],
     ['รายละเอียด', `<div style="background:var(--bg);padding:16px;border-radius:var(--radius-sm);border:2px solid var(--border);line-height:1.7;">${(l.work || '').replace(/\n/g, '<br>')}</div>`],
     ['หมายเหตุ',   l.remark ? `<span style="color:var(--red);font-weight:600;">${l.remark}</span>` : '-'],
   ];
@@ -1173,8 +1288,17 @@ function deleteLog(id) {
 }
 
 // ── SUMMARY ──────────────────────────────────────────────────
+// FIX #3: correct total hours calculation
 function renderSummary() {
-  const totalH      = logs.reduce((s, l) => s + (l.hours || 0), 0);
+  // FIX #3: recalculate hours from start/end if available, else use stored hours
+  const totalH = logs.reduce((s, l) => {
+    // prefer recalculated hours if we have start/end
+    if (l.start && l.end && l.start !== '' && l.end !== '') {
+      return s + calcHours(l.start, l.end);
+    }
+    return s + (parseFloat(l.hours) || 0);
+  }, 0);
+
   const totalPhotos = logs.reduce((s, l) => s + (l.photosBefore?.length || 0) + (l.photosAfter?.length || 0), 0);
   const finishCount = logs.filter(l => l.status === 'Finish').length;
 
@@ -1184,8 +1308,19 @@ function renderSummary() {
     <div class="stat-card amber"><div class="stat-icon">🖼</div><div class="stat-label">รูปภาพ</div><div class="stat-value">${totalPhotos}</div><div class="stat-sub">ภาพ</div></div>
     <div class="stat-card purple"><div class="stat-icon">✅</div><div class="stat-label">Finish</div><div class="stat-value">${finishCount}</div><div class="stat-sub">จาก ${logs.length} (${logs.length > 0 ? Math.round(finishCount / logs.length * 100) : 0}%)</div></div>`;
 
+  // Per-user hours — also recalculate
   const userHours = {};
-  logs.forEach(l => { if (l.user) l.user.split(',').map(u => u.trim()).filter(Boolean).forEach(u => { userHours[u] = (userHours[u] || 0) + (l.hours || 0); }); });
+  logs.forEach(l => {
+    const h = (l.start && l.end && l.start !== '' && l.end !== '')
+      ? calcHours(l.start, l.end)
+      : (parseFloat(l.hours) || 0);
+    if (l.user) {
+      l.user.split(',').map(u => u.trim()).filter(Boolean).forEach(u => {
+        userHours[u] = (userHours[u] || 0) + h;
+      });
+    }
+  });
+
   const maxH = Math.max(0.1, ...Object.values(userHours));
   const colors = { อัด: 'var(--accent)', กุล: 'var(--green)', วิท: 'var(--amber)', หมี: 'var(--accent2)', อัน: 'var(--red)' };
 
@@ -1195,7 +1330,7 @@ function renderSummary() {
       <div style="background:var(--bg);border-radius:10px;height:16px;overflow:hidden;border:2px solid var(--border);">
         <div style="width:${(h / maxH * 100).toFixed(1)}%;height:100%;background:${colors[u] || 'var(--text3)'};border-radius:8px;transition:width 0.8s;"></div>
       </div>
-      <div style="font-size:15px;font-weight:700;font-family:var(--mono);text-align:right;">${h.toFixed(1)}h</div>
+      <div style="font-size:15px;font-weight:700;font-family:var(--mono);text-align:right;">${h.toFixed(2)}h</div>
     </div>`).join('') || '<div style="text-align:center;padding:24px;color:var(--text3);font-weight:600;">ยังไม่มีข้อมูล</div>';
 
   const byDate = {};
@@ -1206,12 +1341,15 @@ function renderSummary() {
     let dStr = d;
     try { const dd = new Date(d + 'T00:00:00'); if (!isNaN(dd)) dStr = dd.toLocaleDateString('th-TH', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }); } catch (e) {}
     const items = byDate[d];
-    const tH = items.reduce((s, l) => s + (l.hours || 0), 0);
+    const tH = items.reduce((s, l) => {
+      if (l.start && l.end && l.start !== '' && l.end !== '') return s + calcHours(l.start, l.end);
+      return s + (parseFloat(l.hours) || 0);
+    }, 0);
     return `
     <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:2px dashed var(--border2);">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
         <span style="font-size:16px;font-weight:700;">${dStr}</span>
-        <span style="font-size:13px;font-weight:700;background:var(--surface);padding:4px 12px;border-radius:16px;border:2px solid var(--border);font-family:var(--mono);box-shadow:2px 2px 0px var(--border);">${tH.toFixed(1)}h · ${items.length} งาน</span>
+        <span style="font-size:13px;font-weight:700;background:var(--surface);padding:4px 12px;border-radius:16px;border:2px solid var(--border);font-family:var(--mono);box-shadow:2px 2px 0px var(--border);">${tH.toFixed(2)}h · ${items.length} งาน</span>
       </div>
       <div style="display:flex;flex-direction:column;gap:10px;">
         ${items.slice(0, 3).map(l => `
