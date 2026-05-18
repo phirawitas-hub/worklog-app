@@ -7,6 +7,19 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
+  /* ── Custom 24hr time picker ── */
+  .time-wrap { display: flex; align-items: center; border: 2px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; background: var(--surface); transition: all 0.2s; }
+  .time-wrap:focus-within { transform: translate(-2px,-2px); box-shadow: var(--shadow-sm); }
+  .time-sel { border: none; box-shadow: none; border-radius: 0; flex: 1; padding: 14px 8px; text-align: center; font-size: 18px; font-weight: 700; font-family: var(--mono); cursor: pointer; background: var(--surface); color: var(--text); outline: none; -webkit-appearance: none; appearance: none; }
+  .time-colon { font-size: 22px; font-weight: 700; font-family: var(--mono); color: var(--text); padding: 0 2px; flex-shrink: 0; }
+  .time-display { display: none; }
+
+  /* ── Multi-select tags ── */
+  .sel-tag { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; background: var(--accent); color: white; border: 2px solid var(--border); box-shadow: 2px 2px 0px var(--border); cursor: default; }
+  .sel-tag.remark-tag { background: var(--amber); color: var(--text); }
+  .sel-tag-x { background: none; border: none; color: inherit; font-size: 14px; font-weight: 700; cursor: pointer; padding: 0; line-height: 1; opacity: 0.8; }
+  .sel-tag-x:hover { opacity: 1; }
+
   :root {
     --bg: #f5f7fa;
     --surface: #ffffff;
@@ -371,18 +384,31 @@
   <div class="page active" id="page-add">
     <div class="card">
       <div class="card-title"><div class="card-title-icon">📅</div>ข้อมูลพื้นฐาน</div>
-      <!-- FIX #6: column order matches sheet: No | User | Date | Start | End | Hour | Timestamp -->
       <div class="form-grid three">
         <div class="field"><label>วันที่</label><input type="date" id="fDate"></div>
-        <!-- FIX #6: 24h time input with explicit step and pattern -->
+        <!-- FIX #3: custom 24hr time picker using HH:MM selects -->
         <div class="field">
-          <label>เวลาเริ่ม (HH:MM)</label>
-          <input type="time" id="fStart" step="60">
+          <label>เวลาเริ่ม</label>
+          <div class="time-wrap" id="startWrap">
+            <select id="fStartH" onchange="onTimeChange()" class="time-sel"></select>
+            <span class="time-colon">:</span>
+            <select id="fStartM" onchange="onTimeChange()" class="time-sel"></select>
+            <span id="startDisplay" class="time-display"></span>
+          </div>
         </div>
         <div class="field">
-          <label>เวลาสิ้นสุด (HH:MM)</label>
-          <input type="time" id="fEnd" step="60">
+          <label>เวลาสิ้นสุด</label>
+          <div class="time-wrap" id="endWrap">
+            <select id="fEndH" onchange="onTimeChange()" class="time-sel"></select>
+            <span class="time-colon">:</span>
+            <select id="fEndM" onchange="onTimeChange()" class="time-sel"></select>
+            <span id="endDisplay" class="time-display"></span>
+          </div>
         </div>
+      </div>
+      <!-- Hour preview -->
+      <div id="hourPreview" style="margin-top:14px;display:none;padding:10px 16px;background:var(--bg);border-radius:var(--radius-sm);border:2px solid var(--border);font-size:14px;font-weight:700;font-family:var(--mono);">
+        ⏱ ชั่วโมงงาน: <span id="hourVal" style="color:var(--accent);font-size:18px;"></span> ชม.
       </div>
     </div>
 
@@ -390,7 +416,7 @@
       <div class="card-title"><div class="card-title-icon">📝</div>รายละเอียดงาน</div>
       <div class="form-grid">
 
-        <!-- FIX #4: Multi-select user picker -->
+        <!-- FIX #4: Multi-select user picker with + button -->
         <div class="field">
           <label>ผู้ปฏิบัติงาน <span style="font-size:12px;color:var(--text3);font-weight:500;">(เลือกได้หลายคน)</span></label>
           <div class="user-picker" id="userPicker">
@@ -399,27 +425,31 @@
             <div class="user-pill sel-วิท unsel" data-user="วิท" onclick="toggleUser('วิท')">วิท</div>
             <div class="user-pill sel-หมี unsel" data-user="หมี" onclick="toggleUser('หมี')">หมี</div>
             <div class="user-pill sel-อัน unsel" data-user="อัน" onclick="toggleUser('อัน')">อัน</div>
+            <div class="user-pill add-user-btn" onclick="addNewUser()" title="เพิ่มชื่อใหม่" style="background:var(--accent);color:white;border-color:var(--accent);">＋</div>
           </div>
         </div>
 
+        <!-- FIX #5: Work multi-select with tags display -->
         <div class="field span2">
-          <label>รายละเอียดการทำงาน</label>
+          <label>รายละเอียดการทำงาน <span style="font-size:12px;color:var(--text3);font-weight:500;">(เลือกได้หลายรายการ)</span></label>
+          <!-- selected tags -->
+          <div id="workTags" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;min-height:0;"></div>
           <div class="combo-wrap">
-            <textarea id="fWork" placeholder="พิมพ์หรือเลือกจากรายการ..."></textarea>
+            <textarea id="fWork" placeholder="พิมพ์เพิ่มเติม หรือเลือกจากรายการ..."></textarea>
             <button type="button" class="combo-toggle" onclick="toggleDropdown('workDrop')" title="เลือกจากรายการ">▾</button>
             <div class="combo-dropdown" id="workDrop">
-              <div class="combo-option" onclick="pickWork('ส่งรายงานประจำวัน Data Stock Onhand Spare Part , Raw Material & Consumables , E-Commerce')"><span>📊</span>ส่งรายงานประจำวัน Data Stock Onhand</div>
-              <div class="combo-option" onclick="pickWork('ส่ง Report Inventory Status change')"><span>📋</span>ส่ง Report Inventory Status change</div>
-              <div class="combo-option" onclick="pickWork('ถ่ายรูปสินค้าและวัดขนาด,น้ำหนัก CATEGORY SPARE PART , ส่งรายงาน Product Information Report')"><span>📷</span>ถ่ายรูปสินค้าและวัดขนาด Product Info Report</div>
-              <div class="combo-option" onclick="pickWork('Cycle Count Selective ')"><span>🔢</span>Cycle Count Selective</div>
-              <div class="combo-option" onclick="pickWork('ตักงาน / เก็บงาน ')"><span>📦</span>ตักงาน / เก็บงาน</div>
-              <div class="combo-option" onclick="pickWork('ทำ 5 ส ')"><span>🧹</span>ทำ 5 ส</div>
-              <div class="combo-option" onclick="pickWork('Replen งาน ')"><span>🔄</span>Replen งาน</div>
-              <div class="combo-option" onclick="pickWork('Transfer-Putaway สินค้า ')"><span>📤</span>Transfer-Putaway สินค้า</div>
-              <div class="combo-option" onclick="pickWork('ตรวจนับสินค้า Aging 5 ปี ')"><span>⏳</span>ตรวจนับสินค้า Aging 5 ปี</div>
-              <div class="combo-option" onclick="pickWork('ตรวจสอบสินค้า DMG & Disposal ')"><span>🔍</span>ตรวจสอบสินค้า DMG & Disposal</div>
-              <div class="combo-option" onclick="pickWork('เปลี่ยน Status สินค้า ')"><span>🔁</span>เปลี่ยน Status สินค้า</div>
-              <div class="combo-option" onclick="pickWork('ตรวจเช็คงาน Location ')"><span>📍</span>ตรวจเช็คงาน Location</div>
+              <div class="combo-option" onclick="addWorkTag('ส่งรายงานประจำวัน Data Stock Onhand Spare Part , Raw Material & Consumables , E-Commerce')"><span>📊</span>ส่งรายงานประจำวัน Data Stock Onhand</div>
+              <div class="combo-option" onclick="addWorkTag('ส่ง Report Inventory Status change')"><span>📋</span>ส่ง Report Inventory Status change</div>
+              <div class="combo-option" onclick="addWorkTag('ถ่ายรูปสินค้าและวัดขนาด,น้ำหนัก CATEGORY SPARE PART , ส่งรายงาน Product Information Report')"><span>📷</span>ถ่ายรูปสินค้าและวัดขนาด Product Info Report</div>
+              <div class="combo-option" onclick="addWorkTag('Cycle Count Selective')"><span>🔢</span>Cycle Count Selective</div>
+              <div class="combo-option" onclick="addWorkTag('ตักงาน / เก็บงาน')"><span>📦</span>ตักงาน / เก็บงาน</div>
+              <div class="combo-option" onclick="addWorkTag('ทำ 5 ส')"><span>🧹</span>ทำ 5 ส</div>
+              <div class="combo-option" onclick="addWorkTag('Replen งาน')"><span>🔄</span>Replen งาน</div>
+              <div class="combo-option" onclick="addWorkTag('Transfer-Putaway สินค้า')"><span>📤</span>Transfer-Putaway สินค้า</div>
+              <div class="combo-option" onclick="addWorkTag('ตรวจนับสินค้า Aging 5 ปี')"><span>⏳</span>ตรวจนับสินค้า Aging 5 ปี</div>
+              <div class="combo-option" onclick="addWorkTag('ตรวจสอบสินค้า DMG & Disposal')"><span>🔍</span>ตรวจสอบสินค้า DMG & Disposal</div>
+              <div class="combo-option" onclick="addWorkTag('เปลี่ยน Status สินค้า')"><span>🔁</span>เปลี่ยน Status สินค้า</div>
+              <div class="combo-option" onclick="addWorkTag('ตรวจเช็คงาน Location')"><span>📍</span>ตรวจเช็คงาน Location</div>
               <div class="combo-option combo-add-new" onclick="addNewWorkItem()" style="background:var(--bg);border-top:2px solid var(--border2);font-weight:700;color:var(--accent);"><span>➕</span>+ เพิ่มรายการใหม่</div>
             </div>
           </div>
@@ -463,16 +493,42 @@
         <button class="chip" onclick="selectStatus('Pending')" id="chip-Pending">⏱ Pending</button>
         <button class="chip" onclick="selectStatus('Issue')" id="chip-Issue">⚠️ มีปัญหา</button>
       </div>
+
+      <!-- FIX #6: Type Work dropdown with + button -->
       <div class="field" style="margin-top:24px">
-        <label>หมายเหตุ / Issue</label>
+        <label>ประเภทงาน (Type Work)</label>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <div class="combo-wrap" style="flex:1;">
+            <input type="text" id="fTypeWork" placeholder="เลือกหรือพิมพ์ประเภทงาน..." readonly style="cursor:pointer;" onclick="toggleDropdown('typeWorkDrop')">
+            <button type="button" class="combo-toggle" onclick="toggleDropdown('typeWorkDrop')" style="top:8px;">▾</button>
+            <div class="combo-dropdown" id="typeWorkDrop">
+              <div class="combo-option" onclick="pickTypeWork('Cycle Count')"><span>🔢</span>Cycle Count</div>
+              <div class="combo-option" onclick="pickTypeWork('Replenishment')"><span>🔄</span>Replenishment</div>
+              <div class="combo-option" onclick="pickTypeWork('Transfer-Putaway')"><span>📤</span>Transfer-Putaway</div>
+              <div class="combo-option" onclick="pickTypeWork('Audit / Verify')"><span>🔍</span>Audit / Verify</div>
+              <div class="combo-option" onclick="pickTypeWork('Report')"><span>📊</span>Report</div>
+              <div class="combo-option" onclick="pickTypeWork('5ส / Housekeeping')"><span>🧹</span>5ส / Housekeeping</div>
+              <div class="combo-option" onclick="pickTypeWork('Photo / Product Info')"><span>📷</span>Photo / Product Info</div>
+              <div class="combo-option" onclick="pickTypeWork('DMG & Disposal')"><span>❌</span>DMG & Disposal</div>
+              <div class="combo-option combo-add-new" onclick="addNewTypeWorkItem()" style="background:var(--bg);border-top:2px solid var(--border2);font-weight:700;color:var(--accent);"><span>➕</span>+ เพิ่มประเภทใหม่</div>
+            </div>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="addNewTypeWorkItem()" style="flex-shrink:0;white-space:nowrap;">＋ เพิ่ม</button>
+        </div>
+      </div>
+
+      <!-- FIX #5: Remark multi-select with tags -->
+      <div class="field" style="margin-top:20px">
+        <label>หมายเหตุ / Issue <span style="font-size:12px;color:var(--text3);font-weight:500;">(เลือกได้หลายรายการ)</span></label>
+        <div id="remarkTags" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;min-height:0;"></div>
         <div class="combo-wrap">
-          <input type="text" id="fRemark" placeholder="พิมพ์หรือเลือกจากรายการ...">
+          <input type="text" id="fRemark" placeholder="พิมพ์เพิ่มเติม หรือเลือกจากรายการ...">
           <button type="button" class="combo-toggle" onclick="toggleDropdown('remarkDrop')" style="top:8px;">▾</button>
           <div class="combo-dropdown" id="remarkDrop">
-            <div class="combo-option" onclick="pickRemark('ตรวจสอบแล้วถูกต้อง')"><span>✅</span>ตรวจสอบแล้วถูกต้อง</div>
-            <div class="combo-option" onclick="pickRemark('สินค้าจำนวนไม่ตรงกับระบบ')"><span>⚠️</span>สินค้าจำนวนไม่ตรงกับระบบ</div>
-            <div class="combo-option" onclick="pickRemark('หาสินค้าไม่พบใน Location ที่ระบุ')"><span>🔍</span>หาสินค้าไม่พบใน Location ที่ระบุ</div>
-            <div class="combo-option" onclick="pickRemark('สินค้า Damage ไม่สามารถจำหน่ายได้')"><span>❌</span>สินค้า Damage ไม่สามารถจำหน่ายได้</div>
+            <div class="combo-option" onclick="addRemarkTag('ตรวจสอบแล้วถูกต้อง')"><span>✅</span>ตรวจสอบแล้วถูกต้อง</div>
+            <div class="combo-option" onclick="addRemarkTag('สินค้าจำนวนไม่ตรงกับระบบ')"><span>⚠️</span>สินค้าจำนวนไม่ตรงกับระบบ</div>
+            <div class="combo-option" onclick="addRemarkTag('หาสินค้าไม่พบใน Location ที่ระบุ')"><span>🔍</span>หาสินค้าไม่พบใน Location ที่ระบุ</div>
+            <div class="combo-option" onclick="addRemarkTag('สินค้า Damage ไม่สามารถจำหน่ายได้')"><span>❌</span>สินค้า Damage ไม่สามารถจำหน่ายได้</div>
             <div class="combo-option combo-add-new" onclick="addNewRemarkItem()" style="background:var(--bg);border-top:2px solid var(--border2);font-weight:700;color:var(--accent);"><span>➕</span>+ เพิ่มรายการใหม่</div>
           </div>
         </div>
@@ -604,24 +660,170 @@ try {
 
 let nextId = logs.length > 0 ? Math.max(...logs.map(l => l.id || 0)) + 1 : 1;
 let currentStatus = 'Finish';
-
-// FIX #4: Multi-select users set
 let selectedUsers = new Set(['อัด']);
 
-// ── FIX #2: calcHours with lunch deduction ──────────────────
-// Mirrors: =IF(C="","",IF(AND(C<12:00, D>13:00), D-C-1h, D-C))
+// ── FIX #1/#2: parse HH:MM string safely (handles "08:30", never AM/PM) ──
+function parseHHMM(str) {
+  if (!str) return null;
+  // strip any AM/PM just in case browser sends it
+  const clean = str.replace(/\s*(AM|PM)/i,'').trim();
+  const parts  = clean.split(':');
+  if (parts.length < 2) return null;
+  const h = parseInt(parts[0], 10);
+  const m = parseInt(parts[1], 10);
+  if (isNaN(h) || isNaN(m)) return null;
+  return h * 60 + m;
+}
+
+// ── FIX #2: calcHours uses parseHHMM + lunch deduction ──
 function calcHours(start, end) {
-  if (!start || !end) return 0;
-  const toMin = t => { const [h,m] = t.split(':').map(Number); return h * 60 + m; };
-  const sMin = toMin(start);
-  const eMin = toMin(end);
+  const sMin = parseHHMM(start);
+  const eMin = parseHHMM(end);
+  if (sMin === null || eMin === null) return 0;
   if (eMin <= sMin) return 0;
-  let diff = eMin - sMin; // in minutes
-  // Deduct 1 hour if work spans full lunch break (before 12:00 start AND after 13:00 end)
-  if (sMin < 12 * 60 && eMin > 13 * 60) {
-    diff -= 60;
-  }
+  let diff = eMin - sMin;
+  if (sMin < 12 * 60 && eMin > 13 * 60) diff -= 60; // lunch deduction
   return Math.max(0, diff / 60);
+}
+
+// ── FIX #3: Build 24hr time selectors ──────────────────────
+function buildTimeSelects() {
+  const hSel = ['fStartH','fEndH'];
+  const mSel = ['fStartM','fEndM'];
+  hSel.forEach(id => {
+    const el = document.getElementById(id);
+    for (let h = 0; h < 24; h++) {
+      const o = document.createElement('option');
+      o.value = String(h).padStart(2,'0');
+      o.textContent = String(h).padStart(2,'0');
+      el.appendChild(o);
+    }
+  });
+  mSel.forEach(id => {
+    const el = document.getElementById(id);
+    for (let m = 0; m < 60; m += 1) {
+      const o = document.createElement('option');
+      o.value = String(m).padStart(2,'0');
+      o.textContent = String(m).padStart(2,'0');
+      el.appendChild(o);
+    }
+  });
+  // Set defaults to now
+  document.getElementById('fStartH').value = nowH;
+  document.getElementById('fStartM').value = nowM;
+}
+
+function getTimeVal(prefix) {
+  const h = document.getElementById(prefix+'H').value;
+  const m = document.getElementById(prefix+'M').value;
+  if (!h && !m) return '';
+  return `${h}:${m}`;
+}
+
+function setTimeVal(prefix, hhmm) {
+  if (!hhmm) {
+    document.getElementById(prefix+'H').selectedIndex = 0;
+    document.getElementById(prefix+'M').selectedIndex = 0;
+    return;
+  }
+  const parts = hhmm.split(':');
+  if (parts.length < 2) return;
+  document.getElementById(prefix+'H').value = parts[0].padStart(2,'0');
+  document.getElementById(prefix+'M').value = parts[1].padStart(2,'0');
+}
+
+function onTimeChange() {
+  const s = getTimeVal('fStart');
+  const e = getTimeVal('fEnd');
+  const h = calcHours(s, e);
+  const prev = document.getElementById('hourPreview');
+  if (s && e && h >= 0) {
+    prev.style.display = 'block';
+    document.getElementById('hourVal').textContent = h.toFixed(2);
+  } else {
+    prev.style.display = 'none';
+  }
+}
+
+// ── FIX #5: Work multi-select tags ─────────────────────────
+let selectedWorkTags = [];
+function addWorkTag(val) {
+  document.getElementById('workDrop').classList.remove('open');
+  if (selectedWorkTags.includes(val)) return;
+  selectedWorkTags.push(val);
+  renderWorkTags();
+}
+function removeWorkTag(val) {
+  selectedWorkTags = selectedWorkTags.filter(x => x !== val);
+  renderWorkTags();
+}
+function renderWorkTags() {
+  const c = document.getElementById('workTags');
+  c.innerHTML = selectedWorkTags.map(v =>
+    `<span class="sel-tag">${v}<button class="sel-tag-x" onclick="removeWorkTag('${v.replace(/'/g,"\\'")}')">✕</button></span>`
+  ).join('');
+  c.style.marginBottom = selectedWorkTags.length ? '8px' : '0';
+}
+function getWorkValue() {
+  const tags  = selectedWorkTags.join(' / ');
+  const typed = document.getElementById('fWork').value.trim();
+  return [tags, typed].filter(Boolean).join(' / ');
+}
+
+// ── FIX #5: Remark multi-select tags ───────────────────────
+let selectedRemarkTags = [];
+function addRemarkTag(val) {
+  document.getElementById('remarkDrop').classList.remove('open');
+  if (selectedRemarkTags.includes(val)) return;
+  selectedRemarkTags.push(val);
+  renderRemarkTags();
+}
+function removeRemarkTag(val) {
+  selectedRemarkTags = selectedRemarkTags.filter(x => x !== val);
+  renderRemarkTags();
+}
+function renderRemarkTags() {
+  const c = document.getElementById('remarkTags');
+  c.innerHTML = selectedRemarkTags.map(v =>
+    `<span class="sel-tag remark-tag">${v}<button class="sel-tag-x" onclick="removeRemarkTag('${v.replace(/'/g,"\\'")}')">✕</button></span>`
+  ).join('');
+  c.style.marginBottom = selectedRemarkTags.length ? '8px' : '0';
+}
+function getRemarkValue() {
+  const tags  = selectedRemarkTags.join(', ');
+  const typed = document.getElementById('fRemark').value.trim();
+  return [tags, typed].filter(Boolean).join(', ');
+}
+
+// ── FIX #6: TypeWork dropdown + + button ───────────────────
+let customTypeWorkItems = JSON.parse(localStorage.getItem('wl_typework_items') || '[]');
+function pickTypeWork(val) {
+  document.getElementById('fTypeWork').value = val;
+  document.getElementById('typeWorkDrop').classList.remove('open');
+}
+function addNewTypeWorkItem() {
+  const val = prompt('พิมพ์ประเภทงานใหม่:');
+  if (!val || !val.trim()) return;
+  customTypeWorkItems.unshift(val.trim());
+  localStorage.setItem('wl_typework_items', JSON.stringify(customTypeWorkItems));
+  renderCustomTypeWorkOptions();
+  pickTypeWork(val.trim());
+}
+function renderCustomTypeWorkOptions() {
+  document.querySelectorAll('#typeWorkDrop .combo-option-custom').forEach(el => el.remove());
+  const addBtn = document.querySelector('#typeWorkDrop .combo-add-new');
+  customTypeWorkItems.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'combo-option combo-option-custom';
+    div.innerHTML = `<span>🏷</span><span style="flex:1;">${item}</span><button onclick="event.stopPropagation();removeCustomTypeWork('${item.replace(/'/g,"\\'")}');" style="background:var(--red);color:white;border:none;border-radius:8px;padding:2px 8px;font-size:12px;cursor:pointer;">✕</button>`;
+    div.onclick = () => pickTypeWork(item);
+    addBtn.parentNode.insertBefore(div, addBtn);
+  });
+}
+function removeCustomTypeWork(item) {
+  customTypeWorkItems = customTypeWorkItems.filter(x => x !== item);
+  localStorage.setItem('wl_typework_items', JSON.stringify(customTypeWorkItems));
+  renderCustomTypeWorkOptions();
 }
 
 // ── FIX #4: Toggle user selection ──────────────────────────
@@ -636,14 +838,31 @@ function toggleUser(name) {
 }
 
 function renderUserPicker() {
-  document.querySelectorAll('#userPicker .user-pill').forEach(pill => {
+  document.querySelectorAll('#userPicker .user-pill[data-user]').forEach(pill => {
     const u = pill.dataset.user;
-    if (selectedUsers.has(u)) {
-      pill.classList.remove('unsel');
-    } else {
-      pill.classList.add('unsel');
-    }
+    if (selectedUsers.has(u)) pill.classList.remove('unsel');
+    else pill.classList.add('unsel');
   });
+}
+
+// FIX #4: Add new user with + button
+function addNewUser() {
+  const val = prompt('พิมพ์ชื่อพนักงานใหม่:');
+  if (!val || !val.trim()) return;
+  const name = val.trim();
+  const picker = document.getElementById('userPicker');
+  const addBtn = picker.querySelector('.add-user-btn');
+  // Create pill
+  const pill = document.createElement('div');
+  pill.className = 'user-pill sel-default';
+  pill.dataset.user = name;
+  pill.textContent = name;
+  pill.onclick = () => toggleUser(name);
+  pill.style.cssText = 'background:#f1f5f9;color:var(--text);';
+  picker.insertBefore(pill, addBtn);
+  selectedUsers.add(name);
+  renderUserPicker();
+  showToast(`✅ เพิ่ม "${name}" แล้ว`);
 }
 
 // FIX #5: nudge +/- for number inputs
@@ -678,6 +897,7 @@ async function pushToGAS(log) {
     item:         log.item,
     qtyActual:    log.qtyActual,
     status:       log.status,
+    typeWork:     log.typeWork || '',
     issue:        log.issue || '',
     remark:       log.remark,
     photosBefore: log.photosBefore?.length || 0,
@@ -770,7 +990,7 @@ const nowM     = String(today.getMinutes()).padStart(2, '0');
 
 document.getElementById('headerDate').textContent = today.toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: 'numeric' });
 document.getElementById('fDate').value  = todayStr;
-document.getElementById('fStart').value = `${nowH}:${nowM}`;
+buildTimeSelects(); // FIX #3
 
 let facingMode = 'environment';
 let activeSec  = null;
@@ -782,7 +1002,7 @@ initSlots();
 renderList();
 renderSummary();
 fetchFromGAS();
-setTimeout(() => { renderCustomWorkOptions(); renderCustomRemarkOptions(); }, 0);
+setTimeout(() => { renderCustomWorkOptions(); renderCustomRemarkOptions(); renderCustomTypeWorkOptions(); }, 0);
 
 document.addEventListener('click', e => {
   if (!e.target.closest('.combo-wrap')) {
@@ -797,8 +1017,9 @@ function toggleDropdown(id) {
   document.querySelectorAll('.combo-dropdown.open').forEach(d => d.classList.remove('open'));
   if (!wasOpen) el.classList.add('open');
 }
-function pickWork(val)   { document.getElementById('fWork').value = val; document.getElementById('workDrop').classList.remove('open'); }
-function pickRemark(val) { document.getElementById('fRemark').value = val; document.getElementById('remarkDrop').classList.remove('open'); }
+// keep old pickWork/pickRemark as aliases for custom items
+function pickWork(val)   { addWorkTag(val); }
+function pickRemark(val) { addRemarkTag(val); }
 
 let customWorkItems   = JSON.parse(localStorage.getItem('wl_work_items') || '[]');
 let customRemarkItems = JSON.parse(localStorage.getItem('wl_remark_items') || '[]');
@@ -833,7 +1054,7 @@ function addNewWorkItem() {
   customWorkItems.unshift(val.trim());
   localStorage.setItem('wl_work_items', JSON.stringify(customWorkItems));
   renderCustomWorkOptions();
-  pickWork(val.trim());
+  addWorkTag(val.trim());
 }
 
 function addNewRemarkItem() {
@@ -842,7 +1063,7 @@ function addNewRemarkItem() {
   customRemarkItems.unshift(val.trim());
   localStorage.setItem('wl_remark_items', JSON.stringify(customRemarkItems));
   renderCustomRemarkOptions();
-  pickRemark(val.trim());
+  addRemarkTag(val.trim());
 }
 
 function removeCustomWork(item) {
@@ -1070,9 +1291,9 @@ function closeSaveOverlay() {
 async function saveLog() {
   try {
     const date  = document.getElementById('fDate').value;
-    const work  = document.getElementById('fWork').value.trim();
-    const start = document.getElementById('fStart').value;
-    const end   = document.getElementById('fEnd').value;
+    const start = getTimeVal('fStart');
+    const end   = getTimeVal('fEnd');
+    const work  = getWorkValue();
 
     // FIX #4: get user from selectedUsers set
     const userArr = Array.from(selectedUsers);
@@ -1106,8 +1327,9 @@ async function saveLog() {
       item:         document.getElementById('fItem').value       || '0',
       qtyActual:    Number(document.getElementById('fQtyActual').value) || 0,
       status:       currentStatus,
+      typeWork:     document.getElementById('fTypeWork').value || '',
       issue:        '',
-      remark:       document.getElementById('fRemark').value,
+      remark:       getRemarkValue(),
       photos:       getAllPhotos(),
       photosBefore: photos.before.filter(Boolean),
       photosAfter:  photos.after.filter(Boolean),
@@ -1152,13 +1374,19 @@ async function saveLog() {
 
 function resetForm() {
   document.getElementById('fDate').value      = todayStr;
-  document.getElementById('fStart').value     = `${nowH}:${nowM}`;
-  document.getElementById('fEnd').value       = '';
+  setTimeVal('fStart', `${nowH}:${nowM}`);
+  setTimeVal('fEnd', '');
   document.getElementById('fWork').value      = '';
   document.getElementById('fLocation').value  = '0';
   document.getElementById('fItem').value      = '0';
   document.getElementById('fQtyActual').value = '0';
   document.getElementById('fRemark').value    = '';
+  document.getElementById('fTypeWork').value  = '';
+  document.getElementById('hourPreview').style.display = 'none';
+
+  // Reset multi-select tags
+  selectedWorkTags = []; renderWorkTags();
+  selectedRemarkTags = []; renderRemarkTags();
 
   // Reset user to first user only
   selectedUsers = new Set(['อัด']);
@@ -1246,6 +1474,7 @@ function openLog(id) {
     ['วันที่',     dateStr],
     ['เวลา',      `${l.start || '-'} – ${l.end || '-'} (${(l.hours || 0).toFixed(2)} ชม.)`],
     ['สถานะ',     `<span class="status-badge status-${l.status}">${l.status}</span>`],
+    ['Type Work',  l.typeWork ? `<span class="tag">${l.typeWork}</span>` : '-'],
     ['Location',   l.location || '-'],
     ['สินค้า (Item)', l.item || '-'],
     ['จำนวนจริง',  l.qtyActual ? Number(l.qtyActual).toLocaleString() : '0'],
