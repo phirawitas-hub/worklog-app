@@ -516,7 +516,6 @@
 
       <!-- ═══════════════ LIST PAGE ═══════════════ -->
       <div class="page" id="page-list">
-        <!-- Quick date filter -->
         <div style="background:var(--surface);border:3px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:20px;box-shadow:var(--shadow);">
           <div style="font-size:14px;font-weight:700;margin-bottom:12px;">🗓 กรองตามช่วงวันที่</div>
           <div class="quick-filter-chips" style="margin-bottom:12px;">
@@ -560,7 +559,6 @@
 
       <!-- ═══════════════ SUMMARY PAGE ═══════════════ -->
       <div class="page" id="page-summary">
-        <!-- Filter -->
         <div class="summary-filter-bar">
           <div style="flex:1;min-width:100%;">
             <div style="font-size:14px;font-weight:700;margin-bottom:10px;">🗓 ช่วงวันที่</div>
@@ -715,7 +713,13 @@ try { const s = localStorage.getItem('wl_logs'); logs = s ? JSON.parse(s) : []; 
 let nextId = logs.length > 0 ? Math.max(...logs.map(l => l.id || 0)) + 1 : 1;
 let currentStatus = '';
 let selectedUsers = new Set();
-let editingId = null; // null = new, number = editing
+let editingId = null;
+
+// ══════════════════════════════════════════════
+// ★ FIX: declare date-mode vars HERE — before any renderList/renderSummary calls
+// ══════════════════════════════════════════════
+let listDateMode = 'all';
+let summaryDateMode = 'all';
 
 // ══════════════════════════════════════════════
 // TIME HELPERS
@@ -989,7 +993,6 @@ document.getElementById('headerDate').textContent=dateLabel;
 document.getElementById('sidebarDate').textContent=dateLabel;
 document.getElementById('fDate').value=todayStr;
 buildTimeSelects();
-// Start time = now, End time = blank (00:00 sentinel)
 document.getElementById('fStartH').value=nowH;
 document.getElementById('fStartM').value=nowM;
 document.getElementById('fEndH').value='00';
@@ -1269,40 +1272,32 @@ function startEdit(id) {
   editingId=id;
   switchPage('add');
   setTimeout(()=>{
-    // Date/time
     document.getElementById('fDate').value=l.date||todayStr;
     buildTimeSelects();
     setTimeVal('fStart',l.start||'');
     setTimeVal('fEnd',l.end||'');
     onTimeChange();
 
-    // Users
     selectedUsers=new Set((l.user||'').split(',').map(u=>u.trim()).filter(Boolean));
     renderUserPicker();
 
-    // Work tags
     selectedWorkTags=[];
     if(l.work) selectedWorkTags=[l.work];
     renderWorkTags();
     document.getElementById('fWork').value='';
 
-    // Type work
     selectedTypeWorkTags=(l.typeWork||'').split(',').map(s=>s.trim()).filter(Boolean);
     renderTypeWorkTags();
 
-    // Remark
     selectedRemarkTags=[];
     document.getElementById('fRemark').value=l.remark||'';
 
-    // Numbers
     document.getElementById('fItem').value=l.item||'';
     document.getElementById('fLocation').value=l.location||'';
     document.getElementById('fQtyActual').value=l.qtyActual||'';
 
-    // Status
     selectStatus(l.status||'Finish');
 
-    // Photos — restore from saved data
     photos={before:Array(5).fill(null),after:Array(5).fill(null)};
     if(l.photosBefore&&l.photosBefore.length>0){
       l.photosBefore.forEach((p,i)=>{if(i<5&&p)photos.before[i]=p;});
@@ -1312,7 +1307,6 @@ function startEdit(id) {
     }
     initSlots();
 
-    // Edit UI
     document.getElementById('editBanner').style.display='flex';
     document.getElementById('editIdLabel').textContent=id;
     document.getElementById('btnCancelEdit').style.display='inline-flex';
@@ -1364,7 +1358,6 @@ function resetForm() {
 // ══════════════════════════════════════════════
 // DATE FILTER HELPERS
 // ══════════════════════════════════════════════
-let listDateMode='all', summaryDateMode='all';
 function getWeekRange() {
   const now=new Date(), day=now.getDay(), diff=now.getDate()-day+(day===0?-6:1);
   const mon=new Date(now.setDate(diff));
@@ -1422,7 +1415,6 @@ function renderList() {
     return mQ&&mU&&mS&&mT;
   });
 
-  // Summary bar
   const sumBar=document.getElementById('listSummaryBar');
   if(filtered.length>0){
     const totalH=filtered.reduce((acc,l)=>{
@@ -1487,7 +1479,6 @@ function openLog(id) {
     ['หมายเหตุ',l.remark?`<span style="color:var(--red);font-weight:600;">${l.remark}</span>`:'-'],
   ];
 
-  // Photos — show photosBefore and photosAfter
   const beforePhotos = l.photosBefore||[];
   const afterPhotos = l.photosAfter||[];
   const hasPhotos = beforePhotos.length>0||afterPhotos.length>0;
@@ -1524,7 +1515,6 @@ async function deleteLog(id) {
   logs=logs.filter(l=>l.id!==id);
   localStorage.setItem('wl_logs',JSON.stringify(logs));
   renderList();renderSummary();
-  // ลบออกจาก Google Sheets
   const res=await deleteFromGAS(id);
   if(res.ok){
     setSaveUI('✅','ลบสำเร็จ!','ลบรายการออกจากแอปและ Google Sheets แล้ว');
@@ -1566,7 +1556,6 @@ function renderSummary() {
     <div class="stat-card purple"><div class="stat-icon">✅</div><div class="stat-label">Finish</div><div class="stat-value">${finishCount}</div><div class="stat-sub">จาก ${filtered.length} (${filtered.length>0?Math.round(finishCount/filtered.length*100):0}%)</div></div>
   `;
 
-  // User hours chart
   const userHours={};
   filtered.forEach(l=>{
     const h=(l.start&&l.end&&l.start!==''&&l.end!=='')?calcHours(l.start,l.end):(parseFloat(l.hours)||0);
@@ -1583,7 +1572,6 @@ function renderSummary() {
       <div style="font-size:15px;font-weight:700;font-family:var(--mono);text-align:right;">${fmtH(h)}h</div>
     </div>`).join('')||'<div style="text-align:center;padding:24px;color:var(--text3);font-weight:600;">ยังไม่มีข้อมูล</div>';
 
-  // TypeWork chart
   const typeCount={};
   filtered.forEach(l=>{
     if(l.typeWork) l.typeWork.split(',').map(t=>t.trim()).filter(Boolean).forEach(t=>{typeCount[t]=(typeCount[t]||0)+1;});
@@ -1600,7 +1588,6 @@ function renderSummary() {
       <div style="font-size:14px;font-weight:700;font-family:var(--mono);text-align:right;">${c}</div>
     </div>`).join('')||'<div style="text-align:center;padding:24px;color:var(--text3);font-weight:600;">ยังไม่มีข้อมูล</div>';
 
-  // Status chart
   const statusCount={};
   filtered.forEach(l=>{statusCount[l.status||'Unknown']=(statusCount[l.status||'Unknown']||0)+1;});
   const statusColors={'Finish':'var(--green)','Pending':'var(--amber)','InProgress':'var(--accent)','Issue':'var(--red)'};
