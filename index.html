@@ -258,6 +258,23 @@
   /* required star */
   .req { color: var(--red); margin-left: 3px; }
 
+  /* ── FIX 1: Edit mode indicator in topbar only (no banner) ── */
+  .edit-mode-topbar { 
+    display: none; 
+    align-items: center; 
+    gap: 10px; 
+    background: var(--amber); 
+    border: 2px solid var(--border); 
+    border-radius: 20px; 
+    padding: 6px 16px; 
+    font-size: 13px; 
+    font-weight: 700; 
+    box-shadow: 2px 2px 0px var(--border);
+  }
+  .edit-mode-topbar.visible { display: flex; }
+  .edit-cancel-btn { background: var(--surface); border: 2px solid var(--border); border-radius: 12px; padding: 3px 10px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.15s; }
+  .edit-cancel-btn:hover { background: var(--red); color: white; }
+
   @media (max-width: 768px) {
     .sidebar { transform: translateX(calc(-1 * var(--sidebar-w))); }
     .sidebar.open { transform: translateX(0); }
@@ -312,6 +329,11 @@
     <header class="topbar">
       <div class="topbar-title" id="topbarTitle"><span>✍️</span> บันทึกงาน</div>
       <div class="topbar-right">
+        <!-- FIX 1: Edit indicator moved here, compact in topbar -->
+        <div class="edit-mode-topbar" id="editModeIndicator">
+          ✏️ แก้ไข #<span id="editIdLabel"></span>
+          <button class="edit-cancel-btn" onclick="cancelEdit()">✕ ยกเลิก</button>
+        </div>
         <div id="syncBadge" style="display:none;font-size:12px;font-weight:600;padding:6px 14px;border-radius:20px;border:2px solid var(--border);transition:all 0.3s;box-shadow:2px 2px 0px var(--border);color:var(--text);"></div>
         <div class="date-badge" id="headerDate"></div>
       </div>
@@ -321,10 +343,7 @@
 
       <!-- ═══════════════ ADD/EDIT PAGE ═══════════════ -->
       <div class="page active" id="page-add">
-        <div id="editBanner" style="display:none;background:var(--amber);border:3px solid var(--border);border-radius:var(--radius-sm);padding:12px 20px;margin-bottom:20px;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow-sm);">
-          <span>✏️ กำลังแก้ไขรายการ #<span id="editIdLabel"></span></span>
-          <button class="btn btn-ghost btn-sm" onclick="cancelEdit()">✕ ยกเลิกการแก้ไข</button>
-        </div>
+        <!-- FIX 1: Remove old editBanner entirely, now shown in topbar -->
 
         <div class="card">
           <div class="card-title"><div class="card-title-icon">📅</div>ข้อมูลพื้นฐาน</div>
@@ -715,9 +734,6 @@ let currentStatus = '';
 let selectedUsers = new Set();
 let editingId = null;
 
-// ══════════════════════════════════════════════
-// ★ FIX: declare date-mode vars HERE — before any renderList/renderSummary calls
-// ══════════════════════════════════════════════
 let listDateMode = 'all';
 let summaryDateMode = 'all';
 
@@ -919,6 +935,7 @@ async function pushToGAS(log, action='save') {
     photosBefore:log.photosBefore?.length||0, photosAfter:log.photosAfter?.length||0,
     photoTotal:(log.photosBefore?.length||0)+(log.photosAfter?.length||0),
   };
+  // FIX 3: ไม่ส่ง base64 รูปไป Sheets เลย — ส่งแค่จำนวนรูป
   try {
     await fetch(GAS_URL,{method:'POST',mode:'no-cors',body:JSON.stringify(payload)});
     return {ok:true};
@@ -965,11 +982,21 @@ async function fetchFromGAS() {
       const start=parseSheetTime(g('Start')), end=parseSheetTime(g('End'));
       const hoursCalc=(start&&end)?calcHours(start,end):(parseFloat(g('Hour'))||0);
       const tsDate=parseSheetDate(g('Timestamp')||'')||parseSheetDate(g('Date')||'');
+      // FIX 2: รายการที่ sync จาก Sheet จะไม่มีรูป (_fromSheet = true)
       return {id:idVal,user:String(g('User')||''),date:tsDate,start,end,hours:hoursCalc,work:String(g('Work')||''),location:String(g('Location')||'-'),item:String(g('Item')||'-'),qtyActual:parseFloat(g('Quantity'))||0,status:String(g('Status')||'Finish'),typeWork:String(g('Type Work')||''),remark:String(g('Remark')||''),photosBefore:[],photosAfter:[],_fromSheet:true};
     }).filter(l=>l.work&&l.user);
     const sheetIds=new Set(sheetLogs.map(l=>l.id));
+    // FIX 2: รักษารูปภาพของ local logs ไว้ก่อน merge
     const localOnly=logs.filter(l=>!l._fromSheet&&!sheetIds.has(l.id));
-    logs=[...localOnly,...sheetLogs].sort((a,b)=>b.id-a.id);
+    // รายการที่มีทั้งใน local และ sheet → เก็บรูปจาก local
+    const mergedLogs = sheetLogs.map(sl => {
+      const local = logs.find(l => l.id === sl.id && !l._fromSheet);
+      if (local) {
+        return { ...sl, photosBefore: local.photosBefore||[], photosAfter: local.photosAfter||[], _fromSheet: false };
+      }
+      return sl;
+    });
+    logs=[...localOnly,...mergedLogs].sort((a,b)=>b.id-a.id);
     nextId=logs.length>0?Math.max(...logs.map(l=>l.id||0))+1:1;
     renderList(); renderSummary();
     badge.textContent=`✓ ซิงก์แล้ว ${sheetLogs.length} รายการ`; badge.style.background='#dcfce7'; badge.style.borderColor='#16a34a';
@@ -1065,6 +1092,10 @@ function switchPage(name) {
   if(window.innerWidth<=768) closeSidebar();
   if(name==='list'){renderList();fetchFromGAS();}
   if(name==='summary'){renderSummary();fetchFromGAS();}
+  // Hide edit indicator when switching away from add page
+  if(name!=='add') {
+    document.getElementById('editModeIndicator').classList.remove('visible');
+  }
 }
 
 // ══════════════════════════════════════════════
@@ -1230,6 +1261,7 @@ async function saveLog() {
     remark:getRemarkValue(), photos:getAllPhotos(),
     photosBefore:photos.before.filter(Boolean),
     photosAfter:photos.after.filter(Boolean),
+    _fromSheet: false, // FIX 2: mark as local so photos are preserved
   };
 
   setSaveUI('⏳','กำลังประมวลผล...','กำลังบันทึกข้อมูลลงในระบบของเครื่อง');
@@ -1254,12 +1286,21 @@ async function saveLog() {
     setSaveUI('✅',isEdit?'แก้ไขข้อมูลสำเร็จ!':'บันทึกข้อมูลสำเร็จ!','ข้อมูลถูกส่งเข้า Google Sheets เรียบร้อยแล้ว');
     document.getElementById('saveBtnWrap').style.display='none';
     editingId=null;
+    // FIX 1: hide edit indicator
+    document.getElementById('editModeIndicator').classList.remove('visible');
+    document.getElementById('btnCancelEdit').style.display='none';
+    document.getElementById('btnSave').textContent='💾 บันทึกงาน';
     setTimeout(()=>{closeSaveOverlay();resetForm();switchPage('list');},1500);
   } else {
     setSaveUI('⚠️',isEdit?'แก้ไขใน App แล้ว':'บันทึกใน App แล้ว','บันทึกลงแอปเรียบร้อย แต่เชื่อมต่อ Google Sheet พลาด',res.error);
     const btn=document.querySelector('#saveBtnWrap button');
     btn.textContent='รับทราบ';
-    btn.onclick=function(){closeSaveOverlay();resetForm();switchPage('list');editingId=null;};
+    btn.onclick=function(){
+      closeSaveOverlay();resetForm();switchPage('list');editingId=null;
+      document.getElementById('editModeIndicator').classList.remove('visible');
+      document.getElementById('btnCancelEdit').style.display='none';
+      document.getElementById('btnSave').textContent='💾 บันทึกงาน';
+    };
   }
 }
 
@@ -1298,6 +1339,7 @@ function startEdit(id) {
 
     selectStatus(l.status||'Finish');
 
+    // FIX 2: โหลดรูปภาพจาก local storage (ไม่ใช่จาก sheet)
     photos={before:Array(5).fill(null),after:Array(5).fill(null)};
     if(l.photosBefore&&l.photosBefore.length>0){
       l.photosBefore.forEach((p,i)=>{if(i<5&&p)photos.before[i]=p;});
@@ -1307,7 +1349,8 @@ function startEdit(id) {
     }
     initSlots();
 
-    document.getElementById('editBanner').style.display='flex';
+    // FIX 1: แสดง edit indicator ที่ topbar แทน banner
+    document.getElementById('editModeIndicator').classList.add('visible');
     document.getElementById('editIdLabel').textContent=id;
     document.getElementById('btnCancelEdit').style.display='inline-flex';
     document.getElementById('btnSave').textContent='💾 บันทึกการแก้ไข';
@@ -1316,10 +1359,12 @@ function startEdit(id) {
     document.getElementById('page-add').scrollIntoView({behavior:'smooth',block:'start'});
   },100);
 }
+
 function cancelEdit() {
   editingId=null;
   resetForm();
-  document.getElementById('editBanner').style.display='none';
+  // FIX 1: ซ่อน edit indicator
+  document.getElementById('editModeIndicator').classList.remove('visible');
   document.getElementById('btnCancelEdit').style.display='none';
   document.getElementById('btnSave').textContent='💾 บันทึกงาน';
   document.getElementById('topbarTitle').innerHTML=PAGE_TITLES['add'];
@@ -1349,7 +1394,7 @@ function resetForm() {
   ['Finish','Pending'].forEach(x=>{const c=document.getElementById('chip-'+x);if(c)c.className='chip';});
   photos={before:Array(5).fill(null),after:Array(5).fill(null)};
   initSlots();stopCamera();facingMode='environment';
-  document.getElementById('editBanner').style.display='none';
+  document.getElementById('editModeIndicator').classList.remove('visible');
   document.getElementById('btnCancelEdit').style.display='none';
   document.getElementById('btnSave').textContent='💾 บันทึกงาน';
   clearAllErrors();
@@ -1459,7 +1504,7 @@ function renderList() {
 }
 
 // ══════════════════════════════════════════════
-// OPEN LOG DETAIL
+// OPEN LOG DETAIL — FIX 2: แสดงรูปจาก local storage
 // ══════════════════════════════════════════════
 function openLog(id) {
   const l=logs.find(x=>x.id===id); if(!l) return;
@@ -1479,17 +1524,25 @@ function openLog(id) {
     ['หมายเหตุ',l.remark?`<span style="color:var(--red);font-weight:600;">${l.remark}</span>`:'-'],
   ];
 
+  // FIX 2: แสดงรูปจาก local เท่านั้น — ถ้า sync จาก sheet จะไม่มีรูป
   const beforePhotos = l.photosBefore||[];
   const afterPhotos = l.photosAfter||[];
   const hasPhotos = beforePhotos.length>0||afterPhotos.length>0;
-  const photosHtml = hasPhotos ? `
+  
+  let photosHtml = '';
+  if (hasPhotos) {
+    photosHtml = `
     <div class="detail-row" style="flex-direction:column;gap:12px;">
       <div class="detail-label" style="width:100%;font-size:16px;font-weight:700;border-bottom:2px solid var(--border2);padding-bottom:12px;">📸 รูปภาพแนบ</div>
       <div>
         ${beforePhotos.length?`<div style="font-size:14px;font-weight:600;margin-bottom:12px;">📷 ก่อนงาน (${beforePhotos.length})</div><div class="modal-photos" style="margin-bottom:24px">${beforePhotos.map(p=>`<div class="modal-photo" onclick="showFullImg('${p}')"><img src="${p}" loading="lazy"></div>`).join('')}</div>`:''}
         ${afterPhotos.length?`<div style="font-size:14px;font-weight:600;margin-bottom:12px;">✅ หลังงาน (${afterPhotos.length})</div><div class="modal-photos">${afterPhotos.map(p=>`<div class="modal-photo" onclick="showFullImg('${p}')"><img src="${p}" loading="lazy"></div>`).join('')}</div>`:''}
       </div>
-    </div>` : '';
+    </div>`;
+  } else if (l._fromSheet) {
+    // รายการจาก Sheet — รูปเก็บ local เท่านั้น
+    photosHtml = `<div class="detail-row"><div class="detail-label">📸 รูปภาพ</div><div class="detail-val" style="color:var(--text3);font-size:13px;">รูปภาพเก็บเฉพาะในเครื่องที่บันทึก<br>ไม่สามารถแสดงจาก Google Sheets ได้</div></div>`;
+  }
 
   document.getElementById('modalBody').innerHTML=
     rows.map(([k,v])=>`<div class="detail-row"><div class="detail-label">${k}</div><div class="detail-val">${v}</div></div>`).join('')+
