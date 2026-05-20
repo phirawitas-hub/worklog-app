@@ -391,7 +391,7 @@
                 <div class="user-pill sel-วิท unsel" data-user="วิท" onclick="toggleUser('วิท')">วิท</div>
                 <div class="user-pill sel-หมี unsel" data-user="หมี" onclick="toggleUser('หมี')">หมี</div>
                 <div class="user-pill sel-อัน unsel" data-user="อัน" onclick="toggleUser('อัน')">อัน</div>
-                <div class="user-pill add-user-btn" onclick="addNewUser()" title="เพิ่มชื่อใหม่" style="background:var(--accent);color:white;border-color:var(--accent);">＋</div>
+                <div class="user-pill add-user-btn" onclick="openCustomModal('user')" title="เพิ่มชื่อใหม่" style="background:var(--accent);color:white;border-color:var(--accent);">＋</div>
               </div>
             </div>
 
@@ -762,49 +762,102 @@ let summaryDateMode = 'all';
 // keys: work_items | remark_items | typework_items
 // ══════════════════════════════════════════════
 let sharedCustomItems = {
-  work:     JSON.parse(localStorage.getItem('wl_work_items') || '[]'),
-  remark:   JSON.parse(localStorage.getItem('wl_remark_items') || '[]'),
+  user:     JSON.parse(localStorage.getItem('wl_user_items')     || '[]'),
+  work:     JSON.parse(localStorage.getItem('wl_work_items')     || '[]'),
   typeWork: JSON.parse(localStorage.getItem('wl_typework_items') || '[]'),
+  remark:   JSON.parse(localStorage.getItem('wl_remark_items')   || '[]'),
 };
 
-async function fetchCustomItems() {
-  try {
-    const res = await fetch(GAS_URL + '?action=getConfig');
-    const data = await res.json();
-    if (data && typeof data === 'object') {
-      if (Array.isArray(data.work))     { sharedCustomItems.work     = data.work;     localStorage.setItem('wl_work_items', JSON.stringify(data.work)); }
-      if (Array.isArray(data.remark))   { sharedCustomItems.remark   = data.remark;   localStorage.setItem('wl_remark_items', JSON.stringify(data.remark)); }
-      if (Array.isArray(data.typeWork)) { sharedCustomItems.typeWork = data.typeWork; localStorage.setItem('wl_typework_items', JSON.stringify(data.typeWork)); }
-      renderAllCustomOptions();
-    }
-  } catch(e) { /* use local cache */ }
+// config สำหรับ key → label / localStorage key / addFn / slot id
+const ITEM_CONFIG = {
+  user:     { label: '👤 ผู้ปฏิบัติงาน',              lsKey: 'wl_user_items',     fn: 'addUserPill',    slot: 'userCustomSlot'     },
+  work:     { label: '📝 รายละเอียดการทำงาน',         lsKey: 'wl_work_items',     fn: 'addWorkTag',     slot: 'workCustomSlot'     },
+  typeWork: { label: '🏷 ประเภทงาน (Type Work)',       lsKey: 'wl_typework_items', fn: 'addTypeWorkTag', slot: 'typeWorkCustomSlot' },
+  remark:   { label: '💬 หมายเหตุ / Issue',            lsKey: 'wl_remark_items',   fn: 'addRemarkTag',   slot: 'remarkCustomSlot'   },
+};
+
+// ชื่อ Recorder — ถามครั้งแรก จำใน localStorage
+function getRecorder() {
+  let r = localStorage.getItem('wl_recorder');
+  if (!r) {
+    r = prompt('กรุณาใส่ชื่อของคุณ (Recorder ใน Config Sheet):') || 'Unknown';
+    localStorage.setItem('wl_recorder', r);
+  }
+  return r;
 }
 
-async function saveCustomItems(type) {
-  // Persist locally first
-  const keyMap = { work: 'wl_work_items', remark: 'wl_remark_items', typeWork: 'wl_typework_items' };
-  localStorage.setItem(keyMap[type], JSON.stringify(sharedCustomItems[type]));
-  // Push to GAS
+// ── Fetch shared items จาก GAS Config Sheet ──────────────────
+async function fetchCustomItems() {
+  try {
+    const res  = await fetch(GAS_URL + '?action=getConfig');
+    const data = await res.json();
+    if (data && typeof data === 'object') {
+      // GAS คืน { user:[...], work:[...], typeWork:[...], remark:[...] }
+      Object.keys(ITEM_CONFIG).forEach(k => {
+        if (Array.isArray(data[k])) {
+          const local  = sharedCustomItems[k] || [];
+          const server = data[k];
+          // server เป็นหลัก + local ที่ยังไม่มี
+          sharedCustomItems[k] = [...server, ...local.filter(x => !server.includes(x))];
+          localStorage.setItem(ITEM_CONFIG[k].lsKey, JSON.stringify(sharedCustomItems[k]));
+        }
+      });
+      renderAllCustomOptions();
+      // sync user pills ที่มาจาก Config ด้วย
+      syncUserPillsFromConfig();
+    }
+  } catch(e) { /* ใช้ local cache */ }
+}
+
+// ── push 1 item ไป GAS ────────────────────────────────────────
+async function pushConfigItem(type, item, recorder, remove = false) {
+  if (!GAS_URL) return;
   try {
     await fetch(GAS_URL, {
       method: 'POST', mode: 'no-cors',
-      body: JSON.stringify({ action: 'saveConfig', type, items: sharedCustomItems[type] })
+      body: JSON.stringify({ action: 'saveConfig', type, item, recorder, remove })
     });
   } catch(e) {}
 }
 
-function renderAllCustomOptions() {
-  renderCustomSlot('workCustomSlot',     sharedCustomItems.work,     v => addWorkTag(v),     'work');
-  renderCustomSlot('remarkCustomSlot',   sharedCustomItems.remark,   v => addRemarkTag(v),   'remark');
-  renderCustomSlot('typeWorkCustomSlot', sharedCustomItems.typeWork, v => addTypeWorkTag(v), 'typeWork');
+// ── localStorage cache ────────────────────────────────────────
+function saveLocalCache(type) {
+  localStorage.setItem(ITEM_CONFIG[type].lsKey, JSON.stringify(sharedCustomItems[type]));
 }
 
-function renderCustomSlot(slotId, items, addFn, type) {
+// ── sync user pills จาก sharedCustomItems.user ───────────────
+function syncUserPillsFromConfig() {
+  const picker = document.getElementById('userPicker');
+  const addBtn = picker.querySelector('.add-user-btn');
+  const fixedUsers = ['อัด','กุล','วิท','หมี','อัน'];
+  // เพิ่มเฉพาะที่ยังไม่มีใน picker
+  (sharedCustomItems.user || []).forEach(name => {
+    if (fixedUsers.includes(name)) return;
+    if (picker.querySelector(`[data-user="${name}"]`)) return;
+    const pill = document.createElement('div');
+    pill.className = 'user-pill unsel';
+    pill.dataset.user = name;
+    pill.textContent = name;
+    pill.style.cssText = 'background:#f1f5f9;color:var(--text);';
+    pill.onclick = () => toggleUser(name);
+    picker.insertBefore(pill, addBtn);
+  });
+}
+
+// ── render custom options ในทุก dropdown ─────────────────────
+function renderAllCustomOptions() {
+  Object.keys(ITEM_CONFIG).forEach(type => {
+    if (type === 'user') return; // user ใช้ syncUserPillsFromConfig แทน
+    const cfg = ITEM_CONFIG[type];
+    renderCustomSlot(cfg.slot, sharedCustomItems[type], type);
+  });
+}
+
+function renderCustomSlot(slotId, items, type) {
   const slot = document.getElementById(slotId);
   if (!slot) return;
-  const fnMap = { work: 'addWorkTag', remark: 'addRemarkTag', typeWork: 'addTypeWorkTag' };
-  const fn = fnMap[type] || 'addWorkTag';
-  slot.innerHTML = items.map(item => `
+  const fn = ITEM_CONFIG[type]?.fn || 'addWorkTag';
+  slot.innerHTML = (items || []).map(item => `
     <div class="combo-option combo-option-custom" onclick="${fn}('${esc(item)}')">
       <span>📝</span><span style="flex:1;">${item}</span>
     </div>`).join('');
@@ -813,34 +866,45 @@ function renderCustomSlot(slotId, items, addFn, type) {
 function esc(s) { return String(s).replace(/'/g, "\\'"); }
 
 // ══════════════════════════════════════════════
-// CUSTOM ITEMS MODAL — shared across devices
+// CUSTOM ITEMS MODAL
 // ══════════════════════════════════════════════
 let activeCustomType = null;
 
 function openCustomModal(type) {
   document.querySelectorAll('.combo-dropdown.open').forEach(d => d.classList.remove('open'));
   activeCustomType = type;
-  const titles = { work: '📝 จัดการรายละเอียดงาน', remark: '💬 จัดการหมายเหตุ / Issue', typeWork: '🏷 จัดการประเภทงาน' };
-  document.getElementById('customModalTitle').textContent = titles[type] || 'จัดการรายการ';
+  document.getElementById('customModalTitle').textContent = ITEM_CONFIG[type]?.label || 'จัดการรายการ';
   renderCustomModalBody();
   document.getElementById('customModalOverlay').classList.add('open');
 }
 
 function renderCustomModalBody() {
-  const items = sharedCustomItems[activeCustomType] || [];
+  const items    = sharedCustomItems[activeCustomType] || [];
+  const recorder = localStorage.getItem('wl_recorder') || '?';
+  const cfg      = ITEM_CONFIG[activeCustomType];
+
   document.getElementById('customModalBody').innerHTML = `
+    <div style="font-size:12px;color:var(--text3);margin-bottom:12px;padding:8px 12px;background:var(--bg);border-radius:8px;border:1px solid var(--border2);display:flex;align-items:center;gap:8px;">
+      <span>👤 Recorder: <strong>${recorder}</strong></span>
+      <button onclick="changeRecorder()" style="background:none;border:1px solid var(--border2);border-radius:6px;padding:2px 8px;font-size:11px;cursor:pointer;margin-left:auto;">เปลี่ยน</button>
+    </div>
+    <div style="font-size:12px;font-weight:600;color:var(--accent2);margin-bottom:12px;padding:6px 12px;background:#f5f3ff;border-radius:8px;border:1px solid #ddd6fe;">
+      📊 บันทึกใน Sheet Config → คอลัมน์ <strong>${cfg?.label || activeCustomType}</strong>
+    </div>
     <div class="custom-add-row">
       <input type="text" id="customNewInput" placeholder="พิมพ์รายการใหม่..." onkeydown="if(event.key==='Enter')addCustomItem()">
       <button class="btn btn-primary btn-sm" onclick="addCustomItem()" style="white-space:nowrap;">➕ เพิ่ม</button>
     </div>
-    <div style="font-size:13px;font-weight:600;color:var(--text3);margin-bottom:10px;">รายการที่เพิ่มแล้ว (${items.length}) — แสดงทุกเครื่อง</div>
+    <div style="font-size:13px;font-weight:600;color:var(--text3);margin-bottom:10px;">
+      รายการที่เพิ่มแล้ว (${items.length}) — แสดงทุกเครื่อง
+    </div>
     <div class="custom-item-list" id="customItemList">
       ${items.length === 0
         ? '<div style="text-align:center;padding:24px;color:var(--text3);">ยังไม่มีรายการที่เพิ่ม</div>'
         : items.map((item, i) => `
           <div class="custom-item-row">
             <span>${item}</span>
-            <button onclick="removeCustomItem(${i})">✕ ลบ</button>
+            <button onclick="removeCustomItem(${i},'${esc(item)}')">✕ ลบ</button>
           </div>`).join('')
       }
     </div>
@@ -850,37 +914,51 @@ function renderCustomModalBody() {
   setTimeout(() => document.getElementById('customNewInput')?.focus(), 100);
 }
 
-async function addCustomItem() {
-  const input = document.getElementById('customNewInput');
-  const val = input?.value?.trim();
-  if (!val) return showToast('⚠ กรุณาพิมพ์ชื่อรายการ');
-  if (sharedCustomItems[activeCustomType].includes(val)) return showToast('⚠ มีรายการนี้อยู่แล้ว');
-  
-  sharedCustomItems[activeCustomType].unshift(val);
-  input.value = '';
-  
-  await saveCustomItems(activeCustomType);
-  renderCustomModalBody();
-  renderAllCustomOptions();
-  
-  // Auto-select the new item
-  if (activeCustomType === 'work')     addWorkTag(val);
-  if (activeCustomType === 'remark')   addRemarkTag(val);
-  if (activeCustomType === 'typeWork') addTypeWorkTag(val);
-  
-  showToast(`✅ เพิ่ม "${val}" แล้ว — ซิงก์ทุกเครื่อง`);
+function changeRecorder() {
+  const r = prompt('ใส่ชื่อ Recorder ใหม่:');
+  if (r && r.trim()) { localStorage.setItem('wl_recorder', r.trim()); renderCustomModalBody(); }
 }
 
-async function removeCustomItem(idx) {
-  sharedCustomItems[activeCustomType].splice(idx, 1);
-  await saveCustomItems(activeCustomType);
+async function addCustomItem() {
+  const input    = document.getElementById('customNewInput');
+  const val      = input?.value?.trim();
+  if (!val) return showToast('⚠ กรุณาพิมพ์ชื่อรายการ');
+  if ((sharedCustomItems[activeCustomType] || []).includes(val)) return showToast('⚠ มีรายการนี้อยู่แล้ว');
+
+  const recorder = getRecorder();
+  if (!sharedCustomItems[activeCustomType]) sharedCustomItems[activeCustomType] = [];
+  sharedCustomItems[activeCustomType].unshift(val);
+  input.value = '';
+  saveLocalCache(activeCustomType);
+
+  await pushConfigItem(activeCustomType, val, recorder, false);
+
   renderCustomModalBody();
   renderAllCustomOptions();
+
+  // auto-select / auto-add ตาม type
+  if (activeCustomType === 'user')     { syncUserPillsFromConfig(); toggleUser(val); }
+  if (activeCustomType === 'work')     addWorkTag(val);
+  if (activeCustomType === 'typeWork') addTypeWorkTag(val);
+  if (activeCustomType === 'remark')   addRemarkTag(val);
+
+  showToast(`✅ เพิ่ม "${val}" → Sheet Config (${ITEM_CONFIG[activeCustomType]?.label})`);
+}
+
+async function removeCustomItem(idx, itemVal) {
+  sharedCustomItems[activeCustomType].splice(idx, 1);
+  saveLocalCache(activeCustomType);
+  await pushConfigItem(activeCustomType, itemVal, '', true);
+  renderCustomModalBody();
+  renderAllCustomOptions();
+  if (activeCustomType === 'user') syncUserPillsFromConfig();
   showToast('🗑 ลบรายการแล้ว');
 }
 
 function closeCustomModal(e) { if (e.target.id === 'customModalOverlay') closeCustomModalBtn(); }
 function closeCustomModalBtn() { document.getElementById('customModalOverlay').classList.remove('open'); activeCustomType = null; }
+
+
 
 // ══════════════════════════════════════════════
 // TIME HELPERS
@@ -988,14 +1066,7 @@ function renderUserPicker() {
     pill.classList.toggle('unsel', !selectedUsers.has(pill.dataset.user));
   });
 }
-function addNewUser() {
-  const val=prompt('พิมพ์ชื่อพนักงานใหม่:'); if(!val||!val.trim()) return;
-  const name=val.trim();
-  const picker=document.getElementById('userPicker'), addBtn=picker.querySelector('.add-user-btn');
-  const pill=document.createElement('div'); pill.className='user-pill sel-default'; pill.dataset.user=name;
-  pill.textContent=name; pill.onclick=()=>toggleUser(name); pill.style.cssText='background:#f1f5f9;color:var(--text);';
-  picker.insertBefore(pill,addBtn); selectedUsers.add(name); renderUserPicker(); showToast(`✅ เพิ่ม "${name}" แล้ว`);
-}
+// addNewUser → replaced by openCustomModal('user') + syncUserPillsFromConfig()
 
 function nudge(id, delta) { const el=document.getElementById(id); el.value=Math.max(0,(parseInt(el.value)||0)+delta); }
 
