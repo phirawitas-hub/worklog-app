@@ -159,6 +159,8 @@
   .slot-remove { position: absolute; top: 6px; right: 6px; background: var(--surface); border: 2px solid var(--border); color: var(--text); width: 24px; height: 24px; border-radius: 50%; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; z-index: 2; transition: all 0.2s; box-shadow: 2px 2px 0px var(--border); }
   .slot-remove:hover { background: var(--red); color: white; transform: translate(-1px,-1px); box-shadow: 3px 3px 0px var(--border); }
   .slot-index { position: absolute; bottom: 6px; left: 6px; background: var(--surface); border: 2px solid var(--border); color: var(--text); font-size: 11px; font-weight: 700; font-family: var(--mono); padding: 2px 8px; border-radius: 12px; box-shadow: 2px 2px 0px var(--border); }
+  /* uploading state */
+  .photo-slot.uploading::after { content: '⏳'; position: absolute; inset: 0; background: rgba(255,255,255,0.85); display: flex; align-items: center; justify-content: center; font-size: 28px; }
 
   .btn { padding: 14px 28px; border-radius: 30px; font-size: 16px; font-weight: 700; cursor: pointer; border: 2px solid var(--border); box-shadow: var(--shadow); transition: all 0.15s ease; font-family: var(--sans); display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: var(--surface); color: var(--text); }
   .btn:hover { transform: translate(-2px, -2px); box-shadow: var(--shadow-hover); }
@@ -173,7 +175,6 @@
 
   .form-actions { display: flex; gap: 16px; justify-content: flex-end; margin-top: 32px; padding-top: 24px; border-top: 2px dashed var(--border2); }
 
-  /* ── FILTER BAR ── */
   .filter-bar { display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; align-items: center; }
   .filter-bar input[type=text], .filter-bar input[type=search] { flex: 1; min-width: 200px; }
   .filter-bar select { width: auto; min-width: 130px; }
@@ -220,23 +221,32 @@
   .modal-photo:hover { transform: translate(-4px,-4px); box-shadow: 7px 7px 0px var(--border); }
   .modal-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
+  /* ── Custom items modal ── */
+  .custom-modal { max-width: 500px; }
+  .custom-add-row { display: flex; gap: 10px; margin-bottom: 16px; }
+  .custom-add-row input { flex: 1; padding: 12px 14px; font-size: 14px; }
+  .custom-item-list { display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto; }
+  .custom-item-row { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--bg); border: 2px solid var(--border2); border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; }
+  .custom-item-row span { flex: 1; }
+  .custom-item-row button { background: var(--red); color: white; border: none; border-radius: 8px; padding: 4px 10px; font-size: 12px; font-weight: 700; cursor: pointer; }
+
   .save-modal { max-width: 400px; text-align: center; padding: 40px 24px; display: flex; flex-direction: column; align-items: center; }
   .spinner-icon { font-size: 48px; display: inline-block; animation: spin 1s linear infinite; }
   @keyframes spin { 100% { transform: rotate(360deg); } }
   .save-title { font-size: 20px; font-weight: 700; margin-top: 24px; color: var(--text); }
   .save-desc { font-size: 15px; color: var(--text2); margin-top: 8px; }
   .save-details { font-size: 13px; color: var(--red); font-weight: 600; margin-top: 16px; display: none; background: var(--bg); padding: 12px; border-radius: 8px; border: 2px solid var(--border); text-align: left; word-break: break-all; width: 100%; }
+  .save-progress { width: 100%; margin-top: 16px; background: var(--bg); border: 2px solid var(--border); border-radius: 12px; overflow: hidden; display: none; }
+  .save-progress-bar { height: 10px; background: var(--green); width: 0%; transition: width 0.4s; }
 
   .toast { position: fixed; bottom: 32px; right: 32px; background: var(--surface); border: 3px solid var(--border); border-radius: 16px; padding: 16px 24px; font-size: 15px; font-weight: 700; color: var(--text); z-index: 9999; transform: translateY(100px); opacity: 0; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; align-items: center; gap: 12px; box-shadow: 6px 6px 0px var(--border); }
   .toast.show { transform: translateY(0); opacity: 1; }
   .toast .toast-icon { font-size: 20px; }
 
-  /* Validation highlight */
   .field-error input, .field-error textarea, .field-error select, .field-error .user-picker, .field-error .num-wrap, .field-error .time-wrap { border-color: var(--red) !important; box-shadow: 0 0 0 3px rgba(248,113,113,0.2) !important; }
   .field-error label { color: var(--red); }
   .error-hint { font-size: 12px; font-weight: 600; color: var(--red); margin-top: 4px; }
 
-  /* Summary charts */
   .summary-filter-bar { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; padding: 20px; background: var(--surface); border: 3px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
   .summary-filter-bar label { font-size: 13px; font-weight: 700; color: var(--text2); }
   .donut-wrap { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; }
@@ -255,10 +265,8 @@
   ::-webkit-scrollbar-track { background: var(--bg); }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 0px; border: 2px solid var(--bg); }
 
-  /* required star */
   .req { color: var(--red); margin-left: 3px; }
 
-  /* ── FIX 1: Edit mode indicator in topbar only (no banner) ── */
   .edit-mode-topbar { 
     display: none; 
     align-items: center; 
@@ -329,7 +337,6 @@
     <header class="topbar">
       <div class="topbar-title" id="topbarTitle"><span>✍️</span> บันทึกงาน</div>
       <div class="topbar-right">
-        <!-- FIX 1: Edit indicator moved here, compact in topbar -->
         <div class="edit-mode-topbar" id="editModeIndicator">
           ✏️ แก้ไข #<span id="editIdLabel"></span>
           <button class="edit-cancel-btn" onclick="cancelEdit()">✕ ยกเลิก</button>
@@ -343,7 +350,6 @@
 
       <!-- ═══════════════ ADD/EDIT PAGE ═══════════════ -->
       <div class="page active" id="page-add">
-        <!-- FIX 1: Remove old editBanner entirely, now shown in topbar -->
 
         <div class="card">
           <div class="card-title"><div class="card-title-icon">📅</div>ข้อมูลพื้นฐาน</div>
@@ -408,7 +414,8 @@
                   <div class="combo-option" onclick="addWorkTag('ตรวจสอบสินค้า DMG & Disposal')"><span>🔍</span>ตรวจสอบสินค้า DMG & Disposal</div>
                   <div class="combo-option" onclick="addWorkTag('เปลี่ยน Status สินค้า')"><span>🔁</span>เปลี่ยน Status สินค้า</div>
                   <div class="combo-option" onclick="addWorkTag('ตรวจเช็คงาน Location')"><span>📍</span>ตรวจเช็คงาน Location</div>
-                  <div class="combo-option combo-add-new" onclick="addNewWorkItem()" style="background:var(--bg);border-top:2px solid var(--border2);font-weight:700;color:var(--accent);"><span>➕</span>+ เพิ่มรายการใหม่</div>
+                  <div id="workCustomSlot"></div>
+                  <div class="combo-option combo-add-new" onclick="openCustomModal('work')" style="background:var(--bg);border-top:2px solid var(--border2);font-weight:700;color:var(--accent);"><span>➕</span>+ เพิ่ม / จัดการรายการ</div>
                 </div>
               </div>
             </div>
@@ -465,10 +472,11 @@
                   <div class="combo-option" onclick="addTypeWorkTag('5 s Cleaning')"><span>🧹</span>5 s Cleaning</div>
                   <div class="combo-option" onclick="addTypeWorkTag('Photo / Product Info')"><span>📷</span>Photo / Product Info</div>
                   <div class="combo-option" onclick="addTypeWorkTag('DMG & Disposal')"><span>❌</span>DMG & Disposal</div>
-                  <div class="combo-option combo-add-new" onclick="addNewTypeWorkItem()" style="background:var(--bg);border-top:2px solid var(--border2);font-weight:700;color:var(--accent);"><span>➕</span>+ เพิ่มประเภทใหม่</div>
+                  <div id="typeWorkCustomSlot"></div>
+                  <div class="combo-option combo-add-new" onclick="openCustomModal('typeWork')" style="background:var(--bg);border-top:2px solid var(--border2);font-weight:700;color:var(--accent);"><span>➕</span>+ เพิ่ม / จัดการรายการ</div>
                 </div>
               </div>
-              <button class="btn btn-ghost btn-sm" onclick="addNewTypeWorkItem()" style="flex-shrink:0;white-space:nowrap;margin-top:2px;">＋ เพิ่ม</button>
+              <button class="btn btn-ghost btn-sm" onclick="openCustomModal('typeWork')" style="flex-shrink:0;white-space:nowrap;margin-top:2px;">＋ เพิ่ม</button>
             </div>
           </div>
 
@@ -483,7 +491,8 @@
                 <div class="combo-option" onclick="addRemarkTag('สินค้าจำนวนไม่ตรงกับระบบ')"><span>⚠️</span>สินค้าจำนวนไม่ตรงกับระบบ</div>
                 <div class="combo-option" onclick="addRemarkTag('หาสินค้าไม่พบใน Location ที่ระบุ')"><span>🔍</span>หาสินค้าไม่พบใน Location ที่ระบุ</div>
                 <div class="combo-option" onclick="addRemarkTag('สินค้า Damage ไม่สามารถจำหน่ายได้')"><span>❌</span>สินค้า Damage ไม่สามารถจำหน่ายได้</div>
-                <div class="combo-option combo-add-new" onclick="addNewRemarkItem()" style="background:var(--bg);border-top:2px solid var(--border2);font-weight:700;color:var(--accent);"><span>➕</span>+ เพิ่มรายการใหม่</div>
+                <div id="remarkCustomSlot"></div>
+                <div class="combo-option combo-add-new" onclick="openCustomModal('remark')" style="background:var(--bg);border-top:2px solid var(--border2);font-weight:700;color:var(--accent);"><span>➕</span>+ เพิ่ม / จัดการรายการ</div>
               </div>
             </div>
           </div>
@@ -491,7 +500,7 @@
 
         <!-- Camera -->
         <div class="card">
-          <div class="card-title"><div class="card-title-icon">📸</div>ถ่ายภาพ / แนบรูป <span style="font-size:13px;color:var(--text3);font-weight:500;">(ไม่บังคับ)</span></div>
+          <div class="card-title"><div class="card-title-icon">📸</div>ถ่ายภาพ / แนบรูป <span style="font-size:13px;color:var(--text3);font-weight:500;">(ไม่บังคับ — อัปโหลดไป Google Drive อัตโนมัติ)</span></div>
           <div class="photo-section">
             <div class="photo-section-header">
               <div class="photo-section-label">📷 ก่อนงาน</div><span class="photo-section-count" id="beforeCount">0 / 5</span>
@@ -654,10 +663,22 @@
     <div id="saveSpinner" class="spinner-icon">⏳</div>
     <div id="saveTitle" class="save-title">กำลังประมวลผล...</div>
     <div id="saveDesc" class="save-desc">กรุณารอสักครู่</div>
+    <div class="save-progress" id="saveProgress"><div class="save-progress-bar" id="saveProgressBar"></div></div>
     <div id="saveDetails" class="save-details"></div>
     <div style="margin-top:24px;display:none;width:100%;" id="saveBtnWrap">
       <button class="btn btn-primary" onclick="closeSaveOverlay()" style="width:100%;">ตกลง (รับทราบ)</button>
     </div>
+  </div>
+</div>
+
+<!-- Custom Items Modal -->
+<div class="modal-overlay" id="customModalOverlay" onclick="closeCustomModal(event)" style="z-index:9998;">
+  <div class="modal custom-modal">
+    <div class="modal-header">
+      <div class="modal-title" id="customModalTitle">⚙️ จัดการรายการ</div>
+      <button class="modal-close" onclick="closeCustomModalBtn()">✕</button>
+    </div>
+    <div id="customModalBody"></div>
   </div>
 </div>
 
@@ -733,9 +754,133 @@ let nextId = logs.length > 0 ? Math.max(...logs.map(l => l.id || 0)) + 1 : 1;
 let currentStatus = '';
 let selectedUsers = new Set();
 let editingId = null;
-
 let listDateMode = 'all';
 let summaryDateMode = 'all';
+
+// ══════════════════════════════════════════════
+// SHARED CUSTOM ITEMS — stored in GAS Sheet "Config"
+// keys: work_items | remark_items | typework_items
+// ══════════════════════════════════════════════
+let sharedCustomItems = {
+  work:     JSON.parse(localStorage.getItem('wl_work_items') || '[]'),
+  remark:   JSON.parse(localStorage.getItem('wl_remark_items') || '[]'),
+  typeWork: JSON.parse(localStorage.getItem('wl_typework_items') || '[]'),
+};
+
+async function fetchCustomItems() {
+  try {
+    const res = await fetch(GAS_URL + '?action=getConfig');
+    const data = await res.json();
+    if (data && typeof data === 'object') {
+      if (Array.isArray(data.work))     { sharedCustomItems.work     = data.work;     localStorage.setItem('wl_work_items', JSON.stringify(data.work)); }
+      if (Array.isArray(data.remark))   { sharedCustomItems.remark   = data.remark;   localStorage.setItem('wl_remark_items', JSON.stringify(data.remark)); }
+      if (Array.isArray(data.typeWork)) { sharedCustomItems.typeWork = data.typeWork; localStorage.setItem('wl_typework_items', JSON.stringify(data.typeWork)); }
+      renderAllCustomOptions();
+    }
+  } catch(e) { /* use local cache */ }
+}
+
+async function saveCustomItems(type) {
+  // Persist locally first
+  const keyMap = { work: 'wl_work_items', remark: 'wl_remark_items', typeWork: 'wl_typework_items' };
+  localStorage.setItem(keyMap[type], JSON.stringify(sharedCustomItems[type]));
+  // Push to GAS
+  try {
+    await fetch(GAS_URL, {
+      method: 'POST', mode: 'no-cors',
+      body: JSON.stringify({ action: 'saveConfig', type, items: sharedCustomItems[type] })
+    });
+  } catch(e) {}
+}
+
+function renderAllCustomOptions() {
+  renderCustomSlot('workCustomSlot',     sharedCustomItems.work,     v => addWorkTag(v),     'work');
+  renderCustomSlot('remarkCustomSlot',   sharedCustomItems.remark,   v => addRemarkTag(v),   'remark');
+  renderCustomSlot('typeWorkCustomSlot', sharedCustomItems.typeWork, v => addTypeWorkTag(v), 'typeWork');
+}
+
+function renderCustomSlot(slotId, items, addFn, type) {
+  const slot = document.getElementById(slotId);
+  if (!slot) return;
+  const fnMap = { work: 'addWorkTag', remark: 'addRemarkTag', typeWork: 'addTypeWorkTag' };
+  const fn = fnMap[type] || 'addWorkTag';
+  slot.innerHTML = items.map(item => `
+    <div class="combo-option combo-option-custom" onclick="${fn}('${esc(item)}')">
+      <span>📝</span><span style="flex:1;">${item}</span>
+    </div>`).join('');
+}
+
+function esc(s) { return String(s).replace(/'/g, "\\'"); }
+
+// ══════════════════════════════════════════════
+// CUSTOM ITEMS MODAL — shared across devices
+// ══════════════════════════════════════════════
+let activeCustomType = null;
+
+function openCustomModal(type) {
+  document.querySelectorAll('.combo-dropdown.open').forEach(d => d.classList.remove('open'));
+  activeCustomType = type;
+  const titles = { work: '📝 จัดการรายละเอียดงาน', remark: '💬 จัดการหมายเหตุ / Issue', typeWork: '🏷 จัดการประเภทงาน' };
+  document.getElementById('customModalTitle').textContent = titles[type] || 'จัดการรายการ';
+  renderCustomModalBody();
+  document.getElementById('customModalOverlay').classList.add('open');
+}
+
+function renderCustomModalBody() {
+  const items = sharedCustomItems[activeCustomType] || [];
+  document.getElementById('customModalBody').innerHTML = `
+    <div class="custom-add-row">
+      <input type="text" id="customNewInput" placeholder="พิมพ์รายการใหม่..." onkeydown="if(event.key==='Enter')addCustomItem()">
+      <button class="btn btn-primary btn-sm" onclick="addCustomItem()" style="white-space:nowrap;">➕ เพิ่ม</button>
+    </div>
+    <div style="font-size:13px;font-weight:600;color:var(--text3);margin-bottom:10px;">รายการที่เพิ่มแล้ว (${items.length}) — แสดงทุกเครื่อง</div>
+    <div class="custom-item-list" id="customItemList">
+      ${items.length === 0
+        ? '<div style="text-align:center;padding:24px;color:var(--text3);">ยังไม่มีรายการที่เพิ่ม</div>'
+        : items.map((item, i) => `
+          <div class="custom-item-row">
+            <span>${item}</span>
+            <button onclick="removeCustomItem(${i})">✕ ลบ</button>
+          </div>`).join('')
+      }
+    </div>
+    <div style="margin-top:20px;text-align:right;">
+      <button class="btn btn-ghost btn-sm" onclick="closeCustomModalBtn()">ปิด</button>
+    </div>`;
+  setTimeout(() => document.getElementById('customNewInput')?.focus(), 100);
+}
+
+async function addCustomItem() {
+  const input = document.getElementById('customNewInput');
+  const val = input?.value?.trim();
+  if (!val) return showToast('⚠ กรุณาพิมพ์ชื่อรายการ');
+  if (sharedCustomItems[activeCustomType].includes(val)) return showToast('⚠ มีรายการนี้อยู่แล้ว');
+  
+  sharedCustomItems[activeCustomType].unshift(val);
+  input.value = '';
+  
+  await saveCustomItems(activeCustomType);
+  renderCustomModalBody();
+  renderAllCustomOptions();
+  
+  // Auto-select the new item
+  if (activeCustomType === 'work')     addWorkTag(val);
+  if (activeCustomType === 'remark')   addRemarkTag(val);
+  if (activeCustomType === 'typeWork') addTypeWorkTag(val);
+  
+  showToast(`✅ เพิ่ม "${val}" แล้ว — ซิงก์ทุกเครื่อง`);
+}
+
+async function removeCustomItem(idx) {
+  sharedCustomItems[activeCustomType].splice(idx, 1);
+  await saveCustomItems(activeCustomType);
+  renderCustomModalBody();
+  renderAllCustomOptions();
+  showToast('🗑 ลบรายการแล้ว');
+}
+
+function closeCustomModal(e) { if (e.target.id === 'customModalOverlay') closeCustomModalBtn(); }
+function closeCustomModalBtn() { document.getElementById('customModalOverlay').classList.remove('open'); activeCustomType = null; }
 
 // ══════════════════════════════════════════════
 // TIME HELPERS
@@ -801,7 +946,7 @@ function addWorkTag(val) { document.getElementById('workDrop').classList.remove(
 function removeWorkTag(val) { selectedWorkTags=selectedWorkTags.filter(x=>x!==val); renderWorkTags(); }
 function renderWorkTags() {
   const c=document.getElementById('workTags');
-  c.innerHTML=selectedWorkTags.map(v=>`<span class="sel-tag">${v}<button class="sel-tag-x" onclick="removeWorkTag('${v.replace(/'/g,"\\'")}')">✕</button></span>`).join('');
+  c.innerHTML=selectedWorkTags.map(v=>`<span class="sel-tag">${v}<button class="sel-tag-x" onclick="removeWorkTag('${esc(v)}')">✕</button></span>`).join('');
   c.style.marginBottom=selectedWorkTags.length?'8px':'0';
 }
 function getWorkValue() { const tags=selectedWorkTags.join(' / '); const typed=document.getElementById('fWork').value.trim(); return [tags,typed].filter(Boolean).join(' / '); }
@@ -812,7 +957,7 @@ function addRemarkTag(val) { document.getElementById('remarkDrop').classList.rem
 function removeRemarkTag(val) { selectedRemarkTags=selectedRemarkTags.filter(x=>x!==val); renderRemarkTags(); }
 function renderRemarkTags() {
   const c=document.getElementById('remarkTags');
-  c.innerHTML=selectedRemarkTags.map(v=>`<span class="sel-tag remark-tag">${v}<button class="sel-tag-x" onclick="removeRemarkTag('${v.replace(/'/g,"\\'")}')">✕</button></span>`).join('');
+  c.innerHTML=selectedRemarkTags.map(v=>`<span class="sel-tag remark-tag">${v}<button class="sel-tag-x" onclick="removeRemarkTag('${esc(v)}')">✕</button></span>`).join('');
   c.style.marginBottom=selectedRemarkTags.length?'8px':'0';
 }
 function getRemarkValue() { const tags=selectedRemarkTags.join(', '); const typed=document.getElementById('fRemark').value.trim(); return [tags,typed].filter(Boolean).join(', '); }
@@ -824,27 +969,10 @@ function removeTypeWorkTag(val) { selectedTypeWorkTags=selectedTypeWorkTags.filt
 function renderTypeWorkTags() {
   const c=document.getElementById('typeWorkTags');
   if(!c) return;
-  c.innerHTML=selectedTypeWorkTags.map(v=>`<span class="sel-tag" style="background:var(--accent2);">${v}<button class="sel-tag-x" onclick="removeTypeWorkTag('${v.replace(/'/g,"\\'")}')">✕</button></span>`).join('');
+  c.innerHTML=selectedTypeWorkTags.map(v=>`<span class="sel-tag" style="background:var(--accent2);">${v}<button class="sel-tag-x" onclick="removeTypeWorkTag('${esc(v)}')">✕</button></span>`).join('');
   c.style.marginBottom=selectedTypeWorkTags.length?'8px':'0';
 }
 function getTypeWorkValue() { return selectedTypeWorkTags.join(', '); }
-
-let customTypeWorkItems = JSON.parse(localStorage.getItem('wl_typework_items')||'[]');
-function addNewTypeWorkItem() {
-  const val=prompt('พิมพ์ประเภทงานใหม่:'); if(!val||!val.trim()) return;
-  customTypeWorkItems.unshift(val.trim()); localStorage.setItem('wl_typework_items',JSON.stringify(customTypeWorkItems));
-  renderCustomTypeWorkOptions(); addTypeWorkTag(val.trim());
-}
-function renderCustomTypeWorkOptions() {
-  document.querySelectorAll('#typeWorkDrop .combo-option-custom').forEach(el=>el.remove());
-  const addBtn=document.querySelector('#typeWorkDrop .combo-add-new'); if(!addBtn) return;
-  customTypeWorkItems.forEach(item=>{
-    const div=document.createElement('div'); div.className='combo-option combo-option-custom';
-    div.innerHTML=`<span>🏷</span><span style="flex:1;">${item}</span><button onclick="event.stopPropagation();removeCustomTypeWork('${item.replace(/'/g,"\\'")}');" style="background:var(--red);color:white;border:none;border-radius:8px;padding:2px 8px;font-size:12px;cursor:pointer;">✕</button>`;
-    div.onclick=()=>addTypeWorkTag(item); addBtn.parentNode.insertBefore(div,addBtn);
-  });
-}
-function removeCustomTypeWork(item) { customTypeWorkItems=customTypeWorkItems.filter(x=>x!==item); localStorage.setItem('wl_typework_items',JSON.stringify(customTypeWorkItems)); renderCustomTypeWorkOptions(); }
 
 // ══════════════════════════════════════════════
 // USER PICKER
@@ -921,21 +1049,87 @@ function validateForm() {
 }
 
 // ══════════════════════════════════════════════
+// PHOTO UPLOAD TO GOOGLE DRIVE via GAS
+// ══════════════════════════════════════════════
+// photos[sec][i] can be: null | base64 string | { url, driveId } (uploaded)
+
+async function uploadPhotoToDrive(base64data, filename) {
+  if (!GAS_URL) return null;
+  // Strip data:image/jpeg;base64, prefix
+  const b64 = base64data.includes(',') ? base64data.split(',')[1] : base64data;
+  try {
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'uploadPhoto', filename, base64: b64 })
+    });
+    const data = await res.json();
+    if (data.ok && data.url) return { url: data.url, driveId: data.fileId };
+    return null;
+  } catch(e) { return null; }
+}
+
+async function uploadAllPendingPhotos(logId) {
+  const total = photos.before.filter(Boolean).length + photos.after.filter(Boolean).length;
+  if (total === 0) return { before: [], after: [] };
+
+  setSaveUI('⏳', 'กำลังอัปโหลดรูปภาพ...', `0 / ${total} รูป → Google Drive`, null, true);
+
+  let done = 0;
+  const upload = async (secArr, sec) => {
+    const results = [];
+    for (let i = 0; i < secArr.length; i++) {
+      const p = secArr[i];
+      if (!p) { results.push(null); continue; }
+      if (typeof p === 'object' && p.url) { results.push(p); done++; updateProgress(done, total); continue; }
+      // It's a base64 string — upload
+      const filename = `worklog_${logId}_${sec}_${i+1}_${Date.now()}.jpg`;
+      const uploaded = await uploadPhotoToDrive(p, filename);
+      if (uploaded) {
+        results.push(uploaded);
+        showToast(`📤 อัปโหลดรูป ${sec === 'before' ? 'ก่อนงาน' : 'หลังงาน'} ${i+1} แล้ว`);
+      } else {
+        results.push(p); // keep base64 as fallback
+      }
+      done++;
+      updateProgress(done, total);
+      document.getElementById('saveDesc').textContent = `${done} / ${total} รูป → Google Drive`;
+    }
+    return results;
+  };
+
+  const before = await upload(photos.before.filter(Boolean), 'before');
+  const after  = await upload(photos.after.filter(Boolean),  'after');
+  return { before, after };
+}
+
+function updateProgress(done, total) {
+  const bar = document.getElementById('saveProgressBar');
+  if (bar) bar.style.width = `${Math.round(done/total*100)}%`;
+}
+
+// ══════════════════════════════════════════════
 // GAS COMMUNICATION
 // ══════════════════════════════════════════════
 async function pushToGAS(log, action='save') {
   if(!GAS_URL) return {ok:false,error:'ยังไม่ได้ใส่ GAS URL'};
   const now=new Date();
   const ts=`${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}`;
+  
+  // Extract Drive URLs for storage in sheet
+  const beforeUrls = (log.photosBefore||[]).map(p => (typeof p==='object'&&p.url) ? p.url : (typeof p==='string'&&p.startsWith('http') ? p : '')).filter(Boolean);
+  const afterUrls  = (log.photosAfter||[]).map(p => (typeof p==='object'&&p.url) ? p.url : (typeof p==='string'&&p.startsWith('http') ? p : '')).filter(Boolean);
+  
   const payload={
     action, id:log.id, user:log.user, date:log.date, start:log.start, end:log.end,
     hours:fmtH(parseFloat(log.hours)||0), timestamp:ts, work:log.work,
     location:log.location, item:log.item, qtyActual:log.qtyActual, status:log.status,
     typeWork:log.typeWork||'', issue:log.issue||'', remark:log.remark,
-    photosBefore:log.photosBefore?.length||0, photosAfter:log.photosAfter?.length||0,
-    photoTotal:(log.photosBefore?.length||0)+(log.photosAfter?.length||0),
+    photosBefore: beforeUrls.length,
+    photosAfter:  afterUrls.length,
+    photoTotal:   beforeUrls.length + afterUrls.length,
+    photoBeforeUrls: beforeUrls.join('\n'),
+    photoAfterUrls:  afterUrls.join('\n'),
   };
-  // FIX 3: ไม่ส่ง base64 รูปไป Sheets เลย — ส่งแค่จำนวนรูป
   try {
     await fetch(GAS_URL,{method:'POST',mode:'no-cors',body:JSON.stringify(payload)});
     return {ok:true};
@@ -982,17 +1176,23 @@ async function fetchFromGAS() {
       const start=parseSheetTime(g('Start')), end=parseSheetTime(g('End'));
       const hoursCalc=(start&&end)?calcHours(start,end):(parseFloat(g('Hour'))||0);
       const tsDate=parseSheetDate(g('Timestamp')||'')||parseSheetDate(g('Date')||'');
-      // FIX 2: รายการที่ sync จาก Sheet จะไม่มีรูป (_fromSheet = true)
-      return {id:idVal,user:String(g('User')||''),date:tsDate,start,end,hours:hoursCalc,work:String(g('Work')||''),location:String(g('Location')||'-'),item:String(g('Item')||'-'),qtyActual:parseFloat(g('Quantity'))||0,status:String(g('Status')||'Finish'),typeWork:String(g('Type Work')||''),remark:String(g('Remark')||''),photosBefore:[],photosAfter:[],_fromSheet:true};
+      
+      // Parse Drive URLs from sheet columns
+      const parseUrls = (v) => String(v||'').split('\n').map(u=>u.trim()).filter(u=>u.startsWith('http')).map(url=>({url}));
+      const photosBefore = parseUrls(g('Photo Before URLs') || g('photoBeforeUrls') || '');
+      const photosAfter  = parseUrls(g('Photo After URLs')  || g('photoAfterUrls')  || '');
+      
+      return {id:idVal,user:String(g('User')||''),date:tsDate,start,end,hours:hoursCalc,work:String(g('Work')||''),location:String(g('Location')||'-'),item:String(g('Item')||'-'),qtyActual:parseFloat(g('Quantity'))||0,status:String(g('Status')||'Finish'),typeWork:String(g('Type Work')||''),remark:String(g('Remark')||''),photosBefore,photosAfter,_fromSheet:true};
     }).filter(l=>l.work&&l.user);
     const sheetIds=new Set(sheetLogs.map(l=>l.id));
-    // FIX 2: รักษารูปภาพของ local logs ไว้ก่อน merge
     const localOnly=logs.filter(l=>!l._fromSheet&&!sheetIds.has(l.id));
-    // รายการที่มีทั้งใน local และ sheet → เก็บรูปจาก local
     const mergedLogs = sheetLogs.map(sl => {
       const local = logs.find(l => l.id === sl.id && !l._fromSheet);
       if (local) {
-        return { ...sl, photosBefore: local.photosBefore||[], photosAfter: local.photosAfter||[], _fromSheet: false };
+        // merge: prefer Drive URLs from sheet, keep local base64 only if no Drive URL
+        const mergedBefore = sl.photosBefore.length ? sl.photosBefore : (local.photosBefore||[]);
+        const mergedAfter  = sl.photosAfter.length  ? sl.photosAfter  : (local.photosAfter||[]);
+        return { ...sl, photosBefore: mergedBefore, photosAfter: mergedAfter, _fromSheet: false };
       }
       return sl;
     });
@@ -1032,53 +1232,20 @@ let photos={before:Array(5).fill(null),after:Array(5).fill(null)};
 initSlots();
 renderList();
 renderSummary();
+renderAllCustomOptions();
 fetchFromGAS();
-setTimeout(()=>{renderCustomWorkOptions();renderCustomRemarkOptions();renderCustomTypeWorkOptions();},0);
+fetchCustomItems(); // fetch shared custom items
 
 document.addEventListener('click',e=>{
-  if(!e.target.closest('.combo-wrap')) document.querySelectorAll('.combo-dropdown.open').forEach(d=>d.classList.remove('open'));
+  if(!e.target.closest('.combo-wrap')&&!e.target.closest('#customModalOverlay')) {
+    document.querySelectorAll('.combo-dropdown.open').forEach(d=>d.classList.remove('open'));
+  }
 });
 function toggleDropdown(id) {
   const el=document.getElementById(id); const wasOpen=el.classList.contains('open');
   document.querySelectorAll('.combo-dropdown.open').forEach(d=>d.classList.remove('open'));
   if(!wasOpen) el.classList.add('open');
 }
-
-// ══════════════════════════════════════════════
-// CUSTOM ITEMS
-// ══════════════════════════════════════════════
-let customWorkItems=JSON.parse(localStorage.getItem('wl_work_items')||'[]');
-let customRemarkItems=JSON.parse(localStorage.getItem('wl_remark_items')||'[]');
-function renderCustomWorkOptions() {
-  document.querySelectorAll('#workDrop .combo-option-custom').forEach(el=>el.remove());
-  const addBtn=document.querySelector('#workDrop .combo-add-new');
-  customWorkItems.forEach(item=>{
-    const div=document.createElement('div'); div.className='combo-option combo-option-custom';
-    div.innerHTML=`<span>📝</span><span style="flex:1;">${item}</span><button onclick="event.stopPropagation();removeCustomWork('${item.replace(/'/g,"\\'")}');" style="background:var(--red);color:white;border:none;border-radius:8px;padding:2px 8px;font-size:12px;cursor:pointer;">✕</button>`;
-    div.onclick=()=>addWorkTag(item); addBtn.parentNode.insertBefore(div,addBtn);
-  });
-}
-function renderCustomRemarkOptions() {
-  document.querySelectorAll('#remarkDrop .combo-option-custom').forEach(el=>el.remove());
-  const addBtn=document.querySelector('#remarkDrop .combo-add-new');
-  customRemarkItems.forEach(item=>{
-    const div=document.createElement('div'); div.className='combo-option combo-option-custom';
-    div.innerHTML=`<span>📝</span><span style="flex:1;">${item}</span><button onclick="event.stopPropagation();removeCustomRemark('${item.replace(/'/g,"\\'")}');" style="background:var(--red);color:white;border:none;border-radius:8px;padding:2px 8px;font-size:12px;cursor:pointer;">✕</button>`;
-    div.onclick=()=>addRemarkTag(item); addBtn.parentNode.insertBefore(div,addBtn);
-  });
-}
-function addNewWorkItem() {
-  const val=prompt('พิมพ์รายการงานใหม่:'); if(!val||!val.trim()) return;
-  customWorkItems.unshift(val.trim()); localStorage.setItem('wl_work_items',JSON.stringify(customWorkItems));
-  renderCustomWorkOptions(); addWorkTag(val.trim());
-}
-function addNewRemarkItem() {
-  const val=prompt('พิมพ์หมายเหตุใหม่:'); if(!val||!val.trim()) return;
-  customRemarkItems.unshift(val.trim()); localStorage.setItem('wl_remark_items',JSON.stringify(customRemarkItems));
-  renderCustomRemarkOptions(); addRemarkTag(val.trim());
-}
-function removeCustomWork(item) { customWorkItems=customWorkItems.filter(x=>x!==item); localStorage.setItem('wl_work_items',JSON.stringify(customWorkItems)); renderCustomWorkOptions(); }
-function removeCustomRemark(item) { customRemarkItems=customRemarkItems.filter(x=>x!==item); localStorage.setItem('wl_remark_items',JSON.stringify(customRemarkItems)); renderCustomRemarkOptions(); }
 
 // ══════════════════════════════════════════════
 // PAGE SWITCH
@@ -1092,10 +1259,7 @@ function switchPage(name) {
   if(window.innerWidth<=768) closeSidebar();
   if(name==='list'){renderList();fetchFromGAS();}
   if(name==='summary'){renderSummary();fetchFromGAS();}
-  // Hide edit indicator when switching away from add page
-  if(name!=='add') {
-    document.getElementById('editModeIndicator').classList.remove('visible');
-  }
+  if(name!=='add') document.getElementById('editModeIndicator').classList.remove('visible');
 }
 
 // ══════════════════════════════════════════════
@@ -1121,7 +1285,12 @@ function renderSlots(sec){
   countEl.textContent=`${filled} / 5`;
   grid.innerHTML=Array.from({length:5},(_,i)=>{
     const img=photos[sec][i];
-    if(img) return `<div class="photo-slot filled" onclick="previewPhoto('${sec}',${i})"><img src="${img}" alt="${i+1}"><div class="slot-index">${i+1}</div><button class="slot-remove" onclick="event.stopPropagation();removeSlotPhoto('${sec}',${i})">✕</button></div>`;
+    if(img) {
+      // img can be base64 string or {url, driveId}
+      const src = (typeof img==='object'&&img.url) ? img.url : img;
+      const isDrive = typeof img==='object'&&img.url;
+      return `<div class="photo-slot filled" onclick="previewPhoto('${sec}',${i})"><img src="${src}" alt="${i+1}" onerror="this.style.opacity='0.3'"><div class="slot-index">${isDrive ? '☁'+(i+1) : i+1}</div><button class="slot-remove" onclick="event.stopPropagation();removeSlotPhoto('${sec}',${i})">✕</button></div>`;
+    }
     const isNext=filled===i;
     const borderStyle=isNext?`border-style:solid;border-color:${sec==='before'?'var(--accent)':'var(--green)'};`:'';
     return `<div class="photo-slot" onclick="openSlot('${sec}',${i})" style="${borderStyle}"><span class="slot-icon">${isNext?'📸':'+'}</span><span class="slot-num">${i+1}</span></div>`;
@@ -1217,23 +1386,23 @@ function removeSlotPhoto(sec,idx){
 }
 function previewPhoto(sec,idx){
   const img=photos[sec][idx]; if(!img) return;
-  document.getElementById('fullImgPreview').src=img;
+  const src = (typeof img==='object'&&img.url) ? img.url : img;
+  document.getElementById('fullImgPreview').src=src;
   document.getElementById('imgModalOverlay').classList.add('open');
-}
-function getAllPhotos(){
-  return [...photos.before.filter(Boolean).map(p=>({type:'before',data:p})),...photos.after.filter(Boolean).map(p=>({type:'after',data:p}))];
 }
 
 // ══════════════════════════════════════════════
 // SAVE MODAL UI
 // ══════════════════════════════════════════════
-function setSaveUI(icon,title,desc,errorMsg=null){
-  const spinner=document.getElementById('saveSpinner'),btnWrap=document.getElementById('saveBtnWrap'),details=document.getElementById('saveDetails');
+function setSaveUI(icon,title,desc,errorMsg=null,showProgress=false){
+  const spinner=document.getElementById('saveSpinner'),btnWrap=document.getElementById('saveBtnWrap'),details=document.getElementById('saveDetails'),progress=document.getElementById('saveProgress');
   document.getElementById('saveTitle').textContent=title;
   document.getElementById('saveDesc').textContent=desc;
   if(icon==='⏳'){spinner.textContent='⏳';spinner.style.animation='spin 1s linear infinite';btnWrap.style.display='none';}
   else{spinner.textContent=icon;spinner.style.animation='none';btnWrap.style.display='block';}
   if(errorMsg){details.textContent=errorMsg;details.style.display='block';}else{details.style.display='none';}
+  progress.style.display=showProgress?'block':'none';
+  if(showProgress){document.getElementById('saveProgressBar').style.width='0%';}
   document.getElementById('saveOverlay').classList.add('open');
 }
 function closeSaveOverlay(){document.getElementById('saveOverlay').classList.remove('open');}
@@ -1252,19 +1421,28 @@ async function saveLog() {
   const isEdit = editingId !== null;
   const id = isEdit ? editingId : nextId++;
 
+  setSaveUI('⏳','กำลังประมวลผล...','กำลังบันทึกข้อมูล');
+
+  // Upload photos to Drive first
+  const { before: uploadedBefore, after: uploadedAfter } = await uploadAllPendingPhotos(id);
+
   const log={
     id, user:userArr.join(', '), date, start, end, hours, work,
     location:document.getElementById('fLocation').value||'0',
     item:document.getElementById('fItem').value||'0',
     qtyActual:Number(document.getElementById('fQtyActual').value)||0,
     status:currentStatus, typeWork:getTypeWorkValue(), issue:'',
-    remark:getRemarkValue(), photos:getAllPhotos(),
-    photosBefore:photos.before.filter(Boolean),
-    photosAfter:photos.after.filter(Boolean),
-    _fromSheet: false, // FIX 2: mark as local so photos are preserved
+    remark:getRemarkValue(),
+    photosBefore: uploadedBefore,
+    photosAfter:  uploadedAfter,
+    _fromSheet: false,
   };
 
-  setSaveUI('⏳','กำลังประมวลผล...','กำลังบันทึกข้อมูลลงในระบบของเครื่อง');
+  // Update local photos state with uploaded versions
+  photos.before = [...uploadedBefore, ...Array(5-uploadedBefore.length).fill(null)];
+  photos.after  = [...uploadedAfter,  ...Array(5-uploadedAfter.length).fill(null)];
+
+  setSaveUI('⏳','กำลังบันทึกลงเครื่อง...','กำลังบันทึกข้อมูลลงในแอป',null,false);
 
   if(isEdit) {
     const idx=logs.findIndex(l=>l.id===id);
@@ -1273,20 +1451,21 @@ async function saveLog() {
     logs.unshift(log);
   }
 
-  let savedLocally=false;
-  while(!savedLocally&&logs.length>0){
-    try{localStorage.setItem('wl_logs',JSON.stringify(logs));savedLocally=true;}
-    catch(e){if(logs.length>1){logs.pop();}else{setSaveUI('❌','พื้นที่เครื่องเต็ม','รูปภาพอาจมีขนาดใหญ่เกินไป');if(isEdit){/*revert*/}else logs.shift();return;}}
-  }
+  // Save to localStorage (without base64, only Drive URLs to save space)
+  const logsForStorage = logs.map(l => ({
+    ...l,
+    photosBefore: (l.photosBefore||[]).map(p => (typeof p==='object'&&p.url) ? p : null).filter(Boolean),
+    photosAfter:  (l.photosAfter||[]).map(p => (typeof p==='object'&&p.url) ? p : null).filter(Boolean),
+  }));
+  try { localStorage.setItem('wl_logs', JSON.stringify(logsForStorage)); } catch(e) {}
 
   setSaveUI('⏳','กำลังเชื่อมต่อ...','กำลังส่งข้อมูลไปยัง Google Sheets...');
   const gasAction = isEdit ? 'update' : 'save';
   const res=await pushToGAS(log, gasAction);
   if(res.ok){
-    setSaveUI('✅',isEdit?'แก้ไขข้อมูลสำเร็จ!':'บันทึกข้อมูลสำเร็จ!','ข้อมูลถูกส่งเข้า Google Sheets เรียบร้อยแล้ว');
+    setSaveUI('✅',isEdit?'แก้ไขข้อมูลสำเร็จ!':'บันทึกข้อมูลสำเร็จ!','รูปภาพอยู่ใน Google Drive — ดูได้ทุกเครื่อง ✓');
     document.getElementById('saveBtnWrap').style.display='none';
     editingId=null;
-    // FIX 1: hide edit indicator
     document.getElementById('editModeIndicator').classList.remove('visible');
     document.getElementById('btnCancelEdit').style.display='none';
     document.getElementById('btnSave').textContent='💾 บันทึกงาน';
@@ -1339,7 +1518,6 @@ function startEdit(id) {
 
     selectStatus(l.status||'Finish');
 
-    // FIX 2: โหลดรูปภาพจาก local storage (ไม่ใช่จาก sheet)
     photos={before:Array(5).fill(null),after:Array(5).fill(null)};
     if(l.photosBefore&&l.photosBefore.length>0){
       l.photosBefore.forEach((p,i)=>{if(i<5&&p)photos.before[i]=p;});
@@ -1349,7 +1527,6 @@ function startEdit(id) {
     }
     initSlots();
 
-    // FIX 1: แสดง edit indicator ที่ topbar แทน banner
     document.getElementById('editModeIndicator').classList.add('visible');
     document.getElementById('editIdLabel').textContent=id;
     document.getElementById('btnCancelEdit').style.display='inline-flex';
@@ -1363,7 +1540,6 @@ function startEdit(id) {
 function cancelEdit() {
   editingId=null;
   resetForm();
-  // FIX 1: ซ่อน edit indicator
   document.getElementById('editModeIndicator').classList.remove('visible');
   document.getElementById('btnCancelEdit').style.display='none';
   document.getElementById('btnSave').textContent='💾 บันทึกงาน';
@@ -1427,7 +1603,6 @@ function filterByDate(logArr, mode, fromId, toId) {
   }
   return logArr;
 }
-
 function setListQuickDate(mode, btn) {
   listDateMode=mode;
   document.querySelectorAll('.qchip[onclick*="setListQuickDate"]').forEach(b=>b.classList.remove('active'));
@@ -1463,7 +1638,7 @@ function renderList() {
   const sumBar=document.getElementById('listSummaryBar');
   if(filtered.length>0){
     const totalH=filtered.reduce((acc,l)=>{
-      if(l.start&&l.end&&l.start!==''&&l.end!=='') return acc+calcHours(l.start,l.end);
+      if(l.start&&l.end&&l.start!==''&&l.end!='') return acc+calcHours(l.start,l.end);
       return acc+(parseFloat(l.hours)||0);
     },0);
     sumBar.style.display='flex';
@@ -1490,7 +1665,7 @@ function renderList() {
         <div class="log-tags">
           ${lh>0?`<span class="tag">⏱ ${fmtH(lh)}h</span>`:''}
           ${l.qtyActual>0?`<span class="tag">📦 ${Number(l.qtyActual).toLocaleString()}</span>`:''}
-          ${cnt>0?`<span class="tag">📸 ${cnt}</span>`:''}
+          ${cnt>0?`<span class="tag">☁️ ${cnt} รูป</span>`:''}
           ${l.location&&l.location!=='-'&&l.location!=='0'?`<span class="tag">📍 ${l.location}</span>`:''}
           ${l.typeWork?`<span class="tag" style="background:var(--accent2);color:white;">🏷 ${l.typeWork}</span>`:''}
         </div>
@@ -1504,7 +1679,7 @@ function renderList() {
 }
 
 // ══════════════════════════════════════════════
-// OPEN LOG DETAIL — FIX 2: แสดงรูปจาก local storage
+// OPEN LOG DETAIL
 // ══════════════════════════════════════════════
 function openLog(id) {
   const l=logs.find(x=>x.id===id); if(!l) return;
@@ -1524,24 +1699,29 @@ function openLog(id) {
     ['หมายเหตุ',l.remark?`<span style="color:var(--red);font-weight:600;">${l.remark}</span>`:'-'],
   ];
 
-  // FIX 2: แสดงรูปจาก local เท่านั้น — ถ้า sync จาก sheet จะไม่มีรูป
   const beforePhotos = l.photosBefore||[];
   const afterPhotos = l.photosAfter||[];
   const hasPhotos = beforePhotos.length>0||afterPhotos.length>0;
   
+  const renderPhotoGrid = (arr) => arr.map(p => {
+    const src = (typeof p==='object'&&p.url) ? p.url : (typeof p==='string' ? p : '');
+    const isDrive = typeof p==='object'&&p.url;
+    return `<div class="modal-photo" onclick="showFullImg('${src}')">
+      <img src="${src}" loading="lazy" onerror="this.parentElement.innerHTML='<div style=\'padding:16px;text-align:center;\'>🖼<br><small>ดูใน Drive</small></div>'">
+      ${isDrive ? '<div style="position:absolute;bottom:4px;right:4px;background:rgba(0,0,0,0.5);color:white;font-size:10px;padding:2px 6px;border-radius:6px;">☁ Drive</div>' : ''}
+    </div>`;
+  }).join('');
+
   let photosHtml = '';
   if (hasPhotos) {
     photosHtml = `
     <div class="detail-row" style="flex-direction:column;gap:12px;">
-      <div class="detail-label" style="width:100%;font-size:16px;font-weight:700;border-bottom:2px solid var(--border2);padding-bottom:12px;">📸 รูปภาพแนบ</div>
+      <div class="detail-label" style="width:100%;font-size:16px;font-weight:700;border-bottom:2px solid var(--border2);padding-bottom:12px;">📸 รูปภาพแนบ <span style="font-size:13px;font-weight:500;color:var(--text3);">(☁ เก็บใน Google Drive)</span></div>
       <div>
-        ${beforePhotos.length?`<div style="font-size:14px;font-weight:600;margin-bottom:12px;">📷 ก่อนงาน (${beforePhotos.length})</div><div class="modal-photos" style="margin-bottom:24px">${beforePhotos.map(p=>`<div class="modal-photo" onclick="showFullImg('${p}')"><img src="${p}" loading="lazy"></div>`).join('')}</div>`:''}
-        ${afterPhotos.length?`<div style="font-size:14px;font-weight:600;margin-bottom:12px;">✅ หลังงาน (${afterPhotos.length})</div><div class="modal-photos">${afterPhotos.map(p=>`<div class="modal-photo" onclick="showFullImg('${p}')"><img src="${p}" loading="lazy"></div>`).join('')}</div>`:''}
+        ${beforePhotos.length?`<div style="font-size:14px;font-weight:600;margin-bottom:12px;">📷 ก่อนงาน (${beforePhotos.length})</div><div class="modal-photos" style="margin-bottom:24px;position:relative;">${renderPhotoGrid(beforePhotos)}</div>`:''}
+        ${afterPhotos.length?`<div style="font-size:14px;font-weight:600;margin-bottom:12px;">✅ หลังงาน (${afterPhotos.length})</div><div class="modal-photos" style="position:relative;">${renderPhotoGrid(afterPhotos)}</div>`:''}
       </div>
     </div>`;
-  } else if (l._fromSheet) {
-    // รายการจาก Sheet — รูปเก็บ local เท่านั้น
-    photosHtml = `<div class="detail-row"><div class="detail-label">📸 รูปภาพ</div><div class="detail-val" style="color:var(--text3);font-size:13px;">รูปภาพเก็บเฉพาะในเครื่องที่บันทึก<br>ไม่สามารถแสดงจาก Google Sheets ได้</div></div>`;
   }
 
   document.getElementById('modalBody').innerHTML=
@@ -1661,7 +1841,7 @@ function renderSummary() {
 function showToast(msg){
   const t=document.getElementById('toast'), ico=t.querySelector('.toast-icon');
   document.getElementById('toastMsg').textContent=msg;
-  ico.textContent=msg.includes('⚠')?'⚠️':msg.includes('🗑')?'🗑️':msg.includes('📸')||msg.includes('🖼')?'📸':'✅';
+  ico.textContent=msg.includes('⚠')?'⚠️':msg.includes('🗑')?'🗑️':msg.includes('📸')||msg.includes('🖼')||msg.includes('☁')||msg.includes('📤')?'📸':'✅';
   t.classList.add('show');
   if(t._hide) clearTimeout(t._hide);
   t._hide=setTimeout(()=>t.classList.remove('show'),3000);
