@@ -327,6 +327,7 @@
     </nav>
     <div class="sidebar-footer">
       <span class="sidebar-date" id="sidebarDate"></span>
+      <button onclick="forceMigrate()" title="Migrate ข้อมูล custom items เก่าขึ้น Config Sheet" style="margin-top:10px;width:100%;padding:8px;background:var(--surface);border:2px solid var(--border2);border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;color:var(--text3);transition:all 0.15s;" onmouseover="this.style.background='var(--amber)';this.style.color='var(--text)'" onmouseout="this.style.background='var(--surface)';this.style.color='var(--text3)'">☁ Sync ข้อมูลเก่า → Sheet</button>
     </div>
   </aside>
 
@@ -956,6 +957,14 @@ async function removeCustomItem(idx, itemVal) {
 }
 
 function closeCustomModal(e) { if (e.target.id === 'customModalOverlay') closeCustomModalBtn(); }
+
+// บังคับ migrate ใหม่ (ล้าง flag แล้วรัน)
+async function forceMigrate() {
+  if (!confirm('Sync ข้อมูล custom items จาก localStorage ทั้งหมดขึ้น Config Sheet ใช่ไหม?\n(ถ้าเคย sync แล้ว จะไม่เกิดซ้ำ เพราะ GAS ตรวจ duplicate)')) return;
+  localStorage.removeItem('wl_migrated_v3');
+  showToast('⏳ กำลัง sync...');
+  await migrateLocalToSheet();
+}
 function closeCustomModalBtn() { document.getElementById('customModalOverlay').classList.remove('open'); activeCustomType = null; }
 
 
@@ -1300,12 +1309,47 @@ let facingMode='environment', activeSec=null, camStream=null;
 const MAX_PHOTOS=5;
 let photos={before:Array(5).fill(null),after:Array(5).fill(null)};
 
+
+// ══════════════════════════════════════════════
+// MIGRATE — ดึงข้อมูลเก่าจาก localStorage ขึ้น GAS Config Sheet
+// รันครั้งเดียวอัตโนมัติ หรือเรียกด้วยตนเองได้
+// ══════════════════════════════════════════════
+async function migrateLocalToSheet() {
+  // ตรวจว่า migrate ไปแล้วหรือยัง
+  if (localStorage.getItem('wl_migrated_v3') === '1') return;
+
+  const recorder = localStorage.getItem('wl_recorder') || 'MIGRATED';
+  const types = Object.keys(ITEM_CONFIG); // ['user','work','typeWork','remark']
+  let total = 0;
+
+  for (const type of types) {
+    const items = sharedCustomItems[type] || [];
+    if (items.length === 0) continue;
+
+    for (const item of items) {
+      if (!item || !item.trim()) continue;
+      await pushConfigItem(type, item.trim(), recorder, false);
+      total++;
+      // หน่วงนิดหน่อยป้องกัน rate limit
+      await new Promise(r => setTimeout(r, 150));
+    }
+  }
+
+  localStorage.setItem('wl_migrated_v3', '1');
+  if (total > 0) {
+    showToast(`✅ Migrate ${total} รายการจาก localStorage → Sheet Config แล้ว`);
+    // reload จาก sheet เพื่อยืนยัน
+    await fetchCustomItems();
+  }
+}
+
 initSlots();
 renderList();
 renderSummary();
 renderAllCustomOptions();
+syncUserPillsFromConfig();
 fetchFromGAS();
-fetchCustomItems(); // fetch shared custom items
+fetchCustomItems().then(() => migrateLocalToSheet()); // fetch แล้ว migrate ทันที
 
 document.addEventListener('click',e=>{
   if(!e.target.closest('.combo-wrap')&&!e.target.closest('#customModalOverlay')) {
