@@ -742,9 +742,12 @@ async function uploadPhotoToDrive(base64data, filename, maxRetries=3) {
   const b64 = base64data.includes(',') ? base64data.split(',')[1] : base64data;
   for (let attempt=1; attempt<=maxRetries; attempt++) {
     try {
+      // ❌ ห้ามใส่ Content-Type: application/json → trigger CORS preflight (OPTIONS)
+      // GAS ไม่รองรับ OPTIONS → upload fail ทุกครั้ง
+      // ✅ ไม่ใส่ header → browser ส่งเป็น text/plain (simple request, ไม่มี preflight)
+      // GAS ยังรับ JSON body ได้ปกติผ่าน e.postData.contents
       const res = await fetch(GAS_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },  // ← CRITICAL: fixes CORS/parse issue
         body: JSON.stringify({ action: 'uploadPhoto', filename, base64: b64 })
       });
       if (!res.ok) throw new Error('HTTP ' + res.status);
