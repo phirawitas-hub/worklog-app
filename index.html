@@ -737,32 +737,47 @@ function validateForm(){
 }
 
 // ═══════════════ UPLOAD TO GOOGLE DRIVE (Fixed) ═══════════════
+// ── ย่อขนาดรูปก่อนส่ง เพื่อลด payload และป้องกัน GAS timeout ──
+function resizeBase64(base64data, maxDim=800, quality=0.7) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      let w=img.width, h=img.height;
+      if(w>maxDim){h=Math.round(h*maxDim/w);w=maxDim;}
+      if(h>maxDim){w=Math.round(w*maxDim/h);h=maxDim;}
+      const c=document.createElement('canvas');
+      c.width=w;c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      resolve(c.toDataURL('image/jpeg',quality));
+    };
+    img.onerror=()=>resolve(base64data);
+    img.src=base64data;
+  });
+}
+
+// ── Upload via URLSearchParams (ไม่ trigger CORS preflight) ──
+// GAS อ่านจาก e.postData.contents ได้ปกติ แต่ต้อง parse เอง
 async function uploadPhotoToDrive(base64data, filename, maxRetries=3) {
   if (!GAS_URL) return null;
-  const b64 = base64data.includes(',') ? base64data.split(',')[1] : base64data;
+  // ย่อรูปก่อน: 800px, 70% → ~80-150KB/รูป
+  const resized = await resizeBase64(base64data, 800, 0.7);
+  const b64 = resized.includes(',') ? resized.split(',')[1] : resized;
   for (let attempt=1; attempt<=maxRetries; attempt++) {
     try {
-      // ❌ ห้ามใส่ Content-Type: application/json → trigger CORS preflight (OPTIONS)
-      // GAS ไม่รองรับ OPTIONS → upload fail ทุกครั้ง
-      // ✅ ไม่ใส่ header → browser ส่งเป็น text/plain (simple request, ไม่มี preflight)
-      // GAS ยังรับ JSON body ได้ปกติผ่าน e.postData.contents
-      const res = await fetch(GAS_URL, {
-        method: 'POST',
-        body: JSON.stringify({ action: 'uploadPhoto', filename, base64: b64 })
-      });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const data = await res.json();
+      // URLSearchParams = application/x-www-form-urlencoded
+      // = simple CORS request, ไม่มี preflight OPTIONS
+      // GAS รับ e.postData.contents แล้ว decode URL-encoded string
+      const body = 'action=uploadPhoto&filename=' + encodeURIComponent(filename) + '&base64=' + encodeURIComponent(b64);
+      const res = await fetch(GAS_URL, { method:'POST', body });
+      let data;
+      try { data = await res.json(); } catch { throw new Error('CORS/network error - cannot read response'); }
       if (data.ok && data.fileId) {
-        return {
-          driveId:  data.fileId,
-          thumbUrl: driveThumbUrl(data.fileId),
-          viewUrl:  driveViewUrl(data.fileId),
-        };
+        return { driveId:data.fileId, thumbUrl:driveThumbUrl(data.fileId), viewUrl:driveViewUrl(data.fileId) };
       }
-      throw new Error(data.error || 'GAS ok:false');
+      throw new Error(data.error || 'GAS returned ok:false');
     } catch(err) {
-      console.warn('Upload attempt ' + attempt + '/' + maxRetries + ' failed:', err.message);
-      if (attempt < maxRetries) await new Promise(r=>setTimeout(r, 800*attempt));
+      console.warn('Upload attempt '+attempt+'/'+maxRetries+' failed:', err.message);
+      if(attempt<maxRetries) await new Promise(r=>setTimeout(r,1000*attempt));
     }
   }
   return null;
