@@ -1035,54 +1035,26 @@ async function startCamera(sec){
   document.getElementById('camLabel').textContent=sec==='before'?'📸 ก่อนงาน':'✅ หลังงาน';
   updateCamBadge();
 
-  // หยุด stream เก่าก่อน
   if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}
   video.srcObject=null;
 
-  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
-    showFallback();showToast('⚠ Browser ไม่รองรับกล้อง — กรุณาเลือกไฟล์แทน');return;
-  }
-
-  const constraintsList=[
-    {video:{facingMode:{ideal:facingMode},width:{ideal:1280},height:{ideal:720}},audio:false},
-    {video:{facingMode:facingMode},audio:false},
-    {video:true,audio:false},
-  ];
-
-  let lastErr=null;
-  for(const constraints of constraintsList){
-    try{camStream=await navigator.mediaDevices.getUserMedia(constraints);break;}
-    catch(e){lastErr=e;camStream=null;}
-  }
-
-  if(!camStream){
-    showFallback();
-    showToast('⚠ เปิดกล้องไม่ได้ ('+(lastErr?.name||'unknown')+') — กรุณาเลือกไฟล์แทน');
-    return;
-  }
-
+  const constraints={video:{facingMode:facingMode,width:{ideal:1280},height:{ideal:720}}};
   try{
+    camStream=await navigator.mediaDevices.getUserMedia(constraints);
     video.srcObject=camStream;
-
-    // ===== FIX: รอ loadedmetadata event (iOS Safari ต้องการ) =====
-    // แทนที่จะ poll readyState ซึ่งรอนานและไม่แน่นอน
-    await new Promise((resolve, reject)=>{
-      const timeout=setTimeout(()=>{
-        // timeout 8 วินาที → แสดงว่า stream ได้แต่ metadata ไม่มา (เช่น iPhone บางรุ่น)
-        // ลองเรียก play() โดยตรงแทน
-        resolve('timeout');
-      }, 8000);
-      video.onloadedmetadata=()=>{clearTimeout(timeout);resolve('ok');};
-      video.onerror=(e)=>{clearTimeout(timeout);reject(e);};
+    await new Promise((resolve,reject)=>{
+      video.oncanplay=resolve;
+      video.onerror=reject;
+      setTimeout(reject,8000);
     });
-
-    // เรียก play() หลัง metadata พร้อม (iOS Safari บังคับ)
-    try{await video.play();}catch(e){console.warn('play() err:',e);}
-
+    await video.play();
     document.getElementById('cameraLive').scrollIntoView({behavior:'smooth',block:'center'});
-    showToast('📷 กล้องพร้อมแล้ว');
-  }catch(e){
-    showFallback();showToast('⚠ เปิดกล้องไม่ได้ — กรุณาเลือกไฟล์แทน');
+  }catch(err){
+    console.error('Camera error:',err);
+    let msg='⚠ เปิดกล้องไม่ได้ — กรุณาเลือกไฟล์แทน';
+    if(err&&err.name==='NotAllowedError') msg='⚠ กล้องถูกบล็อก — กรุณาอนุญาตการใช้กล้อง';
+    else if(err&&err.name==='NotFoundError') msg='⚠ ไม่พบกล้องในอุปกรณ์นี้';
+    showFallback();showToast(msg);
   }
 }
 
