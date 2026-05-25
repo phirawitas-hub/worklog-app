@@ -1034,16 +1034,15 @@ async function startCamera(sec){
   document.getElementById('camControls').style.display='flex';
   document.getElementById('camLabel').textContent=sec==='before'?'📸 ก่อนงาน':'✅ หลังงาน';
   updateCamBadge();
+
   // หยุด stream เก่าก่อน
   if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}
   video.srcObject=null;
 
-  // ตรวจว่า browser รองรับ getUserMedia
   if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
     showFallback();showToast('⚠ Browser ไม่รองรับกล้อง — กรุณาเลือกไฟล์แทน');return;
   }
 
-  // iOS Safari ต้องการ constraints เรียบง่าย — ถ้า ideal ไม่ได้ ลอง exact facingMode
   const constraintsList=[
     {video:{facingMode:{ideal:facingMode},width:{ideal:1280},height:{ideal:720}},audio:false},
     {video:{facingMode:facingMode},audio:false},
@@ -1052,14 +1051,11 @@ async function startCamera(sec){
 
   let lastErr=null;
   for(const constraints of constraintsList){
-    try{
-      camStream=await navigator.mediaDevices.getUserMedia(constraints);
-      break;
-    }catch(e){lastErr=e;camStream=null;}
+    try{camStream=await navigator.mediaDevices.getUserMedia(constraints);break;}
+    catch(e){lastErr=e;camStream=null;}
   }
 
   if(!camStream){
-    console.warn('Camera error:',lastErr);
     showFallback();
     showToast('⚠ เปิดกล้องไม่ได้ ('+(lastErr?.name||'unknown')+') — กรุณาเลือกไฟล์แทน');
     return;
@@ -1067,16 +1063,24 @@ async function startCamera(sec){
 
   try{
     video.srcObject=camStream;
-    // iOS Safari ต้องการ .play() explicit + muted
-    const playPromise=video.play();
-    if(playPromise!==undefined){
-      playPromise.catch(e=>{
-        console.warn('video.play() failed:',e);
-        // ถ้า play ล้มเหลว แสดง fallback
-        showFallback();showToast('⚠ ไม่สามารถเล่น video — กรุณาเลือกไฟล์แทน');
-      });
-    }
+
+    // ===== FIX: รอ loadedmetadata event (iOS Safari ต้องการ) =====
+    // แทนที่จะ poll readyState ซึ่งรอนานและไม่แน่นอน
+    await new Promise((resolve, reject)=>{
+      const timeout=setTimeout(()=>{
+        // timeout 8 วินาที → แสดงว่า stream ได้แต่ metadata ไม่มา (เช่น iPhone บางรุ่น)
+        // ลองเรียก play() โดยตรงแทน
+        resolve('timeout');
+      }, 8000);
+      video.onloadedmetadata=()=>{clearTimeout(timeout);resolve('ok');};
+      video.onerror=(e)=>{clearTimeout(timeout);reject(e);};
+    });
+
+    // เรียก play() หลัง metadata พร้อม (iOS Safari บังคับ)
+    try{await video.play();}catch(e){console.warn('play() err:',e);}
+
     document.getElementById('cameraLive').scrollIntoView({behavior:'smooth',block:'center'});
+    showToast('📷 กล้องพร้อมแล้ว');
   }catch(e){
     showFallback();showToast('⚠ เปิดกล้องไม่ได้ — กรุณาเลือกไฟล์แทน');
   }
@@ -1084,7 +1088,8 @@ async function startCamera(sec){
 
 function showFallback(){
   if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}
-  document.getElementById('videoEl').style.display='none';
+  const video=document.getElementById('videoEl');
+  video.style.display='none';video.srcObject=null;
   document.getElementById('camControls').style.display='none';
   document.getElementById('camFallback').style.display='block';
   document.getElementById('cameraLive').scrollIntoView({behavior:'smooth',block:'center'});
@@ -1097,14 +1102,10 @@ function capturePhoto(){
   if(filled>=MAX_PHOTOS){stopCamera();return;}
   const video=document.getElementById('videoEl'),canvas=document.getElementById('canvasEl');
   if(!camStream){showToast('⚠ กล้องไม่พร้อม');return;}
-  // รอให้ video พร้อม (readyState 2=HAVE_CURRENT_DATA, 3=HAVE_FUTURE_DATA, 4=HAVE_ENOUGH_DATA)
-  if(video.readyState<2||video.videoWidth===0||video.videoHeight===0){
-    showToast('⚠ กล้องกำลังโหลด รอสักครู่...');
-    // ลอง capture หลัง 800ms
-    setTimeout(()=>capturePhoto(),800);
-    return;
+  if(video.videoWidth===0||video.videoHeight===0){
+    showToast('⚠ กล้องยังโหลดไม่เสร็จ กรุณารอสักครู่');return;
   }
-  const MAX_DIM=1200;let w=video.videoWidth||640,h=video.videoHeight||480;
+  const MAX_DIM=1200;let w=video.videoWidth,h=video.videoHeight;
   if(w>MAX_DIM){h=Math.round(h*MAX_DIM/w);w=MAX_DIM;}
   if(h>MAX_DIM){w=Math.round(w*MAX_DIM/h);h=MAX_DIM;}
   canvas.width=w;canvas.height=h;
