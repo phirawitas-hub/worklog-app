@@ -394,7 +394,7 @@
           </div>
           <div id="cameraLive" style="display:none;margin-top:24px;border:3px solid var(--border);border-radius:var(--radius);padding:24px;background:var(--bg);">
             <div style="position:relative;border-radius:var(--radius-sm);overflow:hidden;background:#000;border:2px solid var(--border);">
-              <video id="videoEl" autoplay playsinline style="width:100%;max-height:400px;object-fit:cover;display:block"></video>
+              <video id="videoEl" autoplay playsinline muted style="width:100%;max-height:400px;object-fit:cover;display:block"></video>
               <div id="shutterFlash" style="position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;transition:opacity 0.1s"></div>
               <div style="position:absolute;top:16px;left:16px;background:var(--surface);color:var(--text);font-size:14px;font-weight:700;padding:6px 16px;border-radius:20px;border:2px solid var(--border);box-shadow:2px 2px 0px var(--border);" id="camLabel">ก่อนงาน</div>
               <div style="position:absolute;top:16px;right:16px;background:var(--surface);color:var(--text);font-size:14px;font-weight:700;font-family:var(--mono);padding:6px 16px;border-radius:20px;border:2px solid var(--border);box-shadow:2px 2px 0px var(--border);" id="camSlotBadge">0/10</div>
@@ -1029,22 +1029,65 @@ function openSlot(sec,idx){
 async function startCamera(sec){
   document.getElementById('cameraLive').style.display='block';
   document.getElementById('camFallback').style.display='none';
-  document.getElementById('videoEl').style.display='block';
+  const video=document.getElementById('videoEl');
+  video.style.display='block';
   document.getElementById('camControls').style.display='flex';
   document.getElementById('camLabel').textContent=sec==='before'?'📸 ก่อนงาน':'✅ หลังงาน';
   updateCamBadge();
+  // หยุด stream เก่าก่อน
+  if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}
+  video.srcObject=null;
+
+  // ตรวจว่า browser รองรับ getUserMedia
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+    showFallback();showToast('⚠ Browser ไม่รองรับกล้อง — กรุณาเลือกไฟล์แทน');return;
+  }
+
+  // iOS Safari ต้องการ constraints เรียบง่าย — ถ้า ideal ไม่ได้ ลอง exact facingMode
+  const constraintsList=[
+    {video:{facingMode:{ideal:facingMode},width:{ideal:1280},height:{ideal:720}},audio:false},
+    {video:{facingMode:facingMode},audio:false},
+    {video:true,audio:false},
+  ];
+
+  let lastErr=null;
+  for(const constraints of constraintsList){
+    try{
+      camStream=await navigator.mediaDevices.getUserMedia(constraints);
+      break;
+    }catch(e){lastErr=e;camStream=null;}
+  }
+
+  if(!camStream){
+    console.warn('Camera error:',lastErr);
+    showFallback();
+    showToast('⚠ เปิดกล้องไม่ได้ ('+(lastErr?.name||'unknown')+') — กรุณาเลือกไฟล์แทน');
+    return;
+  }
+
   try{
-    if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}
-    camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode,width:{ideal:1280},height:{ideal:720}},audio:false});
-    document.getElementById('videoEl').srcObject=camStream;
+    video.srcObject=camStream;
+    // iOS Safari ต้องการ .play() explicit + muted
+    const playPromise=video.play();
+    if(playPromise!==undefined){
+      playPromise.catch(e=>{
+        console.warn('video.play() failed:',e);
+        // ถ้า play ล้มเหลว แสดง fallback
+        showFallback();showToast('⚠ ไม่สามารถเล่น video — กรุณาเลือกไฟล์แทน');
+      });
+    }
     document.getElementById('cameraLive').scrollIntoView({behavior:'smooth',block:'center'});
   }catch(e){
-    document.getElementById('videoEl').style.display='none';
-    document.getElementById('camControls').style.display='none';
-    document.getElementById('camFallback').style.display='block';
-    document.getElementById('cameraLive').scrollIntoView({behavior:'smooth',block:'center'});
-    showToast('⚠ เปิดกล้องไม่ได้ — กรุณาเลือกไฟล์แทน');
+    showFallback();showToast('⚠ เปิดกล้องไม่ได้ — กรุณาเลือกไฟล์แทน');
   }
+}
+
+function showFallback(){
+  if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}
+  document.getElementById('videoEl').style.display='none';
+  document.getElementById('camControls').style.display='none';
+  document.getElementById('camFallback').style.display='block';
+  document.getElementById('cameraLive').scrollIntoView({behavior:'smooth',block:'center'});
 }
 async function switchCamera(){facingMode=facingMode==='environment'?'user':'environment';if(activeSec)await startCamera(activeSec);}
 function stopCamera(){if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}document.getElementById('cameraLive').style.display='none';activeSec=null;}
@@ -1053,7 +1096,14 @@ function capturePhoto(){
   const filled=photos[activeSec].filter(Boolean).length;
   if(filled>=MAX_PHOTOS){stopCamera();return;}
   const video=document.getElementById('videoEl'),canvas=document.getElementById('canvasEl');
-  if(!camStream||video.readyState<2)return;
+  if(!camStream){showToast('⚠ กล้องไม่พร้อม');return;}
+  // รอให้ video พร้อม (readyState 2=HAVE_CURRENT_DATA, 3=HAVE_FUTURE_DATA, 4=HAVE_ENOUGH_DATA)
+  if(video.readyState<2||video.videoWidth===0||video.videoHeight===0){
+    showToast('⚠ กล้องกำลังโหลด รอสักครู่...');
+    // ลอง capture หลัง 800ms
+    setTimeout(()=>capturePhoto(),800);
+    return;
+  }
   const MAX_DIM=1200;let w=video.videoWidth||640,h=video.videoHeight||480;
   if(w>MAX_DIM){h=Math.round(h*MAX_DIM/w);w=MAX_DIM;}
   if(h>MAX_DIM){w=Math.round(w*MAX_DIM/h);h=MAX_DIM;}
