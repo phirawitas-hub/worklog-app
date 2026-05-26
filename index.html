@@ -736,70 +736,65 @@ function validateForm(){
 }
 
 // ═══════════════════════════════════════════════════════════
-// FIX: UPLOAD TO GOOGLE DRIVE
-// ใช้ Content-Type: text/plain + JSON body
-// → ไม่ trigger CORS preflight OPTIONS → GAS รับได้
-// → browser อ่าน response กลับได้ปกติ
+// UPLOAD PHOTO → Google Drive ผ่าน GAS (v4)
+// text/plain body = ไม่มี CORS preflight = browser อ่าน response ได้
 // ═══════════════════════════════════════════════════════════
-function resizeBase64(base64data, maxDim=800, quality=0.7) {
-  return new Promise(resolve => {
-    const img = new Image();
-    img.onload = () => {
-      let w=img.width, h=img.height;
-      if(w>maxDim){h=Math.round(h*maxDim/w);w=maxDim;}
-      if(h>maxDim){w=Math.round(w*maxDim/h);h=maxDim;}
-      const c=document.createElement('canvas');
-      c.width=w;c.height=h;
-      c.getContext('2d').drawImage(img,0,0,w,h);
-      resolve(c.toDataURL('image/jpeg',quality));
+
+function resizeBase64(base64data, maxDim, quality) {
+  maxDim  = maxDim  || 800;
+  quality = quality || 0.7;
+  return new Promise(function(resolve) {
+    var img = new Image();
+    img.onload = function() {
+      var w = img.width, h = img.height;
+      if(w > maxDim){ h = Math.round(h * maxDim / w); w = maxDim; }
+      if(h > maxDim){ w = Math.round(w * maxDim / h); h = maxDim; }
+      var canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL('image/jpeg', quality));
     };
-    img.onerror=()=>resolve(base64data);
-    img.src=base64data;
+    img.onerror = function(){ resolve(base64data); };
+    img.src = base64data;
   });
 }
 
-async function uploadPhotoToDrive(base64data, filename, maxRetries=3) {
-  if (!GAS_URL) return null;
-  const resized = await resizeBase64(base64data, 800, 0.7);
-  const b64 = resized.includes(',') ? resized.split(',')[1] : resized;
+async function uploadPhotoToDrive(base64data, filename, maxRetries) {
+  maxRetries = maxRetries || 3;
+  if(!GAS_URL) return null;
 
-  for (let attempt=1; attempt<=maxRetries; attempt++) {
-    try {
-      const res = await fetch(GAS_URL, {
-        method: 'POST',
+  var resized = await resizeBase64(base64data, 800, 0.7);
+  var b64 = resized.includes(',') ? resized.split(',')[1] : resized;
+
+  for(var attempt = 1; attempt <= maxRetries; attempt++){
+    try{
+      var res = await fetch(GAS_URL, {
+        method : 'POST',
         headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({ action: 'uploadPhoto', filename, base64: b64 }),
-        redirect: 'follow'
+        body   : JSON.stringify({ action: 'uploadPhoto', filename: filename, base64: b64 })
       });
-
-      // GAS Web App response อาจเป็น text/html ถ้า error
-      // ดึง text ก่อนแล้วค่อย parse เพื่อ debug ได้
-      const text = await res.text();
-      let data;
-      try {
-        data = JSON.parse(text);
-      } catch(parseErr) {
-        console.warn('Upload attempt '+attempt+': non-JSON response:', text.slice(0,300));
-        throw new Error('GAS returned non-JSON: ' + text.slice(0,100));
+      var text = await res.text();
+      var data;
+      try{ data = JSON.parse(text); }
+      catch(parseErr){
+        console.warn('Upload: non-JSON response:', text.slice(0, 200));
+        throw new Error('GAS returned non-JSON — ลอง redeploy GAS ใหม่');
       }
-
-      if (data.ok && data.fileId) {
+      if(data.ok && data.fileId){
         return {
-          driveId: data.fileId,
-          thumbUrl: driveThumbUrl(data.fileId),
-          viewUrl: driveViewUrl(data.fileId)
+          driveId : data.fileId,
+          thumbUrl: 'https://drive.google.com/thumbnail?id=' + data.fileId + '&sz=w800',
+          viewUrl : 'https://drive.google.com/file/d/' + data.fileId + '/view'
         };
       }
-      throw new Error(data.error || 'GAS returned ok:false');
-
-    } catch(err) {
-      console.warn('Upload attempt '+attempt+'/'+maxRetries+' failed:', err.message);
-      if(attempt < maxRetries) await new Promise(r=>setTimeout(r, 1500 * attempt));
+      throw new Error(data.error || 'GAS ok:false');
+    }catch(err){
+      console.warn('Upload attempt ' + attempt + '/' + maxRetries + ':', err.message);
+      if(attempt < maxRetries) await new Promise(function(r){ setTimeout(r, 1500 * attempt); });
     }
   }
   return null;
 }
-
 function setUploadStatus(visible, text, type='') {
   const bar=document.getElementById('uploadStatusBar'),icon=document.getElementById('uploadStatusIcon'),txt=document.getElementById('uploadStatusText');
   bar.className='upload-status-bar'+(visible?' visible':'')+(type?' '+type:'');
