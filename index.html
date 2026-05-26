@@ -385,11 +385,11 @@
           <div class="card-title"><div class="card-title-icon">📸</div>ถ่ายภาพ / แนบรูป <span style="font-size:13px;color:var(--text3);font-weight:500;">(อัปโหลด Google Drive อัตโนมัติ — ดูได้ทุกเครื่อง)</span></div>
           <div class="upload-status-bar" id="uploadStatusBar"><span id="uploadStatusIcon">📤</span><span id="uploadStatusText">กำลังอัปโหลด...</span></div>
           <div class="photo-section" style="margin-top:16px;">
-            <div class="photo-section-header"><div class="photo-section-label">📷 ก่อนงาน</div><span class="photo-section-count" id="beforeCount">0 / 10</span></div>
+            <div class="photo-section-header"><div class="photo-section-label">📷 ก่อนงาน</div><span class="photo-section-count" id="beforeCount">0 / 5</span></div>
             <div class="slot-grid" id="beforeSlots"></div>
           </div>
           <div class="photo-section" style="margin-top:32px">
-            <div class="photo-section-header"><div class="photo-section-label">✅ หลังงาน</div><span class="photo-section-count" id="afterCount">0 / 10</span></div>
+            <div class="photo-section-header"><div class="photo-section-label">✅ หลังงาน</div><span class="photo-section-count" id="afterCount">0 / 5</span></div>
             <div class="slot-grid" id="afterSlots"></div>
           </div>
           <div id="cameraLive" style="display:none;margin-top:24px;border:3px solid var(--border);border-radius:var(--radius);padding:24px;background:var(--bg);">
@@ -397,7 +397,7 @@
               <video id="videoEl" autoplay playsinline muted style="width:100%;max-height:400px;object-fit:cover;display:block"></video>
               <div id="shutterFlash" style="position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;transition:opacity 0.1s"></div>
               <div style="position:absolute;top:16px;left:16px;background:var(--surface);color:var(--text);font-size:14px;font-weight:700;padding:6px 16px;border-radius:20px;border:2px solid var(--border);box-shadow:2px 2px 0px var(--border);" id="camLabel">ก่อนงาน</div>
-              <div style="position:absolute;top:16px;right:16px;background:var(--surface);color:var(--text);font-size:14px;font-weight:700;font-family:var(--mono);padding:6px 16px;border-radius:20px;border:2px solid var(--border);box-shadow:2px 2px 0px var(--border);" id="camSlotBadge">0/10</div>
+              <div style="position:absolute;top:16px;right:16px;background:var(--surface);color:var(--text);font-size:14px;font-weight:700;font-family:var(--mono);padding:6px 16px;border-radius:20px;border:2px solid var(--border);box-shadow:2px 2px 0px var(--border);" id="camSlotBadge">0/5</div>
             </div>
             <div id="camFallback" style="display:none;text-align:center;padding:32px;background:var(--surface);border-radius:var(--radius-sm);border:2px dashed var(--border2);margin-top:16px;">
               <div style="font-size:48px;margin-bottom:12px;">🖼</div>
@@ -760,33 +760,27 @@ function resizeBase64(base64data, maxDim=800, quality=0.7) {
 
 async function uploadPhotoToDrive(base64data, filename, maxRetries=3) {
   if (!GAS_URL) return null;
-  // ย่อรูปก่อน: 800px, 70%
   const resized = await resizeBase64(base64data, 800, 0.7);
   const b64 = resized.includes(',') ? resized.split(',')[1] : resized;
 
   for (let attempt=1; attempt<=maxRetries; attempt++) {
     try {
-      // ===== KEY FIX =====
-      // Content-Type: 'text/plain' ← ไม่ใช่ 'application/json'
-      // เหตุผล: 'application/json' trigger CORS preflight (OPTIONS request)
-      // → GAS Web App ไม่ support OPTIONS → browser block → upload ล้มเหลว
-      // 'text/plain' = simple request → ไม่มี preflight → GAS รับ JSON ใน e.postData.contents ได้
-      // → GAS parse JSON เองใน doPost → return response → browser อ่านได้ปกติ
       const res = await fetch(GAS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({ action: 'uploadPhoto', filename, base64: b64 })
+        body: JSON.stringify({ action: 'uploadPhoto', filename, base64: b64 }),
+        redirect: 'follow'
       });
 
-      // ถ้า GAS redirect (302) browser จะ follow โดยอัตโนมัติ
-      // response สุดท้ายจะเป็น JSON จาก GAS
+      // GAS Web App response อาจเป็น text/html ถ้า error
+      // ดึง text ก่อนแล้วค่อย parse เพื่อ debug ได้
+      const text = await res.text();
       let data;
       try {
-        data = await res.json();
+        data = JSON.parse(text);
       } catch(parseErr) {
-        // บางครั้ง GAS return HTML error page
-        const text = await res.text().catch(()=>'');
-        throw new Error('Parse error - response: ' + text.slice(0,200));
+        console.warn('Upload attempt '+attempt+': non-JSON response:', text.slice(0,300));
+        throw new Error('GAS returned non-JSON: ' + text.slice(0,100));
       }
 
       if (data.ok && data.fileId) {
@@ -799,11 +793,11 @@ async function uploadPhotoToDrive(base64data, filename, maxRetries=3) {
       throw new Error(data.error || 'GAS returned ok:false');
 
     } catch(err) {
-      console.warn('Upload attempt ' + attempt + '/' + maxRetries + ' failed:', err.message);
-      if(attempt < maxRetries) await new Promise(r=>setTimeout(r, 1200 * attempt));
+      console.warn('Upload attempt '+attempt+'/'+maxRetries+' failed:', err.message);
+      if(attempt < maxRetries) await new Promise(r=>setTimeout(r, 1500 * attempt));
     }
   }
-  return null; // เก็บในเครื่องถ้าทุก attempt ล้มเหลว
+  return null;
 }
 
 function setUploadStatus(visible, text, type='') {
@@ -868,15 +862,17 @@ async function pushToGAS(log, action='save') {
     photoBeforeUrls:beforeUrls.join('\n'),photoAfterUrls:afterUrls.join('\n'),
   };
   try{
-    // ใช้ no-cors สำหรับ save/update/delete เพราะไม่ต้องการ response
-    await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'application/json'},mode:'no-cors',body:JSON.stringify(payload)});
+    // text/plain = simple CORS request ไม่ trigger preflight → GAS รับได้ → อ่าน response ได้
+    await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload),redirect:'follow'});
     return {ok:true};
   }catch(e){return {ok:false,error:'เชื่อมต่อล้มเหลว: '+e.message};}
 }
 async function deleteFromGAS(id){
   if(!GAS_URL)return{ok:false};
-  try{await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'application/json'},mode:'no-cors',body:JSON.stringify({action:'delete',id})});return{ok:true};}
-  catch(e){return{ok:false,error:e.message};}
+  try{
+    await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'delete',id}),redirect:'follow'});
+    return{ok:true};
+  }catch(e){return{ok:false,error:e.message};}
 }
 
 async function fetchFromGAS(){
@@ -884,7 +880,7 @@ async function fetchFromGAS(){
   const badge=document.getElementById('syncBadge');
   badge.style.display='block';badge.style.background='#fef9c3';badge.style.borderColor='#ca8a04';badge.textContent='⏳ กำลังซิงก์...';
   try{
-    const res=await fetch(GAS_URL+'?action=getAll');
+    const res=await fetch(GAS_URL+'?action=getAll',{redirect:'follow'});
     const rows=await res.json();
     if(!Array.isArray(rows)||rows.length===0){badge.textContent='✓ ซิงก์แล้ว (ไม่มีข้อมูลใหม่)';badge.style.background='#dcfce7';badge.style.borderColor='#16a34a';setTimeout(()=>badge.style.display='none',2500);return;}
     const g=(r,key,fb='')=>{const f=Object.keys(r).find(k=>k.trim().toLowerCase()===key.toLowerCase());return f!==undefined?r[f]:fb;};
@@ -937,7 +933,7 @@ document.getElementById('fEndH').value='00';document.getElementById('fEndM').val
 
 let facingMode='environment',activeSec=null,camStream=null;
 // ===== FIX: MAX_PHOTOS = 10 =====
-const MAX_PHOTOS = 10;
+const MAX_PHOTOS = 5;
 let photos={before:Array(MAX_PHOTOS).fill(null),after:Array(MAX_PHOTOS).fill(null)};
 let currentViewUrl='';
 
@@ -1035,33 +1031,47 @@ async function startCamera(sec){
   document.getElementById('camLabel').textContent=sec==='before'?'📸 ก่อนงาน':'✅ หลังงาน';
   updateCamBadge();
 
+  // หยุด stream เก่า
   if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}
   video.srcObject=null;
 
-  const constraints={video:{facingMode:facingMode,width:{ideal:1280},height:{ideal:720}}};
-  try{
-    camStream=await navigator.mediaDevices.getUserMedia(constraints);
-    video.srcObject=camStream;
-    await new Promise((resolve,reject)=>{
-      video.oncanplay=resolve;
-      video.onerror=reject;
-      setTimeout(reject,8000);
-    });
-    await video.play();
-    document.getElementById('cameraLive').scrollIntoView({behavior:'smooth',block:'center'});
-  }catch(err){
-    console.error('Camera error:',err);
-    let msg='⚠ เปิดกล้องไม่ได้ — กรุณาเลือกไฟล์แทน';
-    if(err&&err.name==='NotAllowedError') msg='⚠ กล้องถูกบล็อก — กรุณาอนุญาตการใช้กล้อง';
-    else if(err&&err.name==='NotFoundError') msg='⚠ ไม่พบกล้องในอุปกรณ์นี้';
-    showFallback();showToast(msg);
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+    showFallback();showToast('⚠ Browser ไม่รองรับกล้อง');return;
   }
+
+  // ลอง constraints จากง่ายไปหายาก
+  const tryList=[
+    {video:{facingMode:{ideal:facingMode}},audio:false},
+    {video:true,audio:false}
+  ];
+  let stream=null,lastErr=null;
+  for(const con of tryList){
+    try{stream=await navigator.mediaDevices.getUserMedia(con);break;}
+    catch(e){lastErr=e;}
+  }
+  if(!stream){
+    let msg='⚠ เปิดกล้องไม่ได้ — กรุณาเลือกไฟล์แทน';
+    if(lastErr){
+      if(lastErr.name==='NotAllowedError'||lastErr.name==='PermissionDeniedError')
+        msg='⚠ กรุณาอนุญาตการใช้กล้องใน Browser แล้วลองใหม่';
+      else if(lastErr.name==='NotFoundError')
+        msg='⚠ ไม่พบกล้องในอุปกรณ์นี้';
+      else if(lastErr.name==='NotReadableError')
+        msg='⚠ กล้องถูกใช้งานโดย App อื่น กรุณาปิดแล้วลองใหม่';
+    }
+    showFallback();showToast(msg);return;
+  }
+  camStream=stream;
+  video.srcObject=stream;
+  // play() ทันทีไม่รอ event — Chrome/iOS autoplay+muted ไม่ต้องรอ
+  try{await video.play();}catch(e){console.warn('play():',e);}
+  document.getElementById('cameraLive').scrollIntoView({behavior:'smooth',block:'center'});
 }
 
 function showFallback(){
   if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}
   const video=document.getElementById('videoEl');
-  video.style.display='none';video.srcObject=null;
+  video.srcObject=null;video.style.display='none';
   document.getElementById('camControls').style.display='none';
   document.getElementById('camFallback').style.display='block';
   document.getElementById('cameraLive').scrollIntoView({behavior:'smooth',block:'center'});
@@ -1074,8 +1084,11 @@ function capturePhoto(){
   if(filled>=MAX_PHOTOS){stopCamera();return;}
   const video=document.getElementById('videoEl'),canvas=document.getElementById('canvasEl');
   if(!camStream){showToast('⚠ กล้องไม่พร้อม');return;}
+  // ถ้ายังไม่มี video size รอก่อน (กรณีที่ oncanplay ยิงเร็วเกินไป)
   if(video.videoWidth===0||video.videoHeight===0){
-    showToast('⚠ กล้องยังโหลดไม่เสร็จ กรุณารอสักครู่');return;
+    showToast('⚠ กล้องกำลังเริ่ม กรุณารอสักครู่...');
+    setTimeout(()=>capturePhoto(),500);
+    return;
   }
   const MAX_DIM=1200;let w=video.videoWidth,h=video.videoHeight;
   if(w>MAX_DIM){h=Math.round(h*MAX_DIM/w);w=MAX_DIM;}
