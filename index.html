@@ -115,11 +115,9 @@
   .chip:hover{transform:translate(-2px,-2px);box-shadow:4px 4px 0px var(--border);}
   .chip.selected-Finish{background:var(--green);color:var(--text);}
   .chip.selected-Pending{background:var(--amber);color:var(--text);}
-  /* Photo slots */
   .photo-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
   .photo-section-label{font-size:15px;font-weight:700;padding:6px 16px;border-radius:20px;display:flex;align-items:center;gap:8px;border:2px solid var(--border);box-shadow:2px 2px 0px var(--border);background:var(--surface);}
   .photo-section-count{font-size:14px;font-weight:700;font-family:var(--mono);color:var(--text);background:var(--surface);border:2px solid var(--border);padding:4px 12px;border-radius:20px;}
-  /* ===== FIX: 5 columns × 2 rows = 10 slots ===== */
   .slot-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;}
   .photo-slot{aspect-ratio:1;border-radius:var(--radius-sm);border:2px dashed var(--border2);background:var(--surface);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden;font-size:13px;font-weight:600;color:var(--text3);gap:6px;}
   .photo-slot:hover:not(.filled){border-style:solid;border-color:var(--border);box-shadow:var(--shadow-sm);transform:translate(-2px,-2px);color:var(--text);}
@@ -130,7 +128,6 @@
   .slot-index{position:absolute;bottom:6px;left:6px;background:var(--surface);border:2px solid var(--border);color:var(--text);font-size:11px;font-weight:700;font-family:var(--mono);padding:2px 8px;border-radius:12px;box-shadow:2px 2px 0px var(--border);}
   .slot-drive-badge{position:absolute;top:6px;left:6px;background:#1a73e8;color:white;font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;z-index:2;letter-spacing:0.02em;}
   .drive-err-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--surface2);font-size:11px;color:var(--text3);gap:4px;text-align:center;padding:4px;}
-  /* Upload status banner */
   .upload-status-bar{display:none;align-items:center;gap:10px;padding:12px 18px;background:#eff6ff;border:2px solid #3b82f6;border-radius:var(--radius-sm);margin:16px 0 0;font-size:14px;font-weight:600;}
   .upload-status-bar.visible{display:flex;}
   .upload-status-bar.ok{background:#f0fdf4;border-color:var(--green);}
@@ -380,7 +377,7 @@
             </div>
           </div>
         </div>
-        <!-- PHOTOS — รองรับ 10 รูปต่อ section -->
+        <!-- PHOTOS -->
         <div class="card">
           <div class="card-title"><div class="card-title-icon">📸</div>ถ่ายภาพ / แนบรูป <span style="font-size:13px;color:var(--text3);font-weight:500;">(อัปโหลด Google Drive อัตโนมัติ — ดูได้ทุกเครื่อง)</span></div>
           <div class="upload-status-bar" id="uploadStatusBar"><span id="uploadStatusIcon">📤</span><span id="uploadStatusText">กำลังอัปโหลด...</span></div>
@@ -517,7 +514,12 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbwZEDYqhrhc02ps7Z6Cjbw0
 // ═══════════════ PHOTO HELPERS ═══════════════
 function isDrivePhoto(p) { return p && typeof p === 'object' && p.driveId; }
 function getPhotoSrc(p)  { return !p ? '' : isDrivePhoto(p) ? p.thumbUrl : p; }
-function driveThumbUrl(id) { return 'https://drive.google.com/thumbnail?id=' + id + '&sz=w800'; }
+
+// ══════════════════════════════════════════════════════════════
+// FIX: เปลี่ยน driveThumbUrl → lh3.googleusercontent.com
+//      ดูได้ทุกเครื่องโดยไม่ต้องล็อกอิน Google
+// ══════════════════════════════════════════════════════════════
+function driveThumbUrl(id) { return 'https://lh3.googleusercontent.com/d/' + id + '=w800'; }
 function driveViewUrl(id)  { return 'https://drive.google.com/file/d/' + id + '/view'; }
 function driveUcUrl(id)    { return 'https://drive.google.com/uc?export=view&id=' + id; }
 
@@ -575,12 +577,7 @@ async function fetchCustomItems(){
 async function pushConfigItem(type,item,recorder,remove=false){
   if(!GAS_URL)return;
   try{
-    // ===== FIX: ใช้ text/plain แทน application/json เพื่อหลีกเลี่ยง CORS preflight =====
-    await fetch(GAS_URL,{
-      method:'POST',
-      headers:{'Content-Type':'text/plain'},
-      body:JSON.stringify({action:'saveConfig',type,item,recorder,remove})
-    });
+    await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'saveConfig',type,item,recorder,remove})});
   }catch(e){}
 }
 function syncUserPillsFromConfig(){
@@ -735,83 +732,73 @@ function validateForm(){
   return true;
 }
 
-// ═══════════════════════════════════════════════════════════
-// UPLOAD PHOTO → Google Drive ผ่าน GAS (v4)
-// text/plain body = ไม่มี CORS preflight = browser อ่าน response ได้
-// ═══════════════════════════════════════════════════════════
-
-function resizeBase64(base64data, maxDim, quality) {
-  maxDim  = maxDim  || 800;
-  quality = quality || 0.7;
-  return new Promise(function(resolve) {
-    var img = new Image();
-    img.onload = function() {
-      var w = img.width, h = img.height;
-      if(w > maxDim){ h = Math.round(h * maxDim / w); w = maxDim; }
-      if(h > maxDim){ w = Math.round(w * maxDim / h); h = maxDim; }
-      var canvas = document.createElement('canvas');
-      canvas.width = w; canvas.height = h;
-      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-      resolve(canvas.toDataURL('image/jpeg', quality));
+// ═══════════════ UPLOAD PHOTO ═══════════════
+function resizeBase64(base64data,maxDim,quality){
+  maxDim=maxDim||800;quality=quality||0.7;
+  return new Promise(function(resolve){
+    var img=new Image();
+    img.onload=function(){
+      var w=img.width,h=img.height;
+      if(w>maxDim){h=Math.round(h*maxDim/w);w=maxDim;}
+      if(h>maxDim){w=Math.round(w*maxDim/h);h=maxDim;}
+      var canvas=document.createElement('canvas');
+      canvas.width=w;canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      resolve(canvas.toDataURL('image/jpeg',quality));
     };
-    img.onerror = function(){ resolve(base64data); };
-    img.src = base64data;
+    img.onerror=function(){resolve(base64data);};
+    img.src=base64data;
   });
 }
 
-async function uploadPhotoToDrive(base64data, filename, maxRetries) {
-  maxRetries = maxRetries || 3;
-  if(!GAS_URL) return null;
-
-  var resized = await resizeBase64(base64data, 800, 0.7);
-  var b64 = resized.includes(',') ? resized.split(',')[1] : resized;
-
-  for(var attempt = 1; attempt <= maxRetries; attempt++){
+async function uploadPhotoToDrive(base64data,filename,maxRetries){
+  maxRetries=maxRetries||3;
+  if(!GAS_URL)return null;
+  var resized=await resizeBase64(base64data,800,0.7);
+  var b64=resized.includes(',')?resized.split(',')[1]:resized;
+  for(var attempt=1;attempt<=maxRetries;attempt++){
     try{
-      var res = await fetch(GAS_URL, {
-        method : 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body   : JSON.stringify({ action: 'uploadPhoto', filename: filename, base64: b64 })
-      });
-      var text = await res.text();
+      var res=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'uploadPhoto',filename:filename,base64:b64})});
+      var text=await res.text();
       var data;
-      try{ data = JSON.parse(text); }
-      catch(parseErr){
-        console.warn('Upload: non-JSON response:', text.slice(0, 200));
-        throw new Error('GAS returned non-JSON — ลอง redeploy GAS ใหม่');
-      }
-      if(data.ok && data.fileId){
-        return {
-          driveId : data.fileId,
-          thumbUrl: 'https://drive.google.com/thumbnail?id=' + data.fileId + '&sz=w800',
-          viewUrl : 'https://drive.google.com/file/d/' + data.fileId + '/view'
+      try{data=JSON.parse(text);}
+      catch(parseErr){throw new Error('GAS returned non-JSON — ลอง redeploy GAS ใหม่');}
+      if(data.ok&&data.fileId){
+        return{
+          driveId:data.fileId,
+          // ══════════════════════════════════════════════════
+          // FIX: ใช้ lh3 URL จาก GAS response โดยตรง
+          //      (GAS ส่ง url: lh3.googleusercontent.com/d/...)
+          // ══════════════════════════════════════════════════
+          thumbUrl:data.url,
+          viewUrl:data.viewUrl
         };
       }
-      throw new Error(data.error || 'GAS ok:false');
+      throw new Error(data.error||'GAS ok:false');
     }catch(err){
-      console.warn('Upload attempt ' + attempt + '/' + maxRetries + ':', err.message);
-      if(attempt < maxRetries) await new Promise(function(r){ setTimeout(r, 1500 * attempt); });
+      console.warn('Upload attempt '+attempt+'/'+maxRetries+':',err.message);
+      if(attempt<maxRetries)await new Promise(function(r){setTimeout(r,1500*attempt);});
     }
   }
   return null;
 }
-function setUploadStatus(visible, text, type='') {
+
+function setUploadStatus(visible,text,type){
+  type=type||'';
   const bar=document.getElementById('uploadStatusBar'),icon=document.getElementById('uploadStatusIcon'),txt=document.getElementById('uploadStatusText');
   bar.className='upload-status-bar'+(visible?' visible':'')+(type?' '+type:'');
   icon.textContent=type==='ok'?'✅':type==='err'?'⚠️':'📤';
   txt.textContent=text;
 }
 
-async function uploadAllPendingPhotos(logId) {
+async function uploadAllPendingPhotos(logId){
   const beforeRaw=photos.before.filter(Boolean),afterRaw=photos.after.filter(Boolean);
   const toUpload=[...beforeRaw,...afterRaw].filter(p=>!isDrivePhoto(p)).length;
-  if (toUpload===0) return {before:beforeRaw,after:afterRaw};
-
-  const total = beforeRaw.length + afterRaw.length;
+  if(toUpload===0)return{before:beforeRaw,after:afterRaw};
+  const total=beforeRaw.length+afterRaw.length;
   setSaveUI('⏳','กำลังอัปโหลดรูปภาพ...','0 / '+toUpload+' รูป → Google Drive',null,true);
   setUploadStatus(true,'กำลังอัปโหลด 0/'+toUpload+' รูป...');
   let done=0,failed=0;
-
   const uploadArr=async(arr,sec)=>{
     const results=[];
     for(let i=0;i<arr.length;i++){
@@ -827,7 +814,7 @@ async function uploadAllPendingPhotos(logId) {
         document.getElementById('saveDesc').textContent=done+' / '+toUpload+' รูปอัปโหลดแล้ว';
         setUploadStatus(true,'☁ อัปโหลด '+done+'/'+toUpload+' รูปแล้ว');
         showToast('☁ '+(sec==='before'?'ก่อนงาน':'หลังงาน')+' #'+(i+1)+' อัปโหลดสำเร็จ');
-      } else {
+      }else{
         results.push(p);failed++;
         showToast('⚠ อัปโหลดรูป '+(sec==='before'?'ก่อนงาน':'หลังงาน')+' #'+(i+1)+' ไม่สำเร็จ (เก็บในเครื่อง)');
       }
@@ -835,19 +822,20 @@ async function uploadAllPendingPhotos(logId) {
     return results;
   };
   const before=await uploadArr(photos.before.filter(Boolean),'before');
-  const after =await uploadArr(photos.after.filter(Boolean), 'after');
+  const after=await uploadArr(photos.after.filter(Boolean),'after');
   if(failed>0){setUploadStatus(true,'⚠ สำเร็จ '+done+' ล้มเหลว '+failed+' รูป','err');setTimeout(()=>setUploadStatus(false,''),5000);}
   else{setUploadStatus(true,'☁ อัปโหลด '+done+' รูปสำเร็จทั้งหมด!','ok');setTimeout(()=>setUploadStatus(false,''),3000);}
-  return {before,after};
+  return{before,after};
 }
 
 // ═══════════════ GAS API ═══════════════
-async function pushToGAS(log, action='save') {
-  if (!GAS_URL) return {ok:false,error:'ไม่ได้ตั้งค่า GAS URL'};
+async function pushToGAS(log,action){
+  action=action||'save';
+  if(!GAS_URL)return{ok:false,error:'ไม่ได้ตั้งค่า GAS URL'};
   const toUrls=arr=>(arr||[]).filter(isDrivePhoto).map(p=>p.viewUrl).filter(Boolean);
   const beforeUrls=toUrls(log.photosBefore),afterUrls=toUrls(log.photosAfter);
   const totalBefore=(log.photosBefore||[]).filter(Boolean).length;
-  const totalAfter =(log.photosAfter ||[]).filter(Boolean).length;
+  const totalAfter=(log.photosAfter||[]).filter(Boolean).length;
   const payload={
     action,id:log.id,user:log.user,start:log.start,end:log.end,
     hours:fmtH(parseFloat(log.hours)||0),work:log.work,
@@ -857,10 +845,9 @@ async function pushToGAS(log, action='save') {
     photoBeforeUrls:beforeUrls.join('\n'),photoAfterUrls:afterUrls.join('\n'),
   };
   try{
-    // text/plain = simple CORS request ไม่ trigger preflight → GAS รับได้ → อ่าน response ได้
     await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload),redirect:'follow'});
-    return {ok:true};
-  }catch(e){return {ok:false,error:'เชื่อมต่อล้มเหลว: '+e.message};}
+    return{ok:true};
+  }catch(e){return{ok:false,error:'เชื่อมต่อล้มเหลว: '+e.message};}
 }
 async function deleteFromGAS(id){
   if(!GAS_URL)return{ok:false};
@@ -878,9 +865,12 @@ async function fetchFromGAS(){
     const res=await fetch(GAS_URL+'?action=getAll',{redirect:'follow'});
     const rows=await res.json();
     if(!Array.isArray(rows)||rows.length===0){badge.textContent='✓ ซิงก์แล้ว (ไม่มีข้อมูลใหม่)';badge.style.background='#dcfce7';badge.style.borderColor='#16a34a';setTimeout(()=>badge.style.display='none',2500);return;}
-    const g=(r,key,fb='')=>{const f=Object.keys(r).find(k=>k.trim().toLowerCase()===key.toLowerCase());return f!==undefined?r[f]:fb;};
+    const g=(r,key,fb)=>{fb=fb===undefined?'':fb;const f=Object.keys(r).find(k=>k.trim().toLowerCase()===key.toLowerCase());return f!==undefined?r[f]:fb;};
     const pTime=v=>{if(!v&&v!==0)return'';const s=String(v).trim();if(/^\d{1,2}:\d{2}/.test(s)){const p=s.split(':');return String(parseInt(p[0],10)).padStart(2,'0')+':'+p[1].substring(0,2);}if(s.includes('T')||s.includes('1899')){try{const d=new Date(s);if(!isNaN(d))return String(d.getUTCHours()).padStart(2,'0')+':'+String(d.getUTCMinutes()).padStart(2,'0');}catch(e){}}return s;};
     const pDate=v=>{if(!v)return'';const s=String(v);if(s.includes('T')||s.includes('1899')){try{const d=new Date(s);if(!isNaN(d))return d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0');}catch(e){}}if(/^\d{1,2}\/\d{1,2}\/\d{4}/.test(s)){const p=s.split('/');return p[2]+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0');}return s.replace(/\//g,'-');};
+    // ══════════════════════════════════════════════════════════
+    // FIX: pUrls — แปลง Drive view URL → lh3 thumbUrl
+    // ══════════════════════════════════════════════════════════
     const pUrls=v=>String(v||'').split('\n').map(u=>u.trim()).filter(u=>u.startsWith('http')).map(url=>{
       const m=url.match(/\/d\/([a-zA-Z0-9_-]+)/)||url.match(/id=([a-zA-Z0-9_-]+)/);
       if(m){const id=m[1];return{driveId:id,thumbUrl:driveThumbUrl(id),viewUrl:driveViewUrl(id)};}
@@ -927,8 +917,7 @@ document.getElementById('fStartH').value=nowH;document.getElementById('fStartM')
 document.getElementById('fEndH').value='00';document.getElementById('fEndM').value='00';
 
 let facingMode='environment',activeSec=null,camStream=null;
-// ===== FIX: MAX_PHOTOS = 10 =====
-const MAX_PHOTOS = 5;
+const MAX_PHOTOS=5;
 let photos={before:Array(MAX_PHOTOS).fill(null),after:Array(MAX_PHOTOS).fill(null)};
 let currentViewUrl='';
 
@@ -957,13 +946,12 @@ function selectStatus(s){
   clearFieldError('field-status');
 }
 
-// ═══════════════ PHOTO SLOTS (รองรับ MAX_PHOTOS) ═══════════════
+// ═══════════════ PHOTO SLOTS ═══════════════
 function initSlots(){renderSlots('before');renderSlots('after');}
 function renderSlots(sec){
   const grid=document.getElementById(sec==='before'?'beforeSlots':'afterSlots');
   const countEl=document.getElementById(sec==='before'?'beforeCount':'afterCount');
   const filled=photos[sec].filter(Boolean).length;
-  // ===== FIX: แสดง x / MAX_PHOTOS =====
   countEl.textContent=filled+' / '+MAX_PHOTOS;
   const accent=sec==='before'?'var(--accent)':'var(--green)';
   grid.innerHTML=Array.from({length:MAX_PHOTOS},(_,i)=>{
@@ -1025,40 +1013,22 @@ async function startCamera(sec){
   document.getElementById('camControls').style.display='flex';
   document.getElementById('camLabel').textContent=sec==='before'?'📸 ก่อนงาน':'✅ หลังงาน';
   updateCamBadge();
-
-  // หยุด stream เก่า
   if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}
   video.srcObject=null;
-
-  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
-    showFallback();showToast('⚠ Browser ไม่รองรับกล้อง');return;
-  }
-
-  // ลอง constraints จากง่ายไปหายาก
-  const tryList=[
-    {video:{facingMode:{ideal:facingMode}},audio:false},
-    {video:true,audio:false}
-  ];
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){showFallback();showToast('⚠ Browser ไม่รองรับกล้อง');return;}
+  const tryList=[{video:{facingMode:{ideal:facingMode}},audio:false},{video:true,audio:false}];
   let stream=null,lastErr=null;
-  for(const con of tryList){
-    try{stream=await navigator.mediaDevices.getUserMedia(con);break;}
-    catch(e){lastErr=e;}
-  }
+  for(const con of tryList){try{stream=await navigator.mediaDevices.getUserMedia(con);break;}catch(e){lastErr=e;}}
   if(!stream){
     let msg='⚠ เปิดกล้องไม่ได้ — กรุณาเลือกไฟล์แทน';
     if(lastErr){
-      if(lastErr.name==='NotAllowedError'||lastErr.name==='PermissionDeniedError')
-        msg='⚠ กรุณาอนุญาตการใช้กล้องใน Browser แล้วลองใหม่';
-      else if(lastErr.name==='NotFoundError')
-        msg='⚠ ไม่พบกล้องในอุปกรณ์นี้';
-      else if(lastErr.name==='NotReadableError')
-        msg='⚠ กล้องถูกใช้งานโดย App อื่น กรุณาปิดแล้วลองใหม่';
+      if(lastErr.name==='NotAllowedError'||lastErr.name==='PermissionDeniedError')msg='⚠ กรุณาอนุญาตการใช้กล้องใน Browser แล้วลองใหม่';
+      else if(lastErr.name==='NotFoundError')msg='⚠ ไม่พบกล้องในอุปกรณ์นี้';
+      else if(lastErr.name==='NotReadableError')msg='⚠ กล้องถูกใช้งานโดย App อื่น กรุณาปิดแล้วลองใหม่';
     }
     showFallback();showToast(msg);return;
   }
-  camStream=stream;
-  video.srcObject=stream;
-  // play() ทันทีไม่รอ event — Chrome/iOS autoplay+muted ไม่ต้องรอ
+  camStream=stream;video.srcObject=stream;
   try{await video.play();}catch(e){console.warn('play():',e);}
   document.getElementById('cameraLive').scrollIntoView({behavior:'smooth',block:'center'});
 }
@@ -1079,12 +1049,7 @@ function capturePhoto(){
   if(filled>=MAX_PHOTOS){stopCamera();return;}
   const video=document.getElementById('videoEl'),canvas=document.getElementById('canvasEl');
   if(!camStream){showToast('⚠ กล้องไม่พร้อม');return;}
-  // ถ้ายังไม่มี video size รอก่อน (กรณีที่ oncanplay ยิงเร็วเกินไป)
-  if(video.videoWidth===0||video.videoHeight===0){
-    showToast('⚠ กล้องกำลังเริ่ม กรุณารอสักครู่...');
-    setTimeout(()=>capturePhoto(),500);
-    return;
-  }
+  if(video.videoWidth===0||video.videoHeight===0){showToast('⚠ กล้องกำลังเริ่ม กรุณารอสักครู่...');setTimeout(()=>capturePhoto(),500);return;}
   const MAX_DIM=1200;let w=video.videoWidth,h=video.videoHeight;
   if(w>MAX_DIM){h=Math.round(h*MAX_DIM/w);w=MAX_DIM;}
   if(h>MAX_DIM){w=Math.round(w*MAX_DIM/h);h=MAX_DIM;}
@@ -1121,7 +1086,8 @@ function handleFileSelectCam(e){
 function removeSlotPhoto(sec,idx){photos[sec].splice(idx,1);photos[sec].push(null);renderSlots(sec);if(activeSec===sec)updateCamBadge();showToast('🗑 ลบภาพแล้ว');}
 
 // ═══════════════ SAVE MODAL ═══════════════
-function setSaveUI(icon,title,desc,errorMsg=null,showProgress=false){
+function setSaveUI(icon,title,desc,errorMsg,showProgress){
+  errorMsg=errorMsg||null;showProgress=showProgress||false;
   const spinner=document.getElementById('saveSpinner'),btnWrap=document.getElementById('saveBtnWrap'),details=document.getElementById('saveDetails'),progress=document.getElementById('saveProgress');
   document.getElementById('saveTitle').textContent=title;document.getElementById('saveDesc').textContent=desc;
   if(icon==='⏳'){spinner.textContent='⏳';spinner.style.animation='spin 1s linear infinite';btnWrap.style.display='none';}
@@ -1139,9 +1105,9 @@ async function saveLog(){
   const date=document.getElementById('fDate').value,start=getTimeVal('fStart'),end=getTimeVal('fEnd'),work=getWorkValue(),hours=calcHours(start,end);
   const isEdit=editingId!==null,id=isEdit?editingId:nextId++;
   setSaveUI('⏳','กำลังประมวลผล...','กำลังเตรียมข้อมูล');
-  const {before:uploadedBefore,after:uploadedAfter}=await uploadAllPendingPhotos(id);
+  const{before:uploadedBefore,after:uploadedAfter}=await uploadAllPendingPhotos(id);
   photos.before=[...uploadedBefore,...Array(MAX_PHOTOS-uploadedBefore.length).fill(null)];
-  photos.after =[...uploadedAfter, ...Array(MAX_PHOTOS-uploadedAfter.length).fill(null)];
+  photos.after=[...uploadedAfter,...Array(MAX_PHOTOS-uploadedAfter.length).fill(null)];
   const log={id,user:Array.from(selectedUsers).join(', '),date,start,end,hours,work,
     location:document.getElementById('fLocation').value||'0',item:document.getElementById('fItem').value||'0',
     qtyActual:Number(document.getElementById('fQtyActual').value)||0,status:currentStatus,
@@ -1182,7 +1148,7 @@ function startEdit(id){
     selectStatus(l.status||'Finish');
     photos={before:Array(MAX_PHOTOS).fill(null),after:Array(MAX_PHOTOS).fill(null)};
     (l.photosBefore||[]).forEach((p,i)=>{if(i<MAX_PHOTOS&&p)photos.before[i]=p;});
-    (l.photosAfter ||[]).forEach((p,i)=>{if(i<MAX_PHOTOS&&p)photos.after[i]=p;});
+    (l.photosAfter||[]).forEach((p,i)=>{if(i<MAX_PHOTOS&&p)photos.after[i]=p;});
     initSlots();
     document.getElementById('editModeIndicator').classList.add('visible');document.getElementById('editIdLabel').textContent=id;
     document.getElementById('btnCancelEdit').style.display='inline-flex';document.getElementById('btnSave').textContent='💾 บันทึกการแก้ไข';
