@@ -758,7 +758,12 @@ async function uploadPhotoToDrive(base64data,filename,maxRetries){
   var b64=resized.includes(',')?resized.split(',')[1]:resized;
   for(var attempt=1;attempt<=maxRetries;attempt++){
     try{
-      var res=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'uploadPhoto',filename:filename,base64:b64})});
+      var res = await fetch(GAS_URL, {
+  method  : 'POST',
+  headers : { 'Content-Type': 'text/plain' },
+  body    : JSON.stringify({ action: 'uploadPhoto', filename: filename, base64: b64 }),
+  redirect: 'follow'   // ← เพิ่มบรรทัดนี้
+});
       var text=await res.text();
       var data;
       try{data=JSON.parse(text);}
