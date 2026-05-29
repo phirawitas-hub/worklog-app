@@ -281,7 +281,10 @@
       <div class="topbar-right">
         <div class="edit-mode-topbar" id="editModeIndicator">✏️ แก้ไข #<span id="editIdLabel"></span><button class="edit-cancel-btn" onclick="cancelEdit()">✕ ยกเลิก</button></div>
         <div id="syncBadge" style="display:none;font-size:12px;font-weight:600;padding:6px 14px;border-radius:20px;border:2px solid var(--border);box-shadow:2px 2px 0px var(--border);color:var(--text);"></div>
-        <div class="date-badge" id="headerDate"></div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="date-badge" id="headerDate"></div>
+          <button onclick="refreshData()" id="refreshBtn" title="รีเฟรชข้อมูลจาก Sheet" style="width:36px;height:36px;border-radius:50%;border:2px solid var(--border);background:var(--surface);box-shadow:2px 2px 0px var(--border);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;flex-shrink:0;" onmouseover="this.style.transform='translate(-2px,-2px)';this.style.boxShadow='4px 4px 0px var(--border)'" onmouseout="this.style.transform='';this.style.boxShadow='2px 2px 0px var(--border)'">🔄</button>
+        </div>
       </div>
     </header>
     <div class="main">
@@ -387,6 +390,35 @@
             </div>
           </div>
         </div>
+
+        <!-- ATTACHMENTS -->
+        <div class="card">
+          <div class="card-title"><div class="card-title-icon">📎</div>แนบไฟล์ <span style="font-size:13px;color:var(--text3);font-weight:500;">(Excel / Google Sheets / อื่นๆ)</span></div>
+          
+          <!-- Google Sheets URL -->
+          <div class="field" style="margin-bottom:20px;">
+            <label>🔗 Google Sheets URL</label>
+            <div style="display:flex;gap:10px;align-items:flex-start;">
+              <input type="text" id="fGSheetsUrl" placeholder="วาง URL Google Sheets ที่นี่..." style="flex:1;">
+              <button class="btn btn-ghost btn-sm" onclick="addGSheetsLink()" style="flex-shrink:0;margin-top:0;white-space:nowrap;">➕ เพิ่ม</button>
+            </div>
+            <div id="gsheetsLinkList" style="display:flex;flex-direction:column;gap:8px;margin-top:10px;"></div>
+          </div>
+
+          <!-- File upload -->
+          <div class="field">
+            <label>📁 แนบไฟล์ Excel / CSV / อื่นๆ</label>
+            <div id="fileDropArea" onclick="document.getElementById('attachFileInput').click()" style="border:2px dashed var(--border2);border-radius:var(--radius-sm);padding:24px;text-align:center;cursor:pointer;background:var(--bg);transition:all 0.2s;" onmouseover="this.style.borderColor='var(--accent)';this.style.background='#eff6ff'" onmouseout="this.style.borderColor='var(--border2)';this.style.background='var(--bg)'">
+              <div style="font-size:32px;margin-bottom:8px;">📂</div>
+              <div style="font-size:14px;font-weight:600;color:var(--text2);">คลิกหรือลากไฟล์มาวาง</div>
+              <div style="font-size:12px;color:var(--text3);margin-top:4px;">.xlsx, .xls, .csv, .pdf, .txt รองรับหลายไฟล์</div>
+              <input type="file" id="attachFileInput" multiple accept=".xlsx,.xls,.csv,.pdf,.txt,.doc,.docx" style="display:none" onchange="handleAttachFiles(event)">
+            </div>
+            <div id="attachedFileList" style="display:flex;flex-direction:column;gap:8px;margin-top:12px;"></div>
+          </div>
+        </div>
+        <!-- END ATTACHMENTS -->
+
         <!-- PHOTOS -->
         <div class="card">
           <div class="card-title"><div class="card-title-icon">📸</div>ถ่ายภาพ / แนบรูป <span style="font-size:13px;color:var(--text3);font-weight:500;">(อัปโหลด Google Drive — แยก Before/After อย่างละ 5 รูป)</span></div>
@@ -766,6 +798,17 @@ document.addEventListener('DOMContentLoaded', () => {
       handleLogoFileSelect(fakeEv);
     }
   });
+
+  // File drag-drop
+  const fd=document.getElementById('fileDropArea');
+  if(fd){
+    fd.addEventListener('dragover',e=>{e.preventDefault();fd.style.borderColor='var(--accent)';fd.style.background='#eff6ff';});
+    fd.addEventListener('dragleave',()=>{fd.style.borderColor='var(--border2)';fd.style.background='var(--bg)';});
+    fd.addEventListener('drop',e=>{
+      e.preventDefault();fd.style.borderColor='var(--border2)';fd.style.background='var(--bg)';
+      const fakeEv={target:{files:e.dataTransfer.files,value:''}};handleAttachFiles(fakeEv);
+    });
+  }
 
   // App name input live preview
   document.getElementById('settingsAppName').addEventListener('input', e => {
@@ -1444,6 +1487,8 @@ function resetForm(){
   photos={before:Array(MAX_PHOTOS).fill(null),after:Array(MAX_PHOTOS).fill(null)};initSlots();stopCamera();facingMode='environment';
   document.getElementById('editModeIndicator').classList.remove('visible');document.getElementById('btnCancelEdit').style.display='none';document.getElementById('btnSave').textContent='💾 บันทึกงาน';
   setUploadStatus(false,'');clearAllErrors();
+  attachedLinks=[];renderAttachedLinks();
+  document.getElementById('fGSheetsUrl').value='';
 }
 
 // ═══════════════ DATE FILTERS ═══════════════
@@ -1563,6 +1608,88 @@ function renderSummary(){
   const sC={};filtered.forEach(l=>{sC[l.status||'Unknown']=(sC[l.status||'Unknown']||0)+1;});
   const maxSC=Math.max(1,...Object.values(sC));const sCols={Finish:'var(--green)',Pending:'var(--amber)',InProgress:'var(--accent)',Issue:'var(--red)'};
   document.getElementById('statusChart').innerHTML=Object.entries(sC).sort((a,b)=>b[1]-a[1]).map(([s,c])=>`<div style="display:grid;grid-template-columns:120px 1fr 60px;gap:14px;align-items:center;"><span class="status-badge status-${s}" style="text-align:center;">${s}</span><div style="background:var(--bg);border-radius:10px;height:18px;overflow:hidden;border:2px solid var(--border);"><div style="width:${(c/maxSC*100).toFixed(1)}%;height:100%;background:${sCols[s]||'var(--text3)'};border-radius:8px;transition:width 0.8s;"></div></div><div style="font-size:14px;font-weight:700;font-family:var(--mono);text-align:right;">${c}</div></div>`).join('')||'<div style="text-align:center;padding:24px;color:var(--text3);">ยังไม่มีข้อมูล</div>';
+}
+
+// ═══════════════ REFRESH ═══════════════
+async function refreshData(){
+  const btn=document.getElementById('refreshBtn');
+  btn.style.animation='spin 0.8s linear infinite';
+  btn.style.pointerEvents='none';
+  await fetchFromGAS();
+  btn.style.animation='';
+  btn.style.pointerEvents='';
+  showToast('🔄 รีเฟรชข้อมูลแล้ว');
+}
+
+// ═══════════════ FILE ATTACHMENTS ═══════════════
+let attachedLinks = [];   // [{type:'gsheets'|'file', name, url, size?}]
+
+function addGSheetsLink(){
+  const input=document.getElementById('fGSheetsUrl');
+  const url=input.value.trim();
+  if(!url)return showToast('⚠ กรุณาวาง URL ก่อน');
+  if(!url.startsWith('http'))return showToast('⚠ URL ไม่ถูกต้อง');
+  const name=url.includes('docs.google.com/spreadsheets')?'Google Sheets':
+             url.includes('docs.google.com')?'Google Docs':
+             url.split('/').pop().split('?')[0]||'ลิงก์แนบ';
+  attachedLinks.push({type:'gsheets',name,url});
+  input.value='';
+  renderAttachedLinks();
+  showToast('✅ เพิ่มลิงก์แล้ว');
+}
+
+function handleAttachFiles(e){
+  const files=[...e.target.files];
+  files.forEach(file=>{
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      attachedLinks.push({type:'file',name:file.name,size:file.size,dataUrl:ev.target.result});
+      renderAttachedLinks();
+    };
+    reader.readAsDataURL(file);
+  });
+  e.target.value='';
+  showToast('📎 แนบไฟล์ '+files.length+' ไฟล์แล้ว');
+}
+
+function removeAttachment(idx){
+  attachedLinks.splice(idx,1);
+  renderAttachedLinks();
+}
+
+function renderAttachedLinks(){
+  const gsEl=document.getElementById('gsheetsLinkList');
+  const fileEl=document.getElementById('attachedFileList');
+  if(!gsEl||!fileEl)return;
+  const links=attachedLinks.filter(a=>a.type==='gsheets');
+  const files=attachedLinks.filter(a=>a.type==='file');
+  const fmtSize=b=>b>1048576?(b/1048576).toFixed(1)+' MB':b>1024?(b/1024).toFixed(0)+' KB':b+' B';
+  gsEl.innerHTML=links.map((a,i)=>{
+    const realIdx=attachedLinks.indexOf(a);
+    return `<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg);border:2px solid var(--border2);border-radius:var(--radius-sm);">
+      <span style="font-size:18px;">📊</span>
+      <a href="${a.url}" target="_blank" style="flex:1;font-size:13px;font-weight:600;color:var(--accent);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${a.name}</a>
+      <button onclick="removeAttachment(${realIdx})" style="background:var(--red);color:white;border:none;border-radius:6px;padding:3px 8px;font-size:11px;font-weight:700;cursor:pointer;">✕</button>
+    </div>`;
+  }).join('');
+  fileEl.innerHTML=files.map((a)=>{
+    const realIdx=attachedLinks.indexOf(a);
+    const ext=a.name.split('.').pop().toLowerCase();
+    const icon=ext==='xlsx'||ext==='xls'?'📗':ext==='csv'?'📋':ext==='pdf'?'📕':'📄';
+    return `<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg);border:2px solid var(--border2);border-radius:var(--radius-sm);">
+      <span style="font-size:18px;">${icon}</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${a.name}</div>
+        ${a.size?'<div style="font-size:11px;color:var(--text3);">'+fmtSize(a.size)+'</div>':''}
+      </div>
+      <button onclick="removeAttachment(${realIdx})" style="background:var(--red);color:white;border:none;border-radius:6px;padding:3px 8px;font-size:11px;font-weight:700;cursor:pointer;">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function getAttachmentSummary(){
+  if(!attachedLinks.length)return'';
+  return attachedLinks.map(a=>a.type==='gsheets'?'[Sheets] '+a.url:'[File] '+a.name).join('\n');
 }
 
 // ═══════════════ TOAST ═══════════════
