@@ -269,10 +269,8 @@
       <div class="nav-item" onclick="switchPage('summary')" id="nav-summary"><span class="nav-icon">📊</span><span class="nav-label">สรุปภาพรวม</span></div>
       <div class="nav-item" onclick="switchPage('settings')" id="nav-settings"><span class="nav-icon">⚙️</span><span class="nav-label">ตั้งค่าระบบ</span></div>
     </nav>
-    <div class="sidebar-footer">
-      <span class="sidebar-date" id="sidebarDate"></span>
-      <button onclick="testGAS()" style="margin-top:10px;width:100%;padding:8px;background:var(--surface);border:2px solid var(--border2);border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;color:var(--text3);" onmouseover="this.style.background='#eff6ff'" onmouseout="this.style.background='var(--surface)'">🔗 ทดสอบ GAS</button>
-      <button onclick="forceMigrate()" style="margin-top:6px;width:100%;padding:8px;background:var(--surface);border:2px solid var(--border2);border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;color:var(--text3);" onmouseover="this.style.background='var(--amber)'" onmouseout="this.style.background='var(--surface)'">☁ Sync ข้อมูลเก่า → Sheet</button>
+    <div class="sidebar-footer" style="padding:12px 16px;">
+      <span id="sidebarDate" style="display:none;"></span>
     </div>
   </aside>
   <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
