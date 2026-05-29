@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WorkLog — Inventory Team</title>
+<title id="appTitle">WorkLog — Inventory Team</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -22,7 +22,8 @@
   .sidebar{width:var(--sidebar-w);min-height:100vh;background:var(--surface);border-right:3px solid var(--border);display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:200;transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);box-shadow:4px 0 0 var(--border);}
   .sidebar.collapsed{transform:translateX(calc(-1 * var(--sidebar-w)));}
   .sidebar-logo{padding:32px 24px 24px;border-bottom:2px solid var(--border2);display:flex;flex-direction:column;align-items:center;gap:12px;}
-  .sidebar-logo-icon{width:72px;height:72px;border-radius:20px;background:var(--surface2);border:3px solid var(--border);box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;font-size:36px;}
+  .sidebar-logo-icon{width:72px;height:72px;border-radius:20px;background:var(--surface2);border:3px solid var(--border);box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;font-size:36px;overflow:hidden;}
+  .sidebar-logo-icon img{width:100%;height:100%;object-fit:cover;border-radius:17px;}
   .sidebar-logo-title{font-size:22px;font-weight:700;color:var(--text);text-align:center;line-height:1.2;}
   .sidebar-logo-sub{font-size:11px;font-weight:600;letter-spacing:0.12em;color:var(--text3);text-transform:uppercase;}
   .sidebar-nav{flex:1;padding:20px 16px;display:flex;flex-direction:column;gap:6px;overflow-y:auto;}
@@ -221,6 +222,15 @@
   .edit-cancel-btn{background:var(--surface);border:2px solid var(--border);border-radius:12px;padding:3px 10px;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.15s;}
   .edit-cancel-btn:hover{background:var(--red);color:white;}
   .req{color:var(--red);margin-left:3px;}
+  /* ── Settings page ── */
+  .settings-section{margin-bottom:32px;}
+  .settings-section-title{font-size:16px;font-weight:700;color:var(--text2);margin-bottom:16px;padding-bottom:10px;border-bottom:2px dashed var(--border2);display:flex;align-items:center;gap:8px;}
+  .logo-upload-area{border:3px dashed var(--border2);border-radius:var(--radius);padding:32px;display:flex;flex-direction:column;align-items:center;gap:16px;cursor:pointer;transition:all 0.2s;background:var(--bg);position:relative;}
+  .logo-upload-area:hover{border-color:var(--accent);background:#eff6ff;}
+  .logo-preview{width:120px;height:120px;border-radius:20px;border:3px solid var(--border);box-shadow:var(--shadow);object-fit:cover;display:none;}
+  .logo-placeholder{width:120px;height:120px;border-radius:20px;border:3px solid var(--border2);background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:48px;}
+  .logo-upload-hint{font-size:14px;font-weight:600;color:var(--text3);}
+  .logo-upload-hint span{color:var(--accent);}
   ::-webkit-scrollbar{width:10px;height:10px;}
   ::-webkit-scrollbar-track{background:var(--bg);}
   ::-webkit-scrollbar-thumb{background:var(--border);border-radius:0;border:2px solid var(--bg);}
@@ -247,9 +257,9 @@
 <div class="app">
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-logo">
-      <div class="sidebar-logo-icon">📦</div>
+      <div class="sidebar-logo-icon" id="sidebarLogoIcon">📦</div>
       <div>
-        <div class="sidebar-logo-title">WORKLOG</div>
+        <div class="sidebar-logo-title" id="sidebarAppName">WORKLOG</div>
         <div class="sidebar-logo-sub">Inventory System</div>
       </div>
     </div>
@@ -257,6 +267,7 @@
       <div class="nav-item active" onclick="switchPage('add')" id="nav-add"><span class="nav-icon">✍️</span><span class="nav-label">บันทึกงาน</span></div>
       <div class="nav-item" onclick="switchPage('list')" id="nav-list"><span class="nav-icon">📋</span><span class="nav-label">รายการทั้งหมด</span></div>
       <div class="nav-item" onclick="switchPage('summary')" id="nav-summary"><span class="nav-icon">📊</span><span class="nav-label">สรุปภาพรวม</span></div>
+      <div class="nav-item" onclick="switchPage('settings')" id="nav-settings"><span class="nav-icon">⚙️</span><span class="nav-label">ตั้งค่าระบบ</span></div>
     </nav>
     <div class="sidebar-footer">
       <span class="sidebar-date" id="sidebarDate"></span>
@@ -380,7 +391,7 @@
         </div>
         <!-- PHOTOS -->
         <div class="card">
-          <div class="card-title"><div class="card-title-icon">📸</div>ถ่ายภาพ / แนบรูป <span style="font-size:13px;color:var(--text3);font-weight:500;">(อัปโหลด Google Drive อัตโนมัติ — ดูได้ทุกเครื่อง)</span></div>
+          <div class="card-title"><div class="card-title-icon">📸</div>ถ่ายภาพ / แนบรูป <span style="font-size:13px;color:var(--text3);font-weight:500;">(อัปโหลด Google Drive — แยก Before/After อย่างละ 5 รูป)</span></div>
           <div class="upload-status-bar" id="uploadStatusBar"><span id="uploadStatusIcon">📤</span><span id="uploadStatusText">กำลังอัปโหลด...</span></div>
           <div class="photo-section" style="margin-top:16px;">
             <div class="photo-section-header"><div class="photo-section-label">📷 ก่อนงาน</div><span class="photo-section-count" id="beforeCount">0 / 5</span></div>
@@ -417,6 +428,7 @@
           <button class="btn btn-success" onclick="saveLog()" id="btnSave">💾 บันทึกงาน</button>
         </div>
       </div>
+
       <!-- LIST PAGE -->
       <div class="page" id="page-list">
         <div style="background:var(--surface);border:3px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:20px;box-shadow:var(--shadow);">
@@ -441,6 +453,7 @@
         <div id="listSummaryBar" style="display:none;background:var(--surface);border:2px solid var(--border);border-radius:var(--radius-sm);padding:12px 18px;margin-bottom:16px;font-size:14px;font-weight:600;gap:20px;flex-wrap:wrap;box-shadow:var(--shadow-sm);"></div>
         <div class="log-list" id="logList"></div>
       </div>
+
       <!-- SUMMARY PAGE -->
       <div class="page" id="page-summary">
         <div class="summary-filter-bar">
@@ -468,9 +481,64 @@
         <div class="card"><div class="card-title"><div class="card-title-icon">🏷</div>ประเภทงาน</div><div id="typeWorkChart" style="display:flex;flex-direction:column;gap:14px;"></div></div>
         <div class="card"><div class="card-title"><div class="card-title-icon">📌</div>สถานะงาน</div><div id="statusChart" style="display:flex;flex-direction:column;gap:14px;"></div></div>
       </div>
+
+      <!-- ══════════════════════════════════════════════════════ -->
+      <!-- SETTINGS PAGE                                          -->
+      <!-- ══════════════════════════════════════════════════════ -->
+      <div class="page" id="page-settings">
+        <div class="card">
+          <div class="card-title"><div class="card-title-icon">⚙️</div>ตั้งค่าระบบ (System Settings)</div>
+          <p style="font-size:14px;color:var(--text3);margin-bottom:24px;">การตั้งค่าจะซิงก์ไปยัง Google Sheets — มีผลกับทุกเครื่องที่เปิดแอปนี้</p>
+
+          <!-- App Name -->
+          <div class="settings-section">
+            <div class="settings-section-title">🏷 ชื่อระบบ (System Name)</div>
+            <p style="font-size:13px;color:var(--text3);margin-bottom:12px;">เปลี่ยนชื่อแบรนด์ที่แสดงบน Sidebar และ Title Bar</p>
+            <div class="field">
+              <label>ชื่อแอป</label>
+              <input type="text" id="settingsAppName" placeholder="เช่น WorkLog, Vespa Inventory..." maxlength="50">
+            </div>
+          </div>
+
+          <!-- Logo -->
+          <div class="settings-section">
+            <div class="settings-section-title">🖼 โลโก้ / ไอคอน (Logo)</div>
+            <p style="font-size:13px;color:var(--text3);margin-bottom:12px;">อัปโหลดรูปเพื่อแสดงบน Sidebar แทน Emoji — แนะนำรูปสี่เหลี่ยมจัตุรัส ขนาด 200×200px ขึ้นไป</p>
+            <div class="logo-upload-area" id="logoDropArea" onclick="document.getElementById('logoFileInput').click()">
+              <img id="logoPreview" class="logo-preview" src="" alt="Logo Preview">
+              <div class="logo-placeholder" id="logoPlaceholder">📦</div>
+              <div class="logo-upload-hint">คลิกหรือลากไฟล์มาวาง<br><span>รองรับ JPG, PNG, WEBP</span></div>
+              <input type="file" id="logoFileInput" accept="image/*" style="display:none" onchange="handleLogoFileSelect(event)">
+            </div>
+            <div style="margin-top:12px;display:flex;gap:12px;">
+              <button class="btn btn-ghost btn-sm" onclick="clearLogo()">🗑 ลบโลโก้ (ใช้ Emoji)</button>
+            </div>
+          </div>
+
+          <div class="form-actions" style="border-top:2px dashed var(--border2);padding-top:24px;">
+            <button class="btn btn-ghost" onclick="loadSettings()">↩ โหลดจาก Sheet ใหม่</button>
+            <button class="btn btn-success" onclick="saveSettings()" id="btnSaveSettings">💾 บันทึกการตั้งค่า</button>
+          </div>
+        </div>
+
+        <!-- Preview -->
+        <div class="card">
+          <div class="card-title"><div class="card-title-icon">👁</div>ตัวอย่าง Sidebar</div>
+          <div style="display:flex;align-items:center;gap:16px;padding:16px;background:var(--bg);border-radius:var(--radius-sm);border:2px solid var(--border2);">
+            <div id="settingsPreviewIcon" style="width:56px;height:56px;border-radius:14px;background:var(--surface2);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:28px;overflow:hidden;">📦</div>
+            <div>
+              <div id="settingsPreviewName" style="font-size:18px;font-weight:700;">WORKLOG</div>
+              <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;">Inventory System</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- END SETTINGS PAGE -->
+
     </div>
   </div>
 </div>
+
 <!-- Save Modal -->
 <div class="modal-overlay" id="saveOverlay" style="z-index:9999;">
   <div class="modal save-modal">
@@ -499,7 +567,6 @@
 <!-- Full Image Modal -->
 <div class="modal-overlay" id="imgModalOverlay" style="z-index:250;" onclick="if(event.target.id==='imgModalOverlay')closeImgModalBtn()">
   <div class="modal" style="max-width:800px;text-align:center;padding:24px;">
-    <!-- BUG FIX 1: ไม่ใส่ src="" และไม่ใส่ onerror inline → ป้องกัน fires ก่อน script โหลด -->
     <img id="fullImgPreview" style="max-width:100%;max-height:75vh;border-radius:var(--radius-sm);object-fit:contain;border:2px solid var(--border);display:none;">
     <div id="imgErrMsg" style="display:none;padding:20px;font-size:14px;color:var(--text3);">ไม่สามารถโหลดรูปได้ — <a id="imgDriveLink" href="#" target="_blank" style="color:var(--accent);font-weight:700;">เปิดใน Google Drive</a></div>
     <div style="margin-top:16px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
@@ -509,6 +576,7 @@
   </div>
 </div>
 <div class="toast" id="toast"><span class="toast-icon">✨</span><span id="toastMsg"></span></div>
+
 <script>
 // ═══════════════ CONFIG ═══════════════
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwZEDYqhrhc02ps7Z6Cjbw01s_sVE9AWnfz2IBN4sPnVQ7mkon86oA_zatUMubZyhLKZw/exec';
@@ -517,7 +585,6 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbwZEDYqhrhc02ps7Z6Cjbw0
 function isDrivePhoto(p) { return p && typeof p === 'object' && p.driveId; }
 function getPhotoSrc(p)  { return !p ? '' : isDrivePhoto(p) ? p.thumbUrl : p; }
 
-// BUG FIX 1: กำหนด handleFullImgError ก่อนใช้ — ผูก onerror ผ่าน JS ไม่ใช่ inline HTML
 function handleFullImgError(img){
   img.style.display='none';
   document.getElementById('imgErrMsg').style.display='block';
@@ -526,25 +593,16 @@ function handleFullImgError(img){
   document.getElementById('openInDriveBtn').style.display=currentViewUrl?'inline-flex':'none';
 }
 
-// BUG FIX 2: ปุ่มทดสอบการเชื่อมต่อ GAS — กดได้จาก sidebar
 async function testGAS(){
   showToast('⏳ กำลังทดสอบ GAS...');
   try{
     const res=await fetch(GAS_URL+'?action=getAll',{redirect:'follow'});
     const text=await res.text();
-    console.log('[GAS Test] response:', text.slice(0,300));
     const data=JSON.parse(text);
     showToast(Array.isArray(data)?'✅ GAS OK — '+data.length+' รายการ':'⚠ GAS: '+JSON.stringify(data).slice(0,60));
-  }catch(e){
-    console.error('[GAS Test]',e);
-    showToast('⚠ GAS Error: '+e.message);
-  }
+  }catch(e){showToast('⚠ GAS Error: '+e.message);}
 }
 
-// FIX: lh3 URL — ดูได้ทุกเครื่องไม่ต้อง login
-function driveThumbUrl(id) { return 'https://lh3.googleusercontent.com/d/' + id + '=w800'; }
-function driveViewUrl(id)  { return 'https://drive.google.com/file/d/' + id + '/view'; }
-function driveUcUrl(id)    { return 'https://drive.google.com/uc?export=view&id=' + id; }
 function driveThumbUrl(id) { return 'https://lh3.googleusercontent.com/d/' + id + '=w800'; }
 function driveViewUrl(id)  { return 'https://drive.google.com/file/d/' + id + '/view'; }
 function driveUcUrl(id)    { return 'https://drive.google.com/uc?export=view&id=' + id; }
@@ -559,13 +617,164 @@ function toggleSidebar() {
 function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebarOverlay').classList.remove('open');sidebarOpen=false;}
 window.addEventListener('resize',()=>{if(window.innerWidth>768){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebarOverlay').classList.remove('open');}});
 
-const PAGE_TITLES={add:'✍️ บันทึกงาน',list:'📋 รายการทั้งหมด',summary:'📊 สรุปภาพรวม'};
+const PAGE_TITLES={add:'✍️ บันทึกงาน',list:'📋 รายการทั้งหมด',summary:'📊 สรุปภาพรวม',settings:'⚙️ ตั้งค่าระบบ'};
 
 // ═══════════════ DATA ═══════════════
 let logs=[];
 try{const s=localStorage.getItem('wl_logs');logs=s?JSON.parse(s):[];}catch(e){logs=[];}
 let nextId=logs.length>0?Math.max(...logs.map(l=>l.id||0))+1:1;
 let currentStatus='',selectedUsers=new Set(),editingId=null,listDateMode='all',summaryDateMode='all';
+
+// ═══════════════ SYSTEM SETTINGS ═══════════════
+let appSettings = {
+  appName: localStorage.getItem('wl_appName') || 'WORKLOG',
+  logoBase64: localStorage.getItem('wl_logoBase64') || '',
+};
+
+function applyAppSettings(settings) {
+  if (settings.appName) {
+    appSettings.appName = settings.appName;
+    localStorage.setItem('wl_appName', settings.appName);
+    document.getElementById('sidebarAppName').textContent = settings.appName.toUpperCase();
+    document.getElementById('appTitle').textContent = settings.appName + ' — Inventory Team';
+  }
+  if (settings.logoBase64) {
+    appSettings.logoBase64 = settings.logoBase64;
+    localStorage.setItem('wl_logoBase64', settings.logoBase64);
+    const icon = document.getElementById('sidebarLogoIcon');
+    icon.innerHTML = '<img src="' + settings.logoBase64 + '" alt="logo">';
+  } else if (settings.logoBase64 === '') {
+    // explicitly cleared
+    appSettings.logoBase64 = '';
+    localStorage.removeItem('wl_logoBase64');
+    document.getElementById('sidebarLogoIcon').innerHTML = '📦';
+  }
+}
+
+function renderSettingsPage() {
+  document.getElementById('settingsAppName').value = appSettings.appName || '';
+  const preview = document.getElementById('logoPreview');
+  const placeholder = document.getElementById('logoPlaceholder');
+  if (appSettings.logoBase64) {
+    preview.src = appSettings.logoBase64;
+    preview.style.display = 'block';
+    placeholder.style.display = 'none';
+    document.getElementById('settingsPreviewIcon').innerHTML = '<img src="'+appSettings.logoBase64+'" style="width:100%;height:100%;object-fit:cover;border-radius:12px;">';
+  } else {
+    preview.style.display = 'none';
+    placeholder.style.display = 'flex';
+    document.getElementById('settingsPreviewIcon').innerHTML = '📦';
+  }
+  document.getElementById('settingsPreviewName').textContent = (appSettings.appName || 'WORKLOG').toUpperCase();
+}
+
+function handleLogoFileSelect(e) {
+  const file = e.target.files[0]; if (!file) return;
+  if (!file.type.startsWith('image/')) return showToast('⚠ โปรดเลือกไฟล์รูปภาพ');
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      // Resize to max 256x256 for storage efficiency
+      const MAX = 256;
+      let w = img.width, h = img.height;
+      if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+      if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      const b64 = canvas.toDataURL('image/jpeg', 0.85);
+      // Update preview
+      const preview = document.getElementById('logoPreview');
+      const placeholder = document.getElementById('logoPlaceholder');
+      preview.src = b64; preview.style.display = 'block'; placeholder.style.display = 'none';
+      document.getElementById('settingsPreviewIcon').innerHTML = '<img src="'+b64+'" style="width:100%;height:100%;object-fit:cover;border-radius:12px;">';
+      appSettings.logoBase64 = b64;
+      showToast('🖼 โหลดโลโก้แล้ว — กด "บันทึก" เพื่อซิงก์');
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+
+function clearLogo() {
+  appSettings.logoBase64 = '';
+  document.getElementById('logoPreview').style.display = 'none';
+  document.getElementById('logoPlaceholder').style.display = 'flex';
+  document.getElementById('settingsPreviewIcon').innerHTML = '📦';
+  showToast('🗑 ลบโลโก้แล้ว — กด "บันทึก" เพื่อซิงก์');
+}
+
+async function saveSettings() {
+  const name = document.getElementById('settingsAppName').value.trim();
+  if (!name) return showToast('⚠ กรุณากรอกชื่อแอป');
+  const btn = document.getElementById('btnSaveSettings');
+  btn.disabled = true; btn.textContent = '⏳ กำลังบันทึก...';
+  try {
+    const payload = {
+      action: 'saveSettings',
+      appName: name,
+      logoBase64: appSettings.logoBase64 || '',
+    };
+    const res = await fetch(GAS_URL, {
+      method: 'POST', headers: {'Content-Type': 'text/plain'},
+      body: JSON.stringify(payload), redirect: 'follow'
+    });
+    const data = await res.json();
+    if (data.ok) {
+      applyAppSettings({ appName: name, logoBase64: appSettings.logoBase64 });
+      showToast('✅ บันทึก Settings สำเร็จ — ซิงก์ไป Sheet แล้ว');
+    } else {
+      // Save locally only
+      applyAppSettings({ appName: name, logoBase64: appSettings.logoBase64 });
+      showToast('⚠ บันทึกเฉพาะ local — Sheet: ' + (data.error || 'error'));
+    }
+  } catch(e) {
+    applyAppSettings({ appName: name, logoBase64: appSettings.logoBase64 });
+    showToast('⚠ บันทึก local แล้ว แต่ Sheet ไม่ตอบสนอง');
+  }
+  btn.disabled = false; btn.textContent = '💾 บันทึกการตั้งค่า';
+}
+
+async function loadSettings() {
+  showToast('⏳ กำลังโหลด Settings จาก Sheet...');
+  try {
+    const res = await fetch(GAS_URL + '?action=getSettings', {redirect:'follow'});
+    const data = await res.json();
+    if (data && data.appName) {
+      applyAppSettings(data);
+      renderSettingsPage();
+      showToast('✅ โหลด Settings จาก Sheet แล้ว');
+    } else {
+      showToast('⚠ ไม่พบ Settings ใน Sheet');
+    }
+  } catch(e) {
+    showToast('⚠ โหลดไม่ได้: ' + e.message);
+  }
+}
+
+// Drag-drop logo
+document.addEventListener('DOMContentLoaded', () => {
+  const drop = document.getElementById('logoDropArea');
+  if (!drop) return;
+  drop.addEventListener('dragover', e => { e.preventDefault(); drop.style.borderColor = 'var(--accent)'; });
+  drop.addEventListener('dragleave', () => { drop.style.borderColor = ''; });
+  drop.addEventListener('drop', e => {
+    e.preventDefault(); drop.style.borderColor = '';
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+      const fakeEv = { target: { files: [file], value: '' } };
+      handleLogoFileSelect(fakeEv);
+    }
+  });
+
+  // App name input live preview
+  document.getElementById('settingsAppName').addEventListener('input', e => {
+    const v = e.target.value.trim() || 'WORKLOG';
+    document.getElementById('settingsPreviewName').textContent = v.toUpperCase();
+  });
+});
 
 // ═══════════════ CUSTOM ITEMS ═══════════════
 let sharedCustomItems={
@@ -602,9 +811,7 @@ async function fetchCustomItems(){
 }
 async function pushConfigItem(type,item,recorder,remove=false){
   if(!GAS_URL)return;
-  try{
-    await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'saveConfig',type,item,recorder,remove})});
-  }catch(e){}
+  try{await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'saveConfig',type,item,recorder,remove})});}catch(e){}
 }
 function syncUserPillsFromConfig(){
   const picker=document.getElementById('userPicker'),addBtn=picker.querySelector('.add-user-btn');
@@ -784,28 +991,18 @@ async function uploadPhotoToDrive(base64data,filename,maxRetries){
   var b64=resized.includes(',')?resized.split(',')[1]:resized;
   for(var attempt=1;attempt<=maxRetries;attempt++){
     try{
-      // BUG FIX 3: redirect:follow สำคัญมาก — GAS ส่ง 302 redirect, ถ้าไม่ follow จะไม่ได้ response
       var res=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'uploadPhoto',filename:filename,base64:b64}),redirect:'follow'});
       var text=await res.text();
-      console.log('[Upload] attempt '+attempt+' status:'+res.status+' body:',text.slice(0,200));
       var data;
       try{data=JSON.parse(text);}
-      catch(parseErr){
-        console.error('[Upload] non-JSON GAS response:', text.slice(0,500));
-        throw new Error('GAS ตอบไม่ใช่ JSON — ต้อง Redeploy GAS ใหม่');
-      }
-      if(data.ok&&data.fileId){
-        console.log('[Upload] SUCCESS fileId:',data.fileId);
-        return{driveId:data.fileId,thumbUrl:data.url,viewUrl:data.viewUrl};
-      }
-      throw new Error(data.error||'GAS ok:false — '+JSON.stringify(data));
+      catch(parseErr){throw new Error('GAS ตอบไม่ใช่ JSON — ต้อง Redeploy GAS ใหม่');}
+      if(data.ok&&data.fileId){return{driveId:data.fileId,thumbUrl:data.url,viewUrl:data.viewUrl};}
+      throw new Error(data.error||'GAS ok:false');
     }catch(err){
-      console.error('[Upload] attempt '+attempt+'/'+maxRetries+' FAILED:',err.message);
       setUploadStatus(true,'⚠ Upload attempt '+attempt+': '+err.message.slice(0,60),'err');
       if(attempt<maxRetries)await new Promise(function(r){setTimeout(r,1500*attempt);});
     }
   }
-  console.error('[Upload] ALL RETRIES FAILED for',filename);
   return null;
 }
 
@@ -821,7 +1018,6 @@ async function uploadAllPendingPhotos(logId){
   const beforeRaw=photos.before.filter(Boolean),afterRaw=photos.after.filter(Boolean);
   const toUpload=[...beforeRaw,...afterRaw].filter(p=>!isDrivePhoto(p)).length;
   if(toUpload===0)return{before:beforeRaw,after:afterRaw};
-  const total=beforeRaw.length+afterRaw.length;
   setSaveUI('⏳','กำลังอัปโหลดรูปภาพ...','0 / '+toUpload+' รูป → Google Drive',null,true);
   setUploadStatus(true,'กำลังอัปโหลด 0/'+toUpload+' รูป...');
   let done=0,failed=0;
@@ -839,10 +1035,8 @@ async function uploadAllPendingPhotos(logId){
         document.getElementById('saveProgressBar').style.width=pct+'%';
         document.getElementById('saveDesc').textContent=done+' / '+toUpload+' รูปอัปโหลดแล้ว';
         setUploadStatus(true,'☁ อัปโหลด '+done+'/'+toUpload+' รูปแล้ว');
-        showToast('☁ '+(sec==='before'?'ก่อนงาน':'หลังงาน')+' #'+(i+1)+' อัปโหลดสำเร็จ');
       }else{
         results.push(p);failed++;
-        setUploadStatus(true,'⚠ รูป '+(sec==='before'?'ก่อน':'หลัง')+' #'+(i+1)+' ล้มเหลว — เปิด F12 > Console ดู error จริง','err');
       }
     }
     return results;
@@ -854,40 +1048,62 @@ async function uploadAllPendingPhotos(logId){
   return{before,after};
 }
 
-// ═══════════════ GAS API ═══════════════
-async function pushToGAS(log,action){
-  action=action||'save';
-  if(!GAS_URL)return{ok:false,error:'ไม่ได้ตั้งค่า GAS URL'};
-  const toUrls=arr=>(arr||[]).filter(isDrivePhoto).map(p=>p.viewUrl).filter(Boolean);
-  const beforeUrls=toUrls(log.photosBefore),afterUrls=toUrls(log.photosAfter);
-  const totalBefore=(log.photosBefore||[]).filter(Boolean).length;
-  const totalAfter=(log.photosAfter||[]).filter(Boolean).length;
-  const payload={
-    action,id:log.id,user:log.user,start:log.start,end:log.end,
-    hours:fmtH(parseFloat(log.hours)||0),work:log.work,
-    location:log.location,item:log.item,qtyActual:log.qtyActual,
-    status:log.status,typeWork:log.typeWork||'',remark:log.remark||'',
-    photosBefore:totalBefore,photosAfter:totalAfter,photoTotal:totalBefore+totalAfter,
-    photoBeforeUrls:beforeUrls.join('\n'),photoAfterUrls:afterUrls.join('\n'),
+// ═══════════════ GAS API (v5: แยก URL 5+5) ═══════════════
+async function pushToGAS(log, action) {
+  action = action || 'save';
+  if (!GAS_URL) return { ok: false, error: 'ไม่ได้ตั้งค่า GAS URL' };
+
+  // ── แยก before / after แต่ละ URL เป็น field ของตัวเอง ──────
+  const toViewUrls = arr => (arr || [])
+    .filter(isDrivePhoto)
+    .map(p => p.viewUrl)
+    .filter(Boolean);
+
+  const beforeUrls = toViewUrls(log.photosBefore); // max 5
+  const afterUrls  = toViewUrls(log.photosAfter);  // max 5
+
+  const totalBefore = (log.photosBefore || []).filter(Boolean).length;
+  const totalAfter  = (log.photosAfter  || []).filter(Boolean).length;
+
+  const payload = {
+    action,
+    id:          log.id,
+    user:        log.user,
+    start:       log.start,
+    end:         log.end,
+    hours:       fmtH(parseFloat(log.hours) || 0),
+    work:        log.work,
+    location:    log.location,
+    item:        log.item,
+    qtyActual:   log.qtyActual,
+    status:      log.status,
+    typeWork:    log.typeWork || '',
+    remark:      log.remark  || '',
+    photosBefore: totalBefore,
+    photosAfter:  totalAfter,
+    photoTotal:   totalBefore + totalAfter,
+    // ── ส่ง newline-separated เหมือนเดิม → GAS v5 จะแยกเอง ──
+    photoBeforeUrls: beforeUrls.join('\n'),
+    photoAfterUrls:  afterUrls.join('\n'),
   };
-  console.log('[pushToGAS] action:'+action+' photoBeforeUrls:',payload.photoBeforeUrls.slice(0,80));
-  try{
-    const res=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload),redirect:'follow'});
-    const text=await res.text();
-    console.log('[pushToGAS] response:',text.slice(0,200));
-    const data=JSON.parse(text);
-    return data.ok?{ok:true}:{ok:false,error:data.error||'GAS error'};
-  }catch(e){
-    console.error('[pushToGAS] error:',e);
-    return{ok:false,error:'เชื่อมต่อล้มเหลว: '+e.message};
+
+  try {
+    const res  = await fetch(GAS_URL, {
+      method: 'POST', headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(payload), redirect: 'follow',
+    });
+    const text = await res.text();
+    const data = JSON.parse(text);
+    return data.ok ? { ok: true } : { ok: false, error: data.error || 'GAS error' };
+  } catch (e) {
+    return { ok: false, error: 'เชื่อมต่อล้มเหลว: ' + e.message };
   }
 }
+
 async function deleteFromGAS(id){
   if(!GAS_URL)return{ok:false};
-  try{
-    await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'delete',id}),redirect:'follow'});
-    return{ok:true};
-  }catch(e){return{ok:false,error:e.message};}
+  try{await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'delete',id}),redirect:'follow'});return{ok:true};}
+  catch(e){return{ok:false,error:e.message};}
 }
 
 async function fetchFromGAS(){
@@ -897,26 +1113,60 @@ async function fetchFromGAS(){
   try{
     const res=await fetch(GAS_URL+'?action=getAll',{redirect:'follow'});
     const rows=await res.json();
-    if(!Array.isArray(rows)||rows.length===0){badge.textContent='✓ ซิงก์แล้ว (ไม่มีข้อมูลใหม่)';badge.style.background='#dcfce7';badge.style.borderColor='#16a34a';setTimeout(()=>badge.style.display='none',2500);return;}
+    if(!Array.isArray(rows)||rows.length===0){
+      badge.textContent='✓ ซิงก์แล้ว (ไม่มีข้อมูลใหม่)';badge.style.background='#dcfce7';badge.style.borderColor='#16a34a';
+      setTimeout(()=>badge.style.display='none',2500);return;
+    }
     const g=(r,key,fb)=>{fb=fb===undefined?'':fb;const f=Object.keys(r).find(k=>k.trim().toLowerCase()===key.toLowerCase());return f!==undefined?r[f]:fb;};
     const pTime=v=>{if(!v&&v!==0)return'';const s=String(v).trim();if(/^\d{1,2}:\d{2}/.test(s)){const p=s.split(':');return String(parseInt(p[0],10)).padStart(2,'0')+':'+p[1].substring(0,2);}if(s.includes('T')||s.includes('1899')){try{const d=new Date(s);if(!isNaN(d))return String(d.getUTCHours()).padStart(2,'0')+':'+String(d.getUTCMinutes()).padStart(2,'0');}catch(e){}}return s;};
     const pDate=v=>{if(!v)return'';const s=String(v);if(s.includes('T')||s.includes('1899')){try{const d=new Date(s);if(!isNaN(d))return d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0');}catch(e){}}if(/^\d{1,2}\/\d{1,2}\/\d{4}/.test(s)){const p=s.split('/');return p[2]+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0');}return s.replace(/\//g,'-');};
-    // ══════════════════════════════════════════════════════════
-    // FIX: pUrls — แปลง Drive view URL → lh3 thumbUrl
-    // ══════════════════════════════════════════════════════════
-    const pUrls=v=>String(v||'').split('\n').map(u=>u.trim()).filter(u=>u.startsWith('http')).map(url=>{
-      const m=url.match(/\/d\/([a-zA-Z0-9_-]+)/)||url.match(/id=([a-zA-Z0-9_-]+)/);
-      if(m){const id=m[1];return{driveId:id,thumbUrl:driveThumbUrl(id),viewUrl:driveViewUrl(id)};}
-      return{driveId:null,thumbUrl:url,viewUrl:url};
-    });
+
+    // ── Parse photo URLs — รองรับทั้ง v4 (รวม) และ v5 (แยก) ──
+    const pUrls = v => String(v||'').split('\n')
+      .map(u=>u.trim()).filter(u=>u.startsWith('http'))
+      .map(url=>{
+        const m=url.match(/\/d\/([a-zA-Z0-9_-]+)/)||url.match(/id=([a-zA-Z0-9_-]+)/);
+        if(m){const id=m[1];return{driveId:id,thumbUrl:driveThumbUrl(id),viewUrl:driveViewUrl(id)};}
+        return{driveId:null,thumbUrl:url,viewUrl:url};
+      });
+
+    // ── Build before/after arrays from v5 columns (Before URL 1..5 / After URL 1..5) ──
+    const pUrlsV5 = (r, prefix) => {
+      const arr = [];
+      for (let i = 1; i <= 5; i++) {
+        const v = g(r, prefix + ' ' + i, '');
+        if (v && String(v).startsWith('http')) {
+          const url = String(v);
+          const m = url.match(/\/d\/([a-zA-Z0-9_-]+)/)||url.match(/id=([a-zA-Z0-9_-]+)/);
+          if (m) { const id=m[1]; arr.push({driveId:id,thumbUrl:driveThumbUrl(id),viewUrl:driveViewUrl(id)}); }
+          else arr.push({driveId:null,thumbUrl:url,viewUrl:url});
+        }
+      }
+      return arr;
+    };
+
     const sheetLogs=rows.map((r,idx)=>{
       const idVal=Number(g(r,'No.')||g(r,'No')||g(r,'no'))||(idx+1);
       const start=pTime(g(r,'Start')),end=pTime(g(r,'End'));
-      return{id:idVal,user:String(g(r,'User')||''),date:pDate(g(r,'Timestamp','')||pDate(g(r,'Date',''))),start,end,hours:(start&&end)?calcHours(start,end):(parseFloat(g(r,'Hour'))||0),work:String(g(r,'Work')||''),location:String(g(r,'Location')||'-'),item:String(g(r,'Item')||'-'),qtyActual:parseFloat(g(r,'Quantity'))||0,status:String(g(r,'Status')||'Finish'),typeWork:String(g(r,'Type Work')||''),remark:String(g(r,'Remark')||''),
-        photosBefore:pUrls(g(r,'Photo Before URLs','')||g(r,'photoBeforeUrls','')),
-        photosAfter: pUrls(g(r,'Photo After URLs', '')||g(r,'photoAfterUrls', '')),
-        _fromSheet:true};
+
+      // Try v5 columns first, fallback to v4 merged URL column
+      let beforePhotos = pUrlsV5(r, 'Before URL');
+      let afterPhotos  = pUrlsV5(r, 'After URL');
+      if (!beforePhotos.length) beforePhotos = pUrls(g(r,'Photo Before URLs','')||g(r,'photoBeforeUrls',''));
+      if (!afterPhotos.length)  afterPhotos  = pUrls(g(r,'Photo After URLs', '')||g(r,'photoAfterUrls',''));
+
+      return{
+        id:idVal,user:String(g(r,'User')||''),date:pDate(g(r,'Timestamp','')||pDate(g(r,'Date',''))),start,end,
+        hours:(start&&end)?calcHours(start,end):(parseFloat(g(r,'Hour'))||0),
+        work:String(g(r,'Work')||''),location:String(g(r,'Location')||'-'),item:String(g(r,'Item')||'-'),
+        qtyActual:parseFloat(g(r,'Quantity'))||0,status:String(g(r,'Status')||'Finish'),
+        typeWork:String(g(r,'Type Work')||''),remark:String(g(r,'Remark')||''),
+        photosBefore: beforePhotos,
+        photosAfter:  afterPhotos,
+        _fromSheet:true
+      };
     }).filter(l=>l.work&&l.user);
+
     const sheetIds=new Set(sheetLogs.map(l=>l.id));
     const localOnly=logs.filter(l=>!l._fromSheet&&!sheetIds.has(l.id));
     const merged=sheetLogs.map(sl=>{
@@ -954,11 +1204,15 @@ const MAX_PHOTOS=5;
 let photos={before:Array(MAX_PHOTOS).fill(null),after:Array(MAX_PHOTOS).fill(null)};
 let currentViewUrl='';
 
+// Apply saved settings on load
+applyAppSettings(appSettings);
+
 initSlots();renderList();renderSummary();renderAllCustomOptions();syncUserPillsFromConfig();
 fetchFromGAS();
 fetchCustomItems().then(()=>migrateLocalToSheet());
+// Load settings from sheet in background
+loadSettings().catch(()=>{});
 
-// BUG FIX 1: ผูก onerror ผ่าน JS หลัง script โหลดสมบูรณ์ — ป้องกัน "not defined" error
 const _fullImg=document.getElementById('fullImgPreview');
 if(_fullImg) _fullImg.onerror=function(){handleFullImgError(this);};
 
@@ -975,6 +1229,7 @@ function switchPage(name){
   if(window.innerWidth<=768)closeSidebar();
   if(name==='list'){renderList();fetchFromGAS();}
   if(name==='summary'){renderSummary();fetchFromGAS();}
+  if(name==='settings'){renderSettingsPage();}
   if(name!=='add')document.getElementById('editModeIndicator').classList.remove('visible');
 }
 function selectStatus(s){
@@ -994,9 +1249,7 @@ function renderSlots(sec){
   grid.innerHTML=Array.from({length:MAX_PHOTOS},(_,i)=>{
     const p=photos[sec][i];
     if(p){
-      const isDrive=isDrivePhoto(p);
-      const src=isDrive?p.thumbUrl:p;
-      const vu=isDrive?p.viewUrl:'';
+      const isDrive=isDrivePhoto(p);const src=isDrive?p.thumbUrl:p;const vu=isDrive?p.viewUrl:'';
       return `<div class="photo-slot filled" onclick="${isDrive?'openPhotoPreview(\''+src+'\',\''+vu+'\')':'openLocalPhotoPreview(\''+sec+'\','+i+')'}">
         <img src="${src}" alt="${i+1}" onerror="handleDriveImgErr(this,'${isDrive?p.driveId:''}')" style="width:100%;height:100%;object-fit:cover;display:block">
         ${isDrive?'<div class="slot-drive-badge">☁ Drive</div>':''}
@@ -1016,21 +1269,14 @@ function handleDriveImgErr(img,driveId){
   if(!img.dataset.fb1){img.dataset.fb1='1';img.src=driveUcUrl(driveId);}
   else if(!img.dataset.fb2){img.dataset.fb2='1';img.style.display='none';img.parentElement.insertAdjacentHTML('beforeend','<div class="drive-err-overlay">☁<br><small>Drive<br>คลิกดู</small></div>');}
 }
-function handleFullImgError(img){
-  img.style.display='none';
-  document.getElementById('imgErrMsg').style.display='block';
-  const link=document.getElementById('imgDriveLink');
-  if(currentViewUrl)link.href=currentViewUrl;
-}
 
 function openPhotoPreview(src,viewUrl){
   currentViewUrl=viewUrl||'';
   const img=document.getElementById('fullImgPreview');
-  // BUG FIX 1: reset state ก่อน set src เสมอ
   img.style.display='block';
   document.getElementById('imgErrMsg').style.display='none';
   document.getElementById('openInDriveBtn').style.display=viewUrl?'inline-flex':'none';
-  img.src=src;  // set src หลัง onerror ถูกผูกแล้ว (ผ่าน JS ใน INIT section)
+  img.src=src;
   document.getElementById('imgModalOverlay').classList.add('open');
 }
 function openLocalPhotoPreview(sec,idx){
@@ -1059,19 +1305,14 @@ async function startCamera(sec){
   let stream=null,lastErr=null;
   for(const con of tryList){try{stream=await navigator.mediaDevices.getUserMedia(con);break;}catch(e){lastErr=e;}}
   if(!stream){
-    let msg='⚠ เปิดกล้องไม่ได้ — กรุณาเลือกไฟล์แทน';
-    if(lastErr){
-      if(lastErr.name==='NotAllowedError'||lastErr.name==='PermissionDeniedError')msg='⚠ กรุณาอนุญาตการใช้กล้องใน Browser แล้วลองใหม่';
-      else if(lastErr.name==='NotFoundError')msg='⚠ ไม่พบกล้องในอุปกรณ์นี้';
-      else if(lastErr.name==='NotReadableError')msg='⚠ กล้องถูกใช้งานโดย App อื่น กรุณาปิดแล้วลองใหม่';
-    }
+    let msg='⚠ เปิดกล้องไม่ได้';
+    if(lastErr){if(lastErr.name==='NotAllowedError')msg='⚠ กรุณาอนุญาตการใช้กล้อง';else if(lastErr.name==='NotFoundError')msg='⚠ ไม่พบกล้อง';else if(lastErr.name==='NotReadableError')msg='⚠ กล้องถูกใช้โดย App อื่น';}
     showFallback();showToast(msg);return;
   }
   camStream=stream;video.srcObject=stream;
   try{await video.play();}catch(e){console.warn('play():',e);}
   document.getElementById('cameraLive').scrollIntoView({behavior:'smooth',block:'center'});
 }
-
 function showFallback(){
   if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}
   const video=document.getElementById('videoEl');
@@ -1088,12 +1329,10 @@ function capturePhoto(){
   if(filled>=MAX_PHOTOS){stopCamera();return;}
   const video=document.getElementById('videoEl'),canvas=document.getElementById('canvasEl');
   if(!camStream){showToast('⚠ กล้องไม่พร้อม');return;}
-  if(video.videoWidth===0||video.videoHeight===0){showToast('⚠ กล้องกำลังเริ่ม กรุณารอสักครู่...');setTimeout(()=>capturePhoto(),500);return;}
+  if(video.videoWidth===0||video.videoHeight===0){showToast('⚠ กล้องกำลังเริ่ม...');setTimeout(()=>capturePhoto(),500);return;}
   const MAX_DIM=1200;let w=video.videoWidth,h=video.videoHeight;
-  if(w>MAX_DIM){h=Math.round(h*MAX_DIM/w);w=MAX_DIM;}
-  if(h>MAX_DIM){w=Math.round(w*MAX_DIM/h);h=MAX_DIM;}
-  canvas.width=w;canvas.height=h;
-  canvas.getContext('2d').drawImage(video,0,0,w,h);
+  if(w>MAX_DIM){h=Math.round(h*MAX_DIM/w);w=MAX_DIM;}if(h>MAX_DIM){w=Math.round(w*MAX_DIM/h);h=MAX_DIM;}
+  canvas.width=w;canvas.height=h;canvas.getContext('2d').drawImage(video,0,0,w,h);
   photos[activeSec][filled]=canvas.toDataURL('image/jpeg',0.75);
   renderSlots(activeSec);updateCamBadge();
   const flash=document.getElementById('shutterFlash');flash.style.opacity='1';setTimeout(()=>flash.style.opacity='0',150);
@@ -1296,7 +1535,6 @@ function openLog(id){
   </div>`;
   document.getElementById('modalOverlay').classList.add('open');
 }
-
 function closeModalBtn(){document.getElementById('modalOverlay').classList.remove('open');}
 function closeImgModalBtn(){document.getElementById('imgModalOverlay').classList.remove('open');currentViewUrl='';}
 
