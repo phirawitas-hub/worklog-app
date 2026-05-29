@@ -260,7 +260,8 @@
     </nav>
     <div class="sidebar-footer">
       <span class="sidebar-date" id="sidebarDate"></span>
-      <button onclick="forceMigrate()" style="margin-top:10px;width:100%;padding:8px;background:var(--surface);border:2px solid var(--border2);border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;color:var(--text3);" onmouseover="this.style.background='var(--amber)'" onmouseout="this.style.background='var(--surface)'">☁ Sync ข้อมูลเก่า → Sheet</button>
+      <button onclick="testGAS()" style="margin-top:10px;width:100%;padding:8px;background:var(--surface);border:2px solid var(--border2);border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;color:var(--text3);" onmouseover="this.style.background='#eff6ff'" onmouseout="this.style.background='var(--surface)'">🔗 ทดสอบ GAS</button>
+      <button onclick="forceMigrate()" style="margin-top:6px;width:100%;padding:8px;background:var(--surface);border:2px solid var(--border2);border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;color:var(--text3);" onmouseover="this.style.background='var(--amber)'" onmouseout="this.style.background='var(--surface)'">☁ Sync ข้อมูลเก่า → Sheet</button>
     </div>
   </aside>
   <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
@@ -498,7 +499,8 @@
 <!-- Full Image Modal -->
 <div class="modal-overlay" id="imgModalOverlay" style="z-index:250;" onclick="if(event.target.id==='imgModalOverlay')closeImgModalBtn()">
   <div class="modal" style="max-width:800px;text-align:center;padding:24px;">
-    <img id="fullImgPreview" src="" style="max-width:100%;max-height:75vh;border-radius:var(--radius-sm);object-fit:contain;border:2px solid var(--border);" onerror="handleFullImgError(this)">
+    <!-- BUG FIX 1: ไม่ใส่ src="" และไม่ใส่ onerror inline → ป้องกัน fires ก่อน script โหลด -->
+    <img id="fullImgPreview" style="max-width:100%;max-height:75vh;border-radius:var(--radius-sm);object-fit:contain;border:2px solid var(--border);display:none;">
     <div id="imgErrMsg" style="display:none;padding:20px;font-size:14px;color:var(--text3);">ไม่สามารถโหลดรูปได้ — <a id="imgDriveLink" href="#" target="_blank" style="color:var(--accent);font-weight:700;">เปิดใน Google Drive</a></div>
     <div style="margin-top:16px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
       <button class="btn btn-ghost btn-sm" onclick="closeImgModalBtn()">✕ ปิด</button>
@@ -515,10 +517,34 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbwZEDYqhrhc02ps7Z6Cjbw0
 function isDrivePhoto(p) { return p && typeof p === 'object' && p.driveId; }
 function getPhotoSrc(p)  { return !p ? '' : isDrivePhoto(p) ? p.thumbUrl : p; }
 
-// ══════════════════════════════════════════════════════════════
-// FIX: เปลี่ยน driveThumbUrl → lh3.googleusercontent.com
-//      ดูได้ทุกเครื่องโดยไม่ต้องล็อกอิน Google
-// ══════════════════════════════════════════════════════════════
+// BUG FIX 1: กำหนด handleFullImgError ก่อนใช้ — ผูก onerror ผ่าน JS ไม่ใช่ inline HTML
+function handleFullImgError(img){
+  img.style.display='none';
+  document.getElementById('imgErrMsg').style.display='block';
+  const link=document.getElementById('imgDriveLink');
+  if(currentViewUrl) link.href=currentViewUrl;
+  document.getElementById('openInDriveBtn').style.display=currentViewUrl?'inline-flex':'none';
+}
+
+// BUG FIX 2: ปุ่มทดสอบการเชื่อมต่อ GAS — กดได้จาก sidebar
+async function testGAS(){
+  showToast('⏳ กำลังทดสอบ GAS...');
+  try{
+    const res=await fetch(GAS_URL+'?action=getAll',{redirect:'follow'});
+    const text=await res.text();
+    console.log('[GAS Test] response:', text.slice(0,300));
+    const data=JSON.parse(text);
+    showToast(Array.isArray(data)?'✅ GAS OK — '+data.length+' รายการ':'⚠ GAS: '+JSON.stringify(data).slice(0,60));
+  }catch(e){
+    console.error('[GAS Test]',e);
+    showToast('⚠ GAS Error: '+e.message);
+  }
+}
+
+// FIX: lh3 URL — ดูได้ทุกเครื่องไม่ต้อง login
+function driveThumbUrl(id) { return 'https://lh3.googleusercontent.com/d/' + id + '=w800'; }
+function driveViewUrl(id)  { return 'https://drive.google.com/file/d/' + id + '/view'; }
+function driveUcUrl(id)    { return 'https://drive.google.com/uc?export=view&id=' + id; }
 function driveThumbUrl(id) { return 'https://lh3.googleusercontent.com/d/' + id + '=w800'; }
 function driveViewUrl(id)  { return 'https://drive.google.com/file/d/' + id + '/view'; }
 function driveUcUrl(id)    { return 'https://drive.google.com/uc?export=view&id=' + id; }
@@ -758,33 +784,28 @@ async function uploadPhotoToDrive(base64data,filename,maxRetries){
   var b64=resized.includes(',')?resized.split(',')[1]:resized;
   for(var attempt=1;attempt<=maxRetries;attempt++){
     try{
-      var res = await fetch(GAS_URL, {
-  method  : 'POST',
-  headers : { 'Content-Type': 'text/plain' },
-  body    : JSON.stringify({ action: 'uploadPhoto', filename: filename, base64: b64 }),
-  redirect: 'follow'   // ← เพิ่มบรรทัดนี้
-});
+      // BUG FIX 3: redirect:follow สำคัญมาก — GAS ส่ง 302 redirect, ถ้าไม่ follow จะไม่ได้ response
+      var res=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'uploadPhoto',filename:filename,base64:b64}),redirect:'follow'});
       var text=await res.text();
+      console.log('[Upload] attempt '+attempt+' status:'+res.status+' body:',text.slice(0,200));
       var data;
       try{data=JSON.parse(text);}
-      catch(parseErr){throw new Error('GAS returned non-JSON — ลอง redeploy GAS ใหม่');}
-      if(data.ok&&data.fileId){
-        return{
-          driveId:data.fileId,
-          // ══════════════════════════════════════════════════
-          // FIX: ใช้ lh3 URL จาก GAS response โดยตรง
-          //      (GAS ส่ง url: lh3.googleusercontent.com/d/...)
-          // ══════════════════════════════════════════════════
-          thumbUrl:data.url,
-          viewUrl:data.viewUrl
-        };
+      catch(parseErr){
+        console.error('[Upload] non-JSON GAS response:', text.slice(0,500));
+        throw new Error('GAS ตอบไม่ใช่ JSON — ต้อง Redeploy GAS ใหม่');
       }
-      throw new Error(data.error||'GAS ok:false');
+      if(data.ok&&data.fileId){
+        console.log('[Upload] SUCCESS fileId:',data.fileId);
+        return{driveId:data.fileId,thumbUrl:data.url,viewUrl:data.viewUrl};
+      }
+      throw new Error(data.error||'GAS ok:false — '+JSON.stringify(data));
     }catch(err){
-      console.warn('Upload attempt '+attempt+'/'+maxRetries+':',err.message);
+      console.error('[Upload] attempt '+attempt+'/'+maxRetries+' FAILED:',err.message);
+      setUploadStatus(true,'⚠ Upload attempt '+attempt+': '+err.message.slice(0,60),'err');
       if(attempt<maxRetries)await new Promise(function(r){setTimeout(r,1500*attempt);});
     }
   }
+  console.error('[Upload] ALL RETRIES FAILED for',filename);
   return null;
 }
 
@@ -821,7 +842,7 @@ async function uploadAllPendingPhotos(logId){
         showToast('☁ '+(sec==='before'?'ก่อนงาน':'หลังงาน')+' #'+(i+1)+' อัปโหลดสำเร็จ');
       }else{
         results.push(p);failed++;
-        showToast('⚠ อัปโหลดรูป '+(sec==='before'?'ก่อนงาน':'หลังงาน')+' #'+(i+1)+' ไม่สำเร็จ (เก็บในเครื่อง)');
+        setUploadStatus(true,'⚠ รูป '+(sec==='before'?'ก่อน':'หลัง')+' #'+(i+1)+' ล้มเหลว — เปิด F12 > Console ดู error จริง','err');
       }
     }
     return results;
@@ -849,10 +870,17 @@ async function pushToGAS(log,action){
     photosBefore:totalBefore,photosAfter:totalAfter,photoTotal:totalBefore+totalAfter,
     photoBeforeUrls:beforeUrls.join('\n'),photoAfterUrls:afterUrls.join('\n'),
   };
+  console.log('[pushToGAS] action:'+action+' photoBeforeUrls:',payload.photoBeforeUrls.slice(0,80));
   try{
-    await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload),redirect:'follow'});
-    return{ok:true};
-  }catch(e){return{ok:false,error:'เชื่อมต่อล้มเหลว: '+e.message};}
+    const res=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload),redirect:'follow'});
+    const text=await res.text();
+    console.log('[pushToGAS] response:',text.slice(0,200));
+    const data=JSON.parse(text);
+    return data.ok?{ok:true}:{ok:false,error:data.error||'GAS error'};
+  }catch(e){
+    console.error('[pushToGAS] error:',e);
+    return{ok:false,error:'เชื่อมต่อล้มเหลว: '+e.message};
+  }
 }
 async function deleteFromGAS(id){
   if(!GAS_URL)return{ok:false};
@@ -930,6 +958,10 @@ initSlots();renderList();renderSummary();renderAllCustomOptions();syncUserPillsF
 fetchFromGAS();
 fetchCustomItems().then(()=>migrateLocalToSheet());
 
+// BUG FIX 1: ผูก onerror ผ่าน JS หลัง script โหลดสมบูรณ์ — ป้องกัน "not defined" error
+const _fullImg=document.getElementById('fullImgPreview');
+if(_fullImg) _fullImg.onerror=function(){handleFullImgError(this);};
+
 document.addEventListener('click',e=>{if(!e.target.closest('.combo-wrap')&&!e.target.closest('#customModalOverlay'))document.querySelectorAll('.combo-dropdown.open').forEach(d=>d.classList.remove('open'));});
 function toggleDropdown(id){const el=document.getElementById(id),was=el.classList.contains('open');document.querySelectorAll('.combo-dropdown.open').forEach(d=>d.classList.remove('open'));if(!was)el.classList.add('open');}
 
@@ -994,9 +1026,11 @@ function handleFullImgError(img){
 function openPhotoPreview(src,viewUrl){
   currentViewUrl=viewUrl||'';
   const img=document.getElementById('fullImgPreview');
-  img.style.display='block';img.src=src;
+  // BUG FIX 1: reset state ก่อน set src เสมอ
+  img.style.display='block';
   document.getElementById('imgErrMsg').style.display='none';
   document.getElementById('openInDriveBtn').style.display=viewUrl?'inline-flex':'none';
+  img.src=src;  // set src หลัง onerror ถูกผูกแล้ว (ผ่าน JS ใน INIT section)
   document.getElementById('imgModalOverlay').classList.add('open');
 }
 function openLocalPhotoPreview(sec,idx){
