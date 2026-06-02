@@ -534,6 +534,14 @@
               <button class="btn btn-ghost btn-sm" onclick="clearLogo()">🗑 ลบโลโก้ (ใช้ Emoji)</button>
             </div>
           </div>
+
+          <!-- Avatar Section -->
+          <div class="settings-section">
+            <div class="settings-section-title">👤 รูปโปรไฟล์ผู้ปฏิบัติงาน</div>
+            <p style="font-size:13px;color:var(--text3);margin-bottom:16px;">อัปโหลดรูปแทนตัวอักษร — แสดงใน Card รายการและ User Pill (JPG, PNG)</p>
+            <div id="avatarManageList" style="display:flex;flex-direction:column;gap:10px;"></div>
+          </div>
+
           <div class="form-actions" style="border-top:2px dashed var(--border2);padding-top:24px;">
             <button class="btn btn-ghost" onclick="loadSettings()">↩ โหลดจาก Sheet ใหม่</button>
             <button class="btn btn-success" onclick="saveSettings()" id="btnSaveSettings">💾 บันทึกการตั้งค่า</button>
@@ -632,9 +640,31 @@ let currentStatus='',selectedUsers=new Set(),editingId=null,listDateMode='all',s
 
 // ═══════════════ SYSTEM SETTINGS ═══════════════
 let appSettings = {
-  appName: localStorage.getItem('wl_appName') || 'WORKLOG',
+  appName:    localStorage.getItem('wl_appName') || 'WORKLOG',
   logoBase64: localStorage.getItem('wl_logoBase64') || '',
+  avatars:    JSON.parse(localStorage.getItem('wl_avatars') || '{}'),
 };
+
+// ── Avatar helpers ──
+const USER_COLORS = {
+  'อัด':{ bg:'#bae6fd', tc:'#0369a1' },
+  'กุล':{ bg:'#a7f3d0', tc:'#047857' },
+  'วิท':{ bg:'#fde68a', tc:'#b45309' },
+  'หมี':{ bg:'#ddd6fe', tc:'#6d28d9' },
+  'อัน':{ bg:'#fecaca', tc:'#b91c1c' },
+};
+
+function getUserAvatarHtml(username, size) {
+  size = size || 48;
+  const b64  = (appSettings.avatars || {})[username];
+  const r    = size <= 32 ? '50%' : '14px';
+  const fs   = Math.max(11, Math.round(size * 0.33));
+  if (b64) {
+    return `<img src="${b64}" style="width:${size}px;height:${size}px;border-radius:${r};object-fit:cover;border:2px solid var(--border);box-shadow:2px 2px 0px var(--border);flex-shrink:0;">`;
+  }
+  const c = USER_COLORS[username] || { bg:'#f1f5f9', tc:'var(--text)' };
+  return `<div style="width:${size}px;height:${size}px;border-radius:${r};background:${c.bg};color:${c.tc};border:2px solid var(--border);box-shadow:2px 2px 0px var(--border);display:flex;align-items:center;justify-content:center;font-size:${fs}px;font-weight:700;flex-shrink:0;">${(username||'??').slice(0,2)}</div>`;
+}
 
 function applyAppSettings(settings) {
   if (settings.appName) {
@@ -653,6 +683,24 @@ function applyAppSettings(settings) {
     localStorage.removeItem('wl_logoBase64');
     document.getElementById('sidebarLogoIcon').innerHTML = '📦';
   }
+  // รับ avatar_* keys จาก Sheet แล้วเก็บลง appSettings.avatars
+  let avatarChanged = false;
+  Object.keys(settings).forEach(k => {
+    if (!k.startsWith('avatar_')) return;
+    const username = k.substring(7);
+    if (settings[k]) {
+      appSettings.avatars[username] = settings[k];
+    } else {
+      delete appSettings.avatars[username];
+    }
+    avatarChanged = true;
+  });
+  if (avatarChanged) {
+    localStorage.setItem('wl_avatars', JSON.stringify(appSettings.avatars));
+    // รีเฟรช user pills และ list
+    renderUserPicker();
+    renderList();
+  }
 }
 
 function renderSettingsPage() {
@@ -670,6 +718,78 @@ function renderSettingsPage() {
     document.getElementById('settingsPreviewIcon').innerHTML = '📦';
   }
   document.getElementById('settingsPreviewName').textContent = (appSettings.appName || 'WORKLOG').toUpperCase();
+  renderAvatarSection();
+}
+
+// ─── Avatar Management ──────────────────────────────────────────
+function getAllUsernames() {
+  const fixed = ['อัด','กุล','วิท','หมี','อัน'];
+  const custom = (sharedCustomItems.user || []).filter(u => !fixed.includes(u));
+  return [...fixed, ...custom];
+}
+
+function renderAvatarSection() {
+  const el = document.getElementById('avatarManageList');
+  if (!el) return;
+  const users = getAllUsernames();
+  el.innerHTML = users.map(username => {
+    const hasPhoto = !!(appSettings.avatars || {})[username];
+    const avatarHtml = getUserAvatarHtml(username, 56);
+    const c = USER_COLORS[username] || { bg:'#f1f5f9', tc:'var(--text)' };
+    return `<div style="display:flex;align-items:center;gap:16px;padding:14px 18px;background:var(--bg);border:2px solid var(--border2);border-radius:var(--radius-sm);">
+      <div id="avatarPreview_${username}" style="flex-shrink:0;">${avatarHtml}</div>
+      <div style="flex:1;">
+        <div style="font-size:15px;font-weight:700;">${username}</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:2px;">${hasPhoto ? '📸 มีรูปโปรไฟล์' : '🔤 ใช้ตัวอักษร'}</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <label class="btn btn-ghost btn-sm" style="cursor:pointer;gap:6px;">
+          📷 อัปโหลด
+          <input type="file" accept="image/*" style="display:none" onchange="handleAvatarFileSelect('${username}',event)">
+        </label>
+        ${hasPhoto ? `<button class="btn btn-ghost btn-sm" onclick="clearUserAvatar('${username}')" style="color:var(--red);">🗑</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function handleAvatarFileSelect(username, e) {
+  const file = e.target.files[0]; if (!file) return;
+  if (!file.type.startsWith('image/')) return showToast('⚠ โปรดเลือกไฟล์รูปภาพ');
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      const MAX = 80; // ขนาดเล็ก — เก็บใน Sheet ได้
+      let w = img.width, h = img.height;
+      if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+      if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      const b64 = canvas.toDataURL('image/jpeg', 0.82);
+      if (!appSettings.avatars) appSettings.avatars = {};
+      appSettings.avatars[username] = b64;
+      localStorage.setItem('wl_avatars', JSON.stringify(appSettings.avatars));
+      renderAvatarSection();
+      renderUserPicker();
+      renderList();
+      showToast('🖼 โหลดรูป ' + username + ' แล้ว — กด "บันทึก" เพื่อซิงก์');
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+
+function clearUserAvatar(username) {
+  if (!appSettings.avatars) appSettings.avatars = {};
+  delete appSettings.avatars[username];
+  localStorage.setItem('wl_avatars', JSON.stringify(appSettings.avatars));
+  renderAvatarSection();
+  renderUserPicker();
+  renderList();
+  showToast('🗑 ลบรูป ' + username + ' แล้ว — กด "บันทึก" เพื่อซิงก์');
 }
 
 function handleLogoFileSelect(e) {
@@ -714,7 +834,11 @@ async function saveSettings() {
   const btn = document.getElementById('btnSaveSettings');
   btn.disabled = true; btn.textContent = '⏳ กำลังบันทึก...';
   try {
+    // รวม appName + logo + avatar ทั้งหมด
     const payload = { action: 'saveSettings', appName: name, logoBase64: appSettings.logoBase64 || '' };
+    Object.entries(appSettings.avatars || {}).forEach(([u, b64]) => {
+      payload['avatar_' + u] = b64 || '';
+    });
     const res = await fetch(GAS_URL, { method: 'POST', headers: {'Content-Type': 'text/plain'}, body: JSON.stringify(payload), redirect: 'follow' });
     const data = await res.json();
     if (data.ok) {
@@ -737,6 +861,7 @@ async function loadSettings() {
     const res = await fetch(GAS_URL + '?action=getSettings', {redirect:'follow'});
     const data = await res.json();
     if (data && data.appName) {
+      // แยก avatar_ keys ออกมาก่อน แล้วส่งทั้งหมดให้ applyAppSettings
       applyAppSettings(data);
       renderSettingsPage();
       showToast('✅ โหลด Settings จาก Sheet แล้ว');
@@ -923,7 +1048,29 @@ function renderTypeWorkTags(){const c=document.getElementById('typeWorkTags');if
 function getTypeWorkValue(){return selectedTypeWorkTags.join(', ');}
 
 function toggleUser(name){if(selectedUsers.has(name))selectedUsers.delete(name);else selectedUsers.add(name);if(selectedUsers.size>0)clearFieldError('field-user');renderUserPicker();}
-function renderUserPicker(){document.querySelectorAll('#userPicker .user-pill[data-user]').forEach(p=>p.classList.toggle('unsel',!selectedUsers.has(p.dataset.user)));}
+function renderUserPicker(){
+  document.querySelectorAll('#userPicker .user-pill[data-user]').forEach(p=>{
+    const name = p.dataset.user;
+    const selected = selectedUsers.has(name);
+    p.classList.toggle('unsel', !selected);
+    // อัปเดต avatar ข้างใน pill
+    const existing = p.querySelector('.pill-avatar');
+    const b64 = (appSettings.avatars || {})[name];
+    if (b64) {
+      if (!existing) {
+        const img = document.createElement('img');
+        img.className = 'pill-avatar';
+        img.style.cssText = 'width:20px;height:20px;border-radius:50%;object-fit:cover;flex-shrink:0;';
+        img.src = b64;
+        p.insertBefore(img, p.firstChild);
+      } else {
+        existing.src = b64;
+      }
+    } else if (existing) {
+      existing.remove();
+    }
+  });
+}
 function nudge(id,d){const el=document.getElementById(id);el.value=Math.max(0,(parseInt(el.value)||0)+d);}
 
 // ═══════════════ VALIDATION ═══════════════
@@ -1503,13 +1650,13 @@ function renderList(){
   const list=document.getElementById('logList');
   if(!filtered.length){list.innerHTML='<div style="text-align:center;padding:60px 20px;background:var(--surface);border-radius:var(--radius);border:3px dashed var(--border2);box-shadow:var(--shadow-sm);"><span style="font-size:56px;display:block;margin-bottom:16px;">🔍</span><div style="font-size:18px;font-weight:700;margin-bottom:8px;">ไม่พบรายการ</div><div style="font-size:15px;color:var(--text2);">ลองเปลี่ยนคำค้นหา หรือล้างตัวกรอง</div></div>';return;}
   list.innerHTML=filtered.map(l=>{
-    const fu=(l.user||'').split(',')[0].trim(),av=['อัด','กุล','วิท','หมี','อัน'].includes(fu)?fu:'default';
+    const fu=(l.user||'').split(',')[0].trim();
     let ds=l.date;try{const d=new Date(l.date+'T00:00:00');if(!isNaN(d))ds=d.toLocaleDateString('th-TH',{day:'2-digit',month:'short'});}catch(e){}
     const drv=[...(l.photosBefore||[]),...(l.photosAfter||[])].filter(isDrivePhoto).length;
     const tot=(l.photosBefore?.length||0)+(l.photosAfter?.length||0);
     const lh=(l.start&&l.end)?calcHours(l.start,l.end):(parseFloat(l.hours)||0);
     return `<div class="log-item" onclick="openLog(${l.id})">
-      <div class="log-avatar user-${av}">${(fu||'??').slice(0,2)}</div>
+      ${getUserAvatarHtml(fu, 48)}
       <div class="log-body">
         <div class="log-meta"><span class="log-user">${l.user||'ไม่มีชื่อ'}</span><span class="log-time">🕒 ${l.start||'--'}–${l.end||'--'}</span><span class="log-date">${ds}</span></div>
         <div class="log-work">${l.work||'-'}</div>
