@@ -222,7 +222,6 @@
   .edit-cancel-btn{background:var(--surface);border:2px solid var(--border);border-radius:12px;padding:3px 10px;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.15s;}
   .edit-cancel-btn:hover{background:var(--red);color:white;}
   .req{color:var(--red);margin-left:3px;}
-  /* ── Settings page ── */
   .settings-section{margin-bottom:32px;}
   .settings-section-title{font-size:16px;font-weight:700;color:var(--text2);margin-bottom:16px;padding-bottom:10px;border-bottom:2px dashed var(--border2);display:flex;align-items:center;gap:8px;}
   .logo-upload-area{border:3px dashed var(--border2);border-radius:var(--radius);padding:32px;display:flex;flex-direction:column;align-items:center;gap:16px;cursor:pointer;transition:all 0.2s;background:var(--bg);position:relative;}
@@ -395,8 +394,6 @@
         <div class="card">
           <div class="card-title"><div class="card-title-icon">📎</div>แนบไฟล์ <span style="font-size:13px;color:var(--text3);font-weight:500;">(อัปโหลดขึ้น Google Drive อัตโนมัติ)</span></div>
           <div class="upload-status-bar" id="attachUploadBar"><span id="attachUploadIcon">📤</span><span id="attachUploadText">กำลังอัปโหลด...</span></div>
-
-          <!-- Google Sheets / Drive URL -->
           <div class="field" style="margin-bottom:20px;">
             <label>🔗 แนบลิงก์ Google Sheets / Drive URL</label>
             <div style="display:flex;gap:10px;align-items:center;">
@@ -405,8 +402,6 @@
             </div>
             <div id="gsheetsLinkList" style="display:flex;flex-direction:column;gap:8px;margin-top:10px;"></div>
           </div>
-
-          <!-- File upload → Drive -->
           <div class="field">
             <label>📁 แนบไฟล์ Excel / CSV / PDF / อื่นๆ <span style="font-weight:400;color:var(--text3);">(อัปโหลดขึ้น Drive)</span></label>
             <div id="fileDropArea" onclick="document.getElementById('attachFileInput').click()" style="border:2px dashed var(--border2);border-radius:var(--radius-sm);padding:28px;text-align:center;cursor:pointer;background:var(--bg);transition:all 0.2s;" onmouseover="this.style.borderColor='var(--accent)';this.style.background='#eff6ff'" onmouseout="this.style.borderColor='var(--border2)';this.style.background='var(--bg)'">
@@ -513,15 +508,11 @@
         <div class="card"><div class="card-title"><div class="card-title-icon">📌</div>สถานะงาน</div><div id="statusChart" style="display:flex;flex-direction:column;gap:14px;"></div></div>
       </div>
 
-      <!-- ══════════════════════════════════════════════════════ -->
-      <!-- SETTINGS PAGE                                          -->
-      <!-- ══════════════════════════════════════════════════════ -->
+      <!-- SETTINGS PAGE -->
       <div class="page" id="page-settings">
         <div class="card">
           <div class="card-title"><div class="card-title-icon">⚙️</div>ตั้งค่าระบบ (System Settings)</div>
           <p style="font-size:14px;color:var(--text3);margin-bottom:24px;">การตั้งค่าจะซิงก์ไปยัง Google Sheets — มีผลกับทุกเครื่องที่เปิดแอปนี้</p>
-
-          <!-- App Name -->
           <div class="settings-section">
             <div class="settings-section-title">🏷 ชื่อระบบ (System Name)</div>
             <p style="font-size:13px;color:var(--text3);margin-bottom:12px;">เปลี่ยนชื่อแบรนด์ที่แสดงบน Sidebar และ Title Bar</p>
@@ -530,8 +521,6 @@
               <input type="text" id="settingsAppName" placeholder="เช่น WorkLog, Vespa Inventory..." maxlength="50">
             </div>
           </div>
-
-          <!-- Logo -->
           <div class="settings-section">
             <div class="settings-section-title">🖼 โลโก้ / ไอคอน (Logo)</div>
             <p style="font-size:13px;color:var(--text3);margin-bottom:12px;">อัปโหลดรูปเพื่อแสดงบน Sidebar แทน Emoji — แนะนำรูปสี่เหลี่ยมจัตุรัส ขนาด 200×200px ขึ้นไป</p>
@@ -545,14 +534,11 @@
               <button class="btn btn-ghost btn-sm" onclick="clearLogo()">🗑 ลบโลโก้ (ใช้ Emoji)</button>
             </div>
           </div>
-
           <div class="form-actions" style="border-top:2px dashed var(--border2);padding-top:24px;">
             <button class="btn btn-ghost" onclick="loadSettings()">↩ โหลดจาก Sheet ใหม่</button>
             <button class="btn btn-success" onclick="saveSettings()" id="btnSaveSettings">💾 บันทึกการตั้งค่า</button>
           </div>
         </div>
-
-        <!-- Preview -->
         <div class="card">
           <div class="card-title"><div class="card-title-icon">👁</div>ตัวอย่าง Sidebar</div>
           <div style="display:flex;align-items:center;gap:16px;padding:16px;background:var(--bg);border-radius:var(--radius-sm);border:2px solid var(--border2);">
@@ -564,8 +550,6 @@
           </div>
         </div>
       </div>
-      <!-- END SETTINGS PAGE -->
-
     </div>
   </div>
 </div>
@@ -624,16 +608,6 @@ function handleFullImgError(img){
   document.getElementById('openInDriveBtn').style.display=currentViewUrl?'inline-flex':'none';
 }
 
-async function testGAS(){
-  showToast('⏳ กำลังทดสอบ GAS...');
-  try{
-    const res=await fetch(GAS_URL+'?action=getAll',{redirect:'follow'});
-    const text=await res.text();
-    const data=JSON.parse(text);
-    showToast(Array.isArray(data)?'✅ GAS OK — '+data.length+' รายการ':'⚠ GAS: '+JSON.stringify(data).slice(0,60));
-  }catch(e){showToast('⚠ GAS Error: '+e.message);}
-}
-
 function driveThumbUrl(id) { return 'https://lh3.googleusercontent.com/d/' + id + '=w800'; }
 function driveViewUrl(id)  { return 'https://drive.google.com/file/d/' + id + '/view'; }
 function driveUcUrl(id)    { return 'https://drive.google.com/uc?export=view&id=' + id; }
@@ -651,9 +625,9 @@ window.addEventListener('resize',()=>{if(window.innerWidth>768){document.getElem
 const PAGE_TITLES={add:'✍️ บันทึกงาน',list:'📋 รายการทั้งหมด',summary:'📊 สรุปภาพรวม',settings:'⚙️ ตั้งค่าระบบ'};
 
 // ═══════════════ DATA ═══════════════
-let logs=[];
-try{const s=localStorage.getItem('wl_logs');logs=s?JSON.parse(s):[];}catch(e){logs=[];}
-let nextId=logs.length>0?Math.max(...logs.map(l=>l.id||0))+1:1;
+// FIX 3: ไม่โหลด local cache เริ่มต้น — ดึงจาก Sheet เท่านั้น
+let logs = [];
+let nextId = 1;
 let currentStatus='',selectedUsers=new Set(),editingId=null,listDateMode='all',summaryDateMode='all';
 
 // ═══════════════ SYSTEM SETTINGS ═══════════════
@@ -675,7 +649,6 @@ function applyAppSettings(settings) {
     const icon = document.getElementById('sidebarLogoIcon');
     icon.innerHTML = '<img src="' + settings.logoBase64 + '" alt="logo">';
   } else if (settings.logoBase64 === '') {
-    // explicitly cleared
     appSettings.logoBase64 = '';
     localStorage.removeItem('wl_logoBase64');
     document.getElementById('sidebarLogoIcon').innerHTML = '📦';
@@ -706,7 +679,6 @@ function handleLogoFileSelect(e) {
   reader.onload = ev => {
     const img = new Image();
     img.onload = () => {
-      // Resize to max 256x256 for storage efficiency
       const MAX = 256;
       let w = img.width, h = img.height;
       if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
@@ -715,7 +687,6 @@ function handleLogoFileSelect(e) {
       canvas.width = w; canvas.height = h;
       canvas.getContext('2d').drawImage(img, 0, 0, w, h);
       const b64 = canvas.toDataURL('image/jpeg', 0.85);
-      // Update preview
       const preview = document.getElementById('logoPreview');
       const placeholder = document.getElementById('logoPlaceholder');
       preview.src = b64; preview.style.display = 'block'; placeholder.style.display = 'none';
@@ -743,21 +714,13 @@ async function saveSettings() {
   const btn = document.getElementById('btnSaveSettings');
   btn.disabled = true; btn.textContent = '⏳ กำลังบันทึก...';
   try {
-    const payload = {
-      action: 'saveSettings',
-      appName: name,
-      logoBase64: appSettings.logoBase64 || '',
-    };
-    const res = await fetch(GAS_URL, {
-      method: 'POST', headers: {'Content-Type': 'text/plain'},
-      body: JSON.stringify(payload), redirect: 'follow'
-    });
+    const payload = { action: 'saveSettings', appName: name, logoBase64: appSettings.logoBase64 || '' };
+    const res = await fetch(GAS_URL, { method: 'POST', headers: {'Content-Type': 'text/plain'}, body: JSON.stringify(payload), redirect: 'follow' });
     const data = await res.json();
     if (data.ok) {
       applyAppSettings({ appName: name, logoBase64: appSettings.logoBase64 });
       showToast('✅ บันทึก Settings สำเร็จ — ซิงก์ไป Sheet แล้ว');
     } else {
-      // Save locally only
       applyAppSettings({ appName: name, logoBase64: appSettings.logoBase64 });
       showToast('⚠ บันทึกเฉพาะ local — Sheet: ' + (data.error || 'error'));
     }
@@ -785,7 +748,6 @@ async function loadSettings() {
   }
 }
 
-// Drag-drop logo
 document.addEventListener('DOMContentLoaded', () => {
   const drop = document.getElementById('logoDropArea');
   if (!drop) return;
@@ -799,8 +761,6 @@ document.addEventListener('DOMContentLoaded', () => {
       handleLogoFileSelect(fakeEv);
     }
   });
-
-  // File drag-drop
   const fd=document.getElementById('fileDropArea');
   if(fd){
     fd.addEventListener('dragover',e=>{e.preventDefault();fd.style.borderColor='var(--accent)';fd.style.background='#eff6ff';});
@@ -810,8 +770,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const fakeEv={target:{files:e.dataTransfer.files,value:''}};handleAttachFiles(fakeEv);
     });
   }
-
-  // App name input live preview
   document.getElementById('settingsAppName').addEventListener('input', e => {
     const v = e.target.value.trim() || 'WORKLOG';
     document.getElementById('settingsPreviewName').textContent = v.toUpperCase();
@@ -932,24 +890,6 @@ async function removeCustomItem(idx,itemVal){
   showToast('🗑 ลบรายการแล้ว');
 }
 function closeCustomModalBtn(){document.getElementById('customModalOverlay').classList.remove('open');activeCustomType=null;}
-async function forceMigrate(){
-  if(!confirm('Sync ข้อมูลจาก localStorage → Sheet Config ใช่ไหม?'))return;
-  localStorage.removeItem('wl_migrated_v3');showToast('⏳ กำลัง sync...');
-  await migrateLocalToSheet();
-}
-async function migrateLocalToSheet(){
-  if(localStorage.getItem('wl_migrated_v3')==='1')return;
-  const recorder=localStorage.getItem('wl_recorder')||'MIGRATED';let total=0;
-  for(const type of Object.keys(ITEM_CONFIG)){
-    for(const item of(sharedCustomItems[type]||[])){
-      if(!item||!item.trim())continue;
-      await pushConfigItem(type,item.trim(),recorder,false);total++;
-      await new Promise(r=>setTimeout(r,150));
-    }
-  }
-  localStorage.setItem('wl_migrated_v3','1');
-  if(total>0){showToast('✅ Migrate '+total+' รายการ → Sheet Config');await fetchCustomItems();}
-}
 
 // ═══════════════ TIME ═══════════════
 function parseHHMM(str){if(!str)return null;const p=String(str).replace(/\s*(AM|PM)/i,'').trim().split(':');if(p.length<2)return null;const h=parseInt(p[0],10),m=parseInt(p[1],10);return isNaN(h)||isNaN(m)?null:h*60+m;}
@@ -1090,19 +1030,18 @@ async function uploadAllPendingPhotos(logId){
   return{before,after};
 }
 
-// ═══════════════ GAS API (v5: แยก URL 5+5) ═══════════════
+// ═══════════════ GAS API ═══════════════
 async function pushToGAS(log, action) {
   action = action || 'save';
   if (!GAS_URL) return { ok: false, error: 'ไม่ได้ตั้งค่า GAS URL' };
 
-  // ── แยก before / after แต่ละ URL เป็น field ของตัวเอง ──────
   const toViewUrls = arr => (arr || [])
     .filter(isDrivePhoto)
     .map(p => p.viewUrl)
     .filter(Boolean);
 
-  const beforeUrls = toViewUrls(log.photosBefore); // max 5
-  const afterUrls  = toViewUrls(log.photosAfter);  // max 5
+  const beforeUrls = toViewUrls(log.photosBefore);
+  const afterUrls  = toViewUrls(log.photosAfter);
 
   const totalBefore = (log.photosBefore || []).filter(Boolean).length;
   const totalAfter  = (log.photosAfter  || []).filter(Boolean).length;
@@ -1124,10 +1063,10 @@ async function pushToGAS(log, action) {
     photosBefore: totalBefore,
     photosAfter:  totalAfter,
     photoTotal:   totalBefore + totalAfter,
-    // ── ส่ง newline-separated เหมือนเดิม → GAS v5 จะแยกเอง ──
     photoBeforeUrls: beforeUrls.join('\n'),
     photoAfterUrls:  afterUrls.join('\n'),
-    attachments:     log.attachments || '',
+    // FIX 1: ส่ง attachments ที่อัปโหลดแล้ว (มี viewUrl) ไปยัง Sheet คอลัม X
+    attachments: log.attachments || '',
   };
 
   try {
@@ -1149,6 +1088,7 @@ async function deleteFromGAS(id){
   catch(e){return{ok:false,error:e.message};}
 }
 
+// ═══════════════ FIX 3: fetchFromGAS — Sheet Only ═══════════════
 async function fetchFromGAS(){
   if(!GAS_URL)return;
   const badge=document.getElementById('syncBadge');
@@ -1164,7 +1104,6 @@ async function fetchFromGAS(){
     const pTime=v=>{if(!v&&v!==0)return'';const s=String(v).trim();if(/^\d{1,2}:\d{2}/.test(s)){const p=s.split(':');return String(parseInt(p[0],10)).padStart(2,'0')+':'+p[1].substring(0,2);}if(s.includes('T')||s.includes('1899')){try{const d=new Date(s);if(!isNaN(d))return String(d.getUTCHours()).padStart(2,'0')+':'+String(d.getUTCMinutes()).padStart(2,'0');}catch(e){}}return s;};
     const pDate=v=>{if(!v)return'';const s=String(v);if(s.includes('T')||s.includes('1899')){try{const d=new Date(s);if(!isNaN(d))return d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0');}catch(e){}}if(/^\d{1,2}\/\d{1,2}\/\d{4}/.test(s)){const p=s.split('/');return p[2]+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0');}return s.replace(/\//g,'-');};
 
-    // ── Parse photo URLs — รองรับทั้ง v4 (รวม) และ v5 (แยก) ──
     const pUrls = v => String(v||'').split('\n')
       .map(u=>u.trim()).filter(u=>u.startsWith('http'))
       .map(url=>{
@@ -1173,7 +1112,6 @@ async function fetchFromGAS(){
         return{driveId:null,thumbUrl:url,viewUrl:url};
       });
 
-    // ── Build before/after arrays from v5 columns (Before URL 1..5 / After URL 1..5) ──
     const pUrlsV5 = (r, prefix) => {
       const arr = [];
       for (let i = 1; i <= 5; i++) {
@@ -1192,11 +1130,13 @@ async function fetchFromGAS(){
       const idVal=Number(g(r,'No.')||g(r,'No')||g(r,'no'))||(idx+1);
       const start=pTime(g(r,'Start')),end=pTime(g(r,'End'));
 
-      // Try v5 columns first, fallback to v4 merged URL column
       let beforePhotos = pUrlsV5(r, 'Before URL');
       let afterPhotos  = pUrlsV5(r, 'After URL');
       if (!beforePhotos.length) beforePhotos = pUrls(g(r,'Photo Before URLs','')||g(r,'photoBeforeUrls',''));
       if (!afterPhotos.length)  afterPhotos  = pUrls(g(r,'Photo After URLs', '')||g(r,'photoAfterUrls',''));
+
+      // FIX 2: อ่าน Attachments จากคอลัม X ด้วย key 'Attachments'
+      const attachmentsRaw = String(g(r,'Attachments','')||g(r,'attachments','')||'').trim();
 
       return{
         id:idVal,user:String(g(r,'User')||''),date:pDate(g(r,'Timestamp','')||pDate(g(r,'Date',''))),start,end,
@@ -1206,21 +1146,18 @@ async function fetchFromGAS(){
         typeWork:String(g(r,'Type Work')||''),remark:String(g(r,'Remark')||''),
         photosBefore: beforePhotos,
         photosAfter:  afterPhotos,
-        attachments: String(g(r,'Attachments','')),
+        attachments: attachmentsRaw,
         _fromSheet:true
       };
     }).filter(l=>l.work&&l.user);
 
-    const sheetIds=new Set(sheetLogs.map(l=>l.id));
-    const localOnly=logs.filter(l=>!l._fromSheet&&!sheetIds.has(l.id));
-    const merged=sheetLogs.map(sl=>{
-      const local=logs.find(l=>l.id===sl.id&&!l._fromSheet);
-      if(local){return{...sl,photosBefore:sl.photosBefore.length?sl.photosBefore:(local.photosBefore||[]),photosAfter:sl.photosAfter.length?sl.photosAfter:(local.photosAfter||[]),_fromSheet:false};}
-      return sl;
-    });
-    logs=[...localOnly,...merged].sort((a,b)=>b.id-a.id);
-    nextId=logs.length>0?Math.max(...logs.map(l=>l.id||0))+1:1;
-    saveLogsLocal();renderList();renderSummary();
+    // FIX 3: ใช้ข้อมูลจาก Sheet เท่านั้น — ไม่รวม local cache เพื่อให้จำนวนตรงกับ Sheet
+    logs = sheetLogs.sort((a,b)=>b.id-a.id);
+    nextId = logs.length > 0 ? Math.max(...logs.map(l=>l.id||0)) + 1 : 1;
+
+    // บันทึก local เฉพาะสิ่งที่จำเป็น (photo objects ที่เป็น Drive)
+    saveLogsLocal();
+    renderList();renderSummary();
     badge.textContent='✓ ซิงก์แล้ว '+sheetLogs.length+' รายการ';badge.style.background='#dcfce7';badge.style.borderColor='#16a34a';
     setTimeout(()=>badge.style.display='none',3000);
   }catch(e){badge.textContent='⚠ ซิงก์ไม่ได้';badge.style.background='#fee2e2';badge.style.borderColor='#dc2626';setTimeout(()=>badge.style.display='none',4000);}
@@ -1248,13 +1185,11 @@ const MAX_PHOTOS=5;
 let photos={before:Array(MAX_PHOTOS).fill(null),after:Array(MAX_PHOTOS).fill(null)};
 let currentViewUrl='';
 
-// Apply saved settings on load
 applyAppSettings(appSettings);
 
 initSlots();renderList();renderSummary();renderAllCustomOptions();syncUserPillsFromConfig();
 fetchFromGAS();
-fetchCustomItems().then(()=>migrateLocalToSheet());
-// Load settings from sheet in background
+fetchCustomItems();
 loadSettings().catch(()=>{});
 
 const _fullImg=document.getElementById('fullImgPreview');
@@ -1421,7 +1356,7 @@ function setSaveUI(icon,title,desc,errorMsg,showProgress){
 }
 function closeSaveOverlay(){document.getElementById('saveOverlay').classList.remove('open');}
 
-// ═══════════════ SAVE LOG ═══════════════
+// ═══════════════ FIX 1+2: SAVE LOG — อัปโหลดไฟล์แนบก่อน แล้วค่อยส่ง Sheet ═══════════════
 async function saveLog(){
   if(!validateForm())return;
   const date=document.getElementById('fDate').value,start=getTimeVal('fStart'),end=getTimeVal('fEnd'),work=getWorkValue(),hours=calcHours(start,end);
@@ -1430,17 +1365,28 @@ async function saveLog(){
   const{before:uploadedBefore,after:uploadedAfter}=await uploadAllPendingPhotos(id);
   photos.before=[...uploadedBefore,...Array(MAX_PHOTOS-uploadedBefore.length).fill(null)];
   photos.after=[...uploadedAfter,...Array(MAX_PHOTOS-uploadedAfter.length).fill(null)];
+
+  // สร้าง log object โดยใช้ attachments = '' ก่อน จะอัปเดตหลังอัปโหลดไฟล์แนบเสร็จ
   const log={id,user:Array.from(selectedUsers).join(', '),date,start,end,hours,work,
     location:document.getElementById('fLocation').value||'0',item:document.getElementById('fItem').value||'0',
     qtyActual:Number(document.getElementById('fQtyActual').value)||0,status:currentStatus,
     typeWork:getTypeWorkValue(),remark:getRemarkValue(),
-    photosBefore:uploadedBefore,photosAfter:uploadedAfter,attachments:getAttachmentSummary(),_fromSheet:false};
+    photosBefore:uploadedBefore,photosAfter:uploadedAfter,
+    attachments:'',  // จะอัปเดตหลัง uploadAllAttachments()
+    _fromSheet:false};
+
   setSaveUI('⏳','กำลังบันทึก...','บันทึกข้อมูลลงในแอป');
   if(isEdit){const idx=logs.findIndex(l=>l.id===id);if(idx>=0)logs[idx]=log;else logs.unshift(log);}
   else logs.unshift(log);
   saveLogsLocal();
+
+  // FIX 1: อัปโหลดไฟล์แนบก่อน
   setSaveUI('⏳','กำลังส่งข้อมูล...','กำลังอัปโหลดไฟล์แนบ...');
   await uploadAllAttachments();
+
+  // FIX 2: อ่าน attachments หลังอัปโหลดเสร็จ (มี viewUrl แล้ว) แล้วอัปเดต log
+  log.attachments = getAttachmentSummary();
+
   setSaveUI('⏳','กำลังส่งข้อมูล...','กำลังบันทึกลง Google Sheets...');
   const res=await pushToGAS(log,isEdit?'update':'save');
   const driveCount=uploadedBefore.filter(isDrivePhoto).length+uploadedAfter.filter(isDrivePhoto).length;
@@ -1474,6 +1420,18 @@ function startEdit(id){
     (l.photosBefore||[]).forEach((p,i)=>{if(i<MAX_PHOTOS&&p)photos.before[i]=p;});
     (l.photosAfter||[]).forEach((p,i)=>{if(i<MAX_PHOTOS&&p)photos.after[i]=p;});
     initSlots();
+    // โหลด attachments เดิมเข้า attachedLinks
+    attachedLinks = [];
+    if (l.attachments) {
+      l.attachments.split('\n').filter(Boolean).forEach(item => {
+        const parts = item.split('|');
+        const name = parts[0] || item;
+        const url  = parts[1] || '';
+        const type = name.toLowerCase().includes('sheet') || url.includes('docs.google') ? 'gsheets' : 'file';
+        attachedLinks.push({ type, name, url, viewUrl: url, uploaded: true });
+      });
+    }
+    renderAttachedLinks();
     document.getElementById('editModeIndicator').classList.add('visible');document.getElementById('editIdLabel').textContent=id;
     document.getElementById('btnCancelEdit').style.display='inline-flex';document.getElementById('btnSave').textContent='💾 บันทึกการแก้ไข';
     document.getElementById('topbarTitle').innerHTML='✏️ แก้ไขรายการ #'+id;
@@ -1512,7 +1470,7 @@ function setSummaryQuickDate(mode,btn){summaryDateMode=mode;document.querySelect
 
 // ═══════════════ ATTACHMENT HELPERS ═══════════════
 function buildAttachList(raw) {
-  if (!raw) return '-';
+  if (!raw || raw === '-') return '-';
   const items = raw.split('\n').map(s => s.trim()).filter(Boolean);
   if (!items.length) return '-';
   return items.map(item => {
@@ -1528,9 +1486,8 @@ function buildAttachList(raw) {
   }).join('');
 }
 
-// Show attach badge in log list card
 function attachBadge(raw) {
-  if (!raw) return '';
+  if (!raw || raw === '-') return '';
   const n = raw.split('\n').filter(Boolean).length;
   return n > 0 ? `<span class="tag" style="background:#eff6ff;color:var(--accent);">📎 ${n} ไฟล์</span>` : '';
 }
@@ -1580,6 +1537,7 @@ function openLog(id){
   let ds=l.date;try{const d=new Date(l.date+'T00:00:00');if(!isNaN(d))ds=d.toLocaleDateString('th-TH',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});}catch(e){}
   const lh=(l.start&&l.end)?calcHours(l.start,l.end):(parseFloat(l.hours)||0);
   const rows=[['วันที่',ds],['เวลา',`${l.start||'-'} – ${l.end||'-'} (${fmtH(lh)} ชม.)`],['สถานะ',`<span class="status-badge status-${l.status}">${l.status}</span>`],['Type Work',l.typeWork?`<span class="tag" style="background:var(--accent2);color:white;">${l.typeWork}</span>`:'-'],['Location',l.location||'-'],['สินค้า (Item)',l.item||'-'],['จำนวนจริง',l.qtyActual?Number(l.qtyActual).toLocaleString():'0'],['รายละเอียด',`<div style="background:var(--bg);padding:16px;border-radius:var(--radius-sm);border:2px solid var(--border);line-height:1.7;">${(l.work||'').replace(/\n/g,'<br>')}</div>`],['หมายเหตุ',l.remark?`<span style="color:var(--red);font-weight:600;">${l.remark}</span>`:'-'],
+  // FIX 2: แสดง Attachments จาก Sheet
   ['ไฟล์แนบ', buildAttachList(l.attachments||'')]];
   const bp=(l.photosBefore||[]).filter(Boolean),ap=(l.photosAfter||[]).filter(Boolean);
   const hasPh=bp.length>0||ap.length>0;
@@ -1655,7 +1613,6 @@ async function refreshData(){
 }
 
 // ═══════════════ FILE ATTACHMENTS ═══════════════
-// attachedLinks: [{type:'gsheets'|'file', name, url, viewUrl?, size?, uploaded?}]
 let attachedLinks = [];
 
 function setAttachStatus(visible, text, type) {
@@ -1792,8 +1749,8 @@ function renderAttachedLinks() {
   }).join('');
 }
 
+// FIX 1: getAttachmentSummary ต้องรวมทั้ง gsheets และ file ที่อัปโหลดแล้ว (มี viewUrl)
 function getAttachmentSummary() {
-  // Format: "ชื่อไฟล์|viewUrl" คั่นด้วย newline → เก็บใน Sheet คอลัมน์ Attachments
   return attachedLinks
     .filter(a => a.viewUrl)
     .map(a => a.name + '|' + a.viewUrl)
