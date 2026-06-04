@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -91,10 +91,12 @@
   .sel-tag.remark-tag{background:var(--amber);color:var(--text);}
   .sel-tag-x{background:none;border:none;color:inherit;font-size:14px;font-weight:700;cursor:pointer;padding:0;line-height:1;opacity:0.8;}
   .sel-tag-x:hover{opacity:1;}
-  .user-picker{display:flex;flex-wrap:wrap;gap:8px;padding:10px;border:2px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);min-height:52px;transition:all 0.2s;}
+  .user-picker{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;padding:18px;border:3px solid var(--border);border-radius:var(--radius);background:var(--surface);min-height:132px;transition:all 0.2s;align-items:stretch;}
   .user-picker:focus-within{transform:translate(-2px,-2px);box-shadow:var(--shadow-sm);}
-  .user-pill{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:700;border:2px solid var(--border);box-shadow:1px 1px 0px var(--border);cursor:pointer;transition:all 0.15s;user-select:none;}
-  .user-pill:hover{transform:translate(-1px,-1px);box-shadow:2px 2px 0px var(--border);}
+  .user-pill{display:inline-flex;align-items:center;justify-content:center;gap:12px;min-height:74px;padding:12px 18px;border-radius:24px;font-size:20px;font-weight:800;border:3px solid var(--border);box-shadow:var(--shadow-sm);cursor:pointer;transition:all 0.15s;user-select:none;line-height:1.1;}
+  .user-pill:hover{transform:translate(-2px,-2px);box-shadow:var(--shadow);}
+  .user-pill .pill-avatar{width:46px!important;height:46px!important;border:2px solid var(--border);box-shadow:2px 2px 0 var(--border);}
+  .add-user-btn{min-width:74px;font-size:26px!important;border-radius:24px!important;}
   .user-pill.sel-อัด{background:#bae6fd;color:#0369a1;}
   .user-pill.sel-กุล{background:#a7f3d0;color:#047857;}
   .user-pill.sel-วิท{background:#fde68a;color:#b45309;}
@@ -133,6 +135,13 @@
   .upload-status-bar.visible{display:flex;}
   .upload-status-bar.ok{background:#f0fdf4;border-color:var(--green);}
   .upload-status-bar.err{background:#fef2f2;border-color:var(--red);}
+  .collapsible-card{padding:0;overflow:hidden;}
+  .collapsible-toggle{width:100%;background:var(--surface);border:0;color:var(--text);font-family:var(--sans);cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:24px 28px;text-align:left;}
+  .collapsible-toggle:hover{background:var(--bg);}
+  .collapsible-title{margin-bottom:0;min-width:0;flex-wrap:wrap;}
+  .collapsible-action{flex-shrink:0;border:2px solid var(--border);border-radius:999px;padding:8px 16px;font-size:14px;font-weight:800;background:var(--accent);color:white;box-shadow:var(--shadow-sm);white-space:nowrap;}
+  .collapsible-body{display:none;padding:0 28px 28px;}
+  .collapsible-body.open{display:block;}
   .btn{padding:14px 28px;border-radius:30px;font-size:16px;font-weight:700;cursor:pointer;border:2px solid var(--border);box-shadow:var(--shadow);transition:all 0.15s;font-family:var(--sans);display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--surface);color:var(--text);}
   .btn:hover{transform:translate(-2px,-2px);box-shadow:var(--shadow-hover);}
   .btn:active{transform:translate(2px,2px);box-shadow:var(--shadow-active);}
@@ -391,8 +400,12 @@
         </div>
 
         <!-- ATTACHMENTS -->
-        <div class="card">
-          <div class="card-title"><div class="card-title-icon">📎</div>แนบไฟล์ <span style="font-size:13px;color:var(--text3);font-weight:500;">(อัปโหลดขึ้น Google Drive อัตโนมัติ)</span></div>
+        <div class="card collapsible-card" id="attachCard">
+          <button type="button" class="collapsible-toggle" onclick="togglePanel('attachPanel')" aria-expanded="false" aria-controls="attachPanel">
+            <span class="card-title collapsible-title"><span class="card-title-icon">📎</span>แนบไฟล์ <span style="font-size:13px;color:var(--text3);font-weight:500;">(อัปโหลดขึ้น Google Drive อัตโนมัติ)</span></span>
+            <span class="collapsible-action" id="attachPanelIcon">เปิด</span>
+          </button>
+          <div class="collapsible-body" id="attachPanel">
           <div class="upload-status-bar" id="attachUploadBar"><span id="attachUploadIcon">📤</span><span id="attachUploadText">กำลังอัปโหลด...</span></div>
           <div class="field" style="margin-bottom:20px;">
             <label>🔗 แนบลิงก์ Google Sheets / Drive URL</label>
@@ -412,12 +425,17 @@
             </div>
             <div id="attachedFileList" style="display:flex;flex-direction:column;gap:8px;margin-top:12px;"></div>
           </div>
+          </div>
         </div>
         <!-- END ATTACHMENTS -->
 
         <!-- PHOTOS -->
-        <div class="card">
-          <div class="card-title"><div class="card-title-icon">📸</div>ถ่ายภาพ / แนบรูป <span style="font-size:13px;color:var(--text3);font-weight:500;">(อัปโหลด Google Drive — แยก Before/After อย่างละ 5 รูป)</span></div>
+        <div class="card collapsible-card" id="photoCard">
+          <button type="button" class="collapsible-toggle" onclick="togglePanel('photoPanel')" aria-expanded="false" aria-controls="photoPanel">
+            <span class="card-title collapsible-title"><span class="card-title-icon">📸</span>ถ่ายภาพ / แนบรูป <span style="font-size:13px;color:var(--text3);font-weight:500;">(อัปโหลด Google Drive — แยก Before/After อย่างละ 5 รูป)</span></span>
+            <span class="collapsible-action" id="photoPanelIcon">เปิด</span>
+          </button>
+          <div class="collapsible-body" id="photoPanel">
           <div class="upload-status-bar" id="uploadStatusBar"><span id="uploadStatusIcon">📤</span><span id="uploadStatusText">กำลังอัปโหลด...</span></div>
           <div class="photo-section" style="margin-top:16px;">
             <div class="photo-section-header"><div class="photo-section-label">📷 ก่อนงาน</div><span class="photo-section-count" id="beforeCount">0 / 5</span></div>
@@ -447,6 +465,7 @@
             <div style="text-align:center;margin-top:20px"><button class="btn btn-ghost btn-sm" onclick="stopCamera()">✕ ปิดกล้อง</button></div>
           </div>
           <canvas id="canvasEl" style="display:none"></canvas>
+          </div>
         </div>
         <div class="form-actions">
           <button class="btn btn-ghost" onclick="cancelEdit()" id="btnCancelEdit" style="display:none;">✕ ยกเลิกแก้ไข</button>
@@ -1060,7 +1079,7 @@ function renderUserPicker(){
       if (!existing) {
         const img = document.createElement('img');
         img.className = 'pill-avatar';
-        img.style.cssText = 'width:20px;height:20px;border-radius:50%;object-fit:cover;flex-shrink:0;';
+        img.style.cssText = 'width:46px;height:46px;border-radius:50%;object-fit:cover;flex-shrink:0;';
         img.src = b64;
         p.insertBefore(img, p.firstChild);
       } else {
@@ -1135,7 +1154,23 @@ async function uploadPhotoToDrive(base64data,filename,maxRetries){
   return null;
 }
 
+function setCollapsibleOpen(panelId, open){
+  const body=document.getElementById(panelId);if(!body)return;
+  const card=body.closest('.collapsible-card');
+  const btn=card?card.querySelector('.collapsible-toggle'):null;
+  const icon=document.getElementById(panelId==='attachPanel'?'attachPanelIcon':'photoPanelIcon');
+  body.classList.toggle('open',!!open);
+  if(card)card.classList.toggle('open',!!open);
+  if(btn)btn.setAttribute('aria-expanded',open?'true':'false');
+  if(icon)icon.textContent=open?'ซ่อน':'เปิด';
+}
+function togglePanel(panelId){
+  const body=document.getElementById(panelId);if(!body)return;
+  setCollapsibleOpen(panelId,!body.classList.contains('open'));
+}
+
 function setUploadStatus(visible,text,type){
+  if(visible)setCollapsibleOpen('photoPanel',true);
   type=type||'';
   const bar=document.getElementById('uploadStatusBar'),icon=document.getElementById('uploadStatusIcon'),txt=document.getElementById('uploadStatusText');
   bar.className='upload-status-bar'+(visible?' visible':'')+(type?' '+type:'');
@@ -1579,6 +1614,8 @@ function startEdit(id){
       });
     }
     renderAttachedLinks();
+    setCollapsibleOpen('attachPanel', !!l.attachments);
+    setCollapsibleOpen('photoPanel', (l.photosBefore||[]).filter(Boolean).length>0 || (l.photosAfter||[]).filter(Boolean).length>0);
     document.getElementById('editModeIndicator').classList.add('visible');document.getElementById('editIdLabel').textContent=id;
     document.getElementById('btnCancelEdit').style.display='inline-flex';document.getElementById('btnSave').textContent='💾 บันทึกการแก้ไข';
     document.getElementById('topbarTitle').innerHTML='✏️ แก้ไขรายการ #'+id;
@@ -1600,6 +1637,8 @@ function resetForm(){
   attachedLinks=[];renderAttachedLinks();
   document.getElementById('fGSheetsUrl').value='';
   setAttachStatus(false,'');
+  setCollapsibleOpen('attachPanel', false);
+  setCollapsibleOpen('photoPanel', false);
 }
 
 // ═══════════════ DATE FILTERS ═══════════════
@@ -1763,6 +1802,7 @@ async function refreshData(){
 let attachedLinks = [];
 
 function setAttachStatus(visible, text, type) {
+  if (visible) setCollapsibleOpen('attachPanel', true);
   type = type || '';
   const bar = document.getElementById('attachUploadBar');
   const icon = document.getElementById('attachUploadIcon');
