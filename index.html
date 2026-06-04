@@ -91,12 +91,12 @@
   .sel-tag.remark-tag{background:var(--amber);color:var(--text);}
   .sel-tag-x{background:none;border:none;color:inherit;font-size:14px;font-weight:700;cursor:pointer;padding:0;line-height:1;opacity:0.8;}
   .sel-tag-x:hover{opacity:1;}
-  .user-picker{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;padding:18px;border:3px solid var(--border);border-radius:var(--radius);background:var(--surface);min-height:132px;transition:all 0.2s;align-items:stretch;}
+  .user-picker{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;padding:14px;border:3px solid var(--border);border-radius:var(--radius);background:var(--surface);min-height:104px;transition:all 0.2s;align-items:stretch;width:100%;}
   .user-picker:focus-within{transform:translate(-2px,-2px);box-shadow:var(--shadow-sm);}
-  .user-pill{display:inline-flex;align-items:center;justify-content:center;gap:12px;min-height:74px;padding:12px 18px;border-radius:24px;font-size:20px;font-weight:800;border:3px solid var(--border);box-shadow:var(--shadow-sm);cursor:pointer;transition:all 0.15s;user-select:none;line-height:1.1;}
+  .user-pill{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:62px;padding:10px 12px;border-radius:22px;font-size:18px;font-weight:800;border:3px solid var(--border);box-shadow:var(--shadow-sm);cursor:pointer;transition:all 0.15s;user-select:none;line-height:1.1;}
   .user-pill:hover{transform:translate(-2px,-2px);box-shadow:var(--shadow);}
-  .user-pill .pill-avatar{width:46px!important;height:46px!important;border:2px solid var(--border);box-shadow:2px 2px 0 var(--border);}
-  .add-user-btn{min-width:74px;font-size:26px!important;border-radius:24px!important;}
+  .user-pill .pill-avatar{width:38px!important;height:38px!important;border:2px solid var(--border);box-shadow:2px 2px 0 var(--border);}
+  .add-user-btn{min-width:62px;font-size:24px!important;border-radius:22px!important;}
   .user-pill.sel-อัด{background:#bae6fd;color:#0369a1;}
   .user-pill.sel-กุล{background:#a7f3d0;color:#047857;}
   .user-pill.sel-วิท{background:#fde68a;color:#b45309;}
@@ -250,7 +250,7 @@
     .content-wrap{margin-left:0!important;}
     .sidebar-toggle{left:12px!important;}
     .stats{grid-template-columns:1fr 1fr;}
-    .form-grid,.form-grid.three{grid-template-columns:1fr;}
+    .form-grid,.form-grid.three{grid-template-columns:1fr;} .user-picker{grid-template-columns:repeat(2,minmax(0,1fr));}
     .field.span2{grid-column:span 1;}
     .main{padding:24px 16px;}
     .topbar{padding-left:68px;}
@@ -310,7 +310,7 @@
         <div class="card">
           <div class="card-title"><div class="card-title-icon">📝</div>รายละเอียดงาน</div>
           <div class="form-grid">
-            <div class="field" id="field-user">
+            <div class="field span2" id="field-user">
               <label>ผู้ปฏิบัติงาน<span class="req">*</span></label>
               <div class="user-picker" id="userPicker">
                 <div class="user-pill sel-อัด unsel" data-user="อัด" onclick="toggleUser('อัด')">อัด</div>
@@ -1079,7 +1079,7 @@ function renderUserPicker(){
       if (!existing) {
         const img = document.createElement('img');
         img.className = 'pill-avatar';
-        img.style.cssText = 'width:46px;height:46px;border-radius:50%;object-fit:cover;flex-shrink:0;';
+        img.style.cssText = 'width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0;';
         img.src = b64;
         p.insertBefore(img, p.firstChild);
       } else {
