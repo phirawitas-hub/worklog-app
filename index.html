@@ -14,24 +14,32 @@
     --radius:20px;--radius-sm:12px;
     --shadow:4px 4px 0px var(--border);--shadow-hover:6px 6px 0px var(--border);
     --shadow-active:0px 0px 0px var(--border);--shadow-sm:2px 2px 0px var(--border);
-    --mono:'Space Mono',monospace;--sans:'Prompt',sans-serif;--sidebar-w:260px;
+    --mono:'Space Mono',monospace;--sans:'Prompt',sans-serif;--sidebar-w:260px;--sidebar-mini-w:86px;
   }
   *{margin:0;padding:0;box-sizing:border-box;}
   body{background-color:var(--bg);background-image:radial-gradient(#cbd5e1 2px,transparent 2px);background-size:28px 28px;color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.6;min-height:100vh;}
   .app{display:flex;min-height:100vh;}
-  .sidebar{width:var(--sidebar-w);min-height:100vh;background:var(--surface);border-right:3px solid var(--border);display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:200;transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);box-shadow:4px 0 0 var(--border);}
-  .sidebar.collapsed{transform:translateX(calc(-1 * var(--sidebar-w)));}
+  .sidebar{width:var(--sidebar-w);min-height:100vh;background:var(--surface);border-right:3px solid var(--border);display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:200;transition:width 0.25s cubic-bezier(0.4,0,0.2,1),transform 0.3s cubic-bezier(0.4,0,0.2,1);box-shadow:4px 0 0 var(--border);}
+  .sidebar.collapsed{width:var(--sidebar-mini-w);}
   .sidebar-logo{padding:32px 24px 24px;border-bottom:2px solid var(--border2);display:flex;flex-direction:column;align-items:center;gap:12px;}
   .sidebar-logo-icon{width:72px;height:72px;border-radius:20px;background:var(--surface2);border:3px solid var(--border);box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;font-size:36px;overflow:hidden;}
   .sidebar-logo-icon img{width:100%;height:100%;object-fit:cover;border-radius:17px;}
   .sidebar-logo-title{font-size:22px;font-weight:700;color:var(--text);text-align:center;line-height:1.2;}
   .sidebar-logo-sub{font-size:11px;font-weight:600;letter-spacing:0.12em;color:var(--text3);text-transform:uppercase;text-align:center;}
+  .sidebar.collapsed .sidebar-logo{padding:24px 10px 18px;}
+  .sidebar.collapsed .sidebar-logo-icon{width:52px;height:52px;border-radius:16px;font-size:28px;box-shadow:var(--shadow-sm);}
+  .sidebar.collapsed .sidebar-logo-icon img{border-radius:13px;}
+  .sidebar.collapsed .sidebar-logo-title,.sidebar.collapsed .sidebar-logo-sub{display:none;}
   .sidebar-nav{flex:1;padding:20px 16px;display:flex;flex-direction:column;gap:6px;overflow-y:auto;}
   .nav-item{display:flex;align-items:center;gap:14px;padding:14px 18px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;color:var(--text2);cursor:pointer;border:2px solid transparent;transition:all 0.15s;user-select:none;position:relative;}
   .nav-item:hover{background:var(--bg);color:var(--text);border-color:var(--border2);}
   .nav-item.active{background:var(--text);color:white;border-color:var(--border);box-shadow:var(--shadow-sm);}
   .nav-item.active .nav-icon{color:var(--green);}
   .nav-icon{font-size:22px;flex-shrink:0;width:28px;text-align:center;}
+  .sidebar.collapsed .sidebar-nav{padding:18px 10px;align-items:center;}
+  .sidebar.collapsed .nav-item{width:56px;height:56px;justify-content:center;padding:0;border-radius:18px;gap:0;}
+  .sidebar.collapsed .nav-label{display:none;}
+  .sidebar.collapsed .nav-icon{width:auto;font-size:24px;}
   .nav-item.active::before{content:'';position:absolute;left:-18px;top:50%;transform:translateY(-50%);width:6px;height:32px;background:var(--green);border-radius:0 4px 4px 0;}
   .sidebar-footer{padding:16px;border-top:2px solid var(--border2);}
   .sidebar-date{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--text3);background:var(--bg);border:2px solid var(--border2);padding:8px 14px;border-radius:20px;text-align:center;display:block;}
@@ -39,9 +47,9 @@
   .sidebar-overlay.open{display:block;}
   .sidebar-toggle{position:fixed;top:18px;left:calc(var(--sidebar-w) + 12px);z-index:201;width:44px;height:44px;background:var(--surface);border:3px solid var(--border);border-radius:50%;box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:20px;transition:left 0.3s cubic-bezier(0.4,0,0.2,1),transform 0.2s,box-shadow 0.2s;}
   .sidebar-toggle:hover{transform:translate(-2px,-2px);box-shadow:var(--shadow-hover);}
-  .sidebar-toggle.sidebar-hidden{left:12px;}
+  .sidebar-toggle.sidebar-hidden{left:calc(var(--sidebar-mini-w) + 12px);}
   .content-wrap{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh;transition:margin-left 0.3s cubic-bezier(0.4,0,0.2,1);}
-  .content-wrap.full{margin-left:0;}
+  .content-wrap.full{margin-left:var(--sidebar-mini-w);}
   .topbar{background:var(--surface);border-bottom:3px solid var(--border);padding:0 24px 0 68px;height:70px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
   .topbar-title{font-size:18px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:10px;}
   .topbar-right{display:flex;align-items:center;gap:12px;}
@@ -243,7 +251,14 @@
   ::-webkit-scrollbar-track{background:var(--bg);}
   ::-webkit-scrollbar-thumb{background:var(--border);border-radius:0;border:2px solid var(--bg);}
   @media(max-width:768px){
-    .sidebar{transform:translateX(calc(-1 * var(--sidebar-w)));}
+    .sidebar,.sidebar.collapsed{width:var(--sidebar-w);transform:translateX(calc(-1 * var(--sidebar-w)));}
+    .sidebar.collapsed .sidebar-logo{padding:32px 24px 24px;}
+    .sidebar.collapsed .sidebar-logo-icon{width:72px;height:72px;border-radius:20px;font-size:36px;box-shadow:var(--shadow);}
+    .sidebar.collapsed .sidebar-logo-title,.sidebar.collapsed .sidebar-logo-sub{display:block;}
+    .sidebar.collapsed .sidebar-nav{padding:20px 16px;align-items:stretch;}
+    .sidebar.collapsed .nav-item{width:auto;height:auto;justify-content:flex-start;padding:14px 18px;border-radius:var(--radius-sm);gap:14px;}
+    .sidebar.collapsed .nav-label{display:inline;}
+    .sidebar.collapsed .nav-icon{width:28px;font-size:22px;}
     .sidebar.open{transform:translateX(0);}
     .sidebar-overlay{display:none;}
     .sidebar-overlay.open{display:block;}
@@ -272,17 +287,17 @@
       </div>
     </div>
     <nav class="sidebar-nav">
-      <div class="nav-item active" onclick="switchPage('add')" id="nav-add"><span class="nav-icon">✍️</span><span class="nav-label">บันทึกงาน</span></div>
-      <div class="nav-item" onclick="switchPage('list')" id="nav-list"><span class="nav-icon">📋</span><span class="nav-label">รายการทั้งหมด</span></div>
-      <div class="nav-item" onclick="switchPage('summary')" id="nav-summary"><span class="nav-icon">📊</span><span class="nav-label">สรุปภาพรวม</span></div>
-      <div class="nav-item" onclick="switchPage('settings')" id="nav-settings"><span class="nav-icon">⚙️</span><span class="nav-label">ตั้งค่าระบบ</span></div>
+      <div class="nav-item active" onclick="switchPage('add')" id="nav-add" title="บันทึกงาน"><span class="nav-icon">✍️</span><span class="nav-label">บันทึกงาน</span></div>
+      <div class="nav-item" onclick="switchPage('list')" id="nav-list" title="รายการทั้งหมด"><span class="nav-icon">📋</span><span class="nav-label">รายการทั้งหมด</span></div>
+      <div class="nav-item" onclick="switchPage('summary')" id="nav-summary" title="สรุปภาพรวม"><span class="nav-icon">📊</span><span class="nav-label">สรุปภาพรวม</span></div>
+      <div class="nav-item" onclick="switchPage('settings')" id="nav-settings" title="ตั้งค่าระบบ"><span class="nav-icon">⚙️</span><span class="nav-label">ตั้งค่าระบบ</span></div>
     </nav>
     <div class="sidebar-footer" style="padding:12px 16px;">
       <span id="sidebarDate" style="display:none;"></span>
     </div>
   </aside>
   <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
-  <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">☰</button>
+  <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()" title="พับ/ขยายเมนู">☰</button>
   <div class="content-wrap" id="contentWrap">
     <header class="topbar">
       <div class="topbar-title" id="topbarTitle"><span>✍️</span> บันทึกงาน</div>
@@ -644,10 +659,14 @@ let sidebarOpen = true;
 function toggleSidebar() {
   const sb=document.getElementById('sidebar'),toggle=document.getElementById('sidebarToggle'),cw=document.getElementById('contentWrap'),ov=document.getElementById('sidebarOverlay'),mob=window.innerWidth<=768;
   if(mob){sidebarOpen=!sb.classList.contains('open');sb.classList.toggle('open',sidebarOpen);ov.classList.toggle('open',sidebarOpen);}
-  else{sidebarOpen=!sidebarOpen;sb.classList.toggle('collapsed',!sidebarOpen);cw.classList.toggle('full',!sidebarOpen);toggle.classList.toggle('sidebar-hidden',!sidebarOpen);toggle.textContent=sidebarOpen?'☰':'▶';}
+  else{sidebarOpen=!sidebarOpen;sb.classList.toggle('collapsed',!sidebarOpen);cw.classList.toggle('full',!sidebarOpen);toggle.classList.toggle('sidebar-hidden',!sidebarOpen);toggle.textContent=sidebarOpen?'☰':'›';toggle.title=sidebarOpen?'พับเมนู':'ขยายเมนู';}
 }
 function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebarOverlay').classList.remove('open');sidebarOpen=false;}
-window.addEventListener('resize',()=>{if(window.innerWidth>768){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebarOverlay').classList.remove('open');}});
+window.addEventListener('resize',()=>{
+  const sb=document.getElementById('sidebar'),toggle=document.getElementById('sidebarToggle'),cw=document.getElementById('contentWrap');
+  if(window.innerWidth>768){sb.classList.remove('open');document.getElementById('sidebarOverlay').classList.remove('open');cw.classList.toggle('full',sb.classList.contains('collapsed'));toggle.classList.toggle('sidebar-hidden',sb.classList.contains('collapsed'));}
+  else{sb.classList.remove('collapsed');cw.classList.remove('full');toggle.classList.remove('sidebar-hidden');toggle.textContent='☰';toggle.title='เปิดเมนู';}
+});
 
 const PAGE_TITLES={add:'✍️ บันทึกงาน',list:'📋 รายการทั้งหมด',summary:'📊 สรุปภาพรวม',settings:'⚙️ ตั้งค่าระบบ'};
 
