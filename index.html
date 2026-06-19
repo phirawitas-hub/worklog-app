@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -576,6 +576,32 @@
             <div id="avatarManageList" style="display:flex;flex-direction:column;gap:10px;"></div>
           </div>
 
+          <!-- LINE Notification Section -->
+          <div class="settings-section">
+            <div class="settings-section-title">🔔 แจ้งเตือน LINE (LINE Messaging API)</div>
+            <p style="font-size:13px;color:var(--text3);margin-bottom:16px;">ส่งข้อความแจ้งเตือนผ่าน LINE ทุกครั้งที่มีการบันทึก/แก้ไขงาน — ต้องสร้าง LINE Official Account + Messaging API Channel ก่อน แล้วนำ Channel Access Token และ userId/groupId มาใส่ที่นี่</p>
+            <div class="form-grid">
+              <div class="field span2">
+                <label>Channel Access Token</label>
+                <input type="password" id="settingsLineToken" placeholder="วาง Channel Access Token จาก LINE Developers Console" autocomplete="off">
+              </div>
+              <div class="field span2">
+                <label>ส่งถึง (userId / groupId) — เว้นว่าง = broadcast ไม่ได้ใช้</label>
+                <input type="text" id="settingsLineTarget" placeholder="Uxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx หรือ Cxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:16px;margin-top:18px;flex-wrap:wrap;">
+              <button class="btn btn-ghost btn-sm" onclick="testLineNotify()" id="btnTestLine">📨 ทดสอบส่ง LINE</button>
+              <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;font-weight:600;user-select:none;">
+                <span class="line-toggle" id="lineToggle" onclick="toggleLineEnabled()" style="position:relative;width:46px;height:26px;background:var(--surface2);border:2px solid var(--border);border-radius:20px;display:inline-block;transition:background 0.2s;flex-shrink:0;">
+                  <span id="lineToggleDot" style="position:absolute;top:1px;left:1px;width:18px;height:18px;background:var(--surface);border:2px solid var(--border);border-radius:50%;transition:transform 0.2s;"></span>
+                </span>
+                <span onclick="toggleLineEnabled()">แจ้งเตือนเมื่อมีการบันทึกงานใหม่</span>
+              </label>
+            </div>
+            <div id="lineTestResult" style="margin-top:12px;font-size:13px;font-weight:600;display:none;padding:10px 14px;border-radius:8px;border:2px solid var(--border2);"></div>
+          </div>
+
           <div class="form-actions" style="border-top:2px dashed var(--border2);padding-top:24px;">
             <button class="btn btn-ghost" onclick="loadSettings()">↩ โหลดจาก Sheet ใหม่</button>
             <button class="btn btn-success" onclick="saveSettings()" id="btnSaveSettings">💾 บันทึกการตั้งค่า</button>
@@ -681,6 +707,9 @@ let appSettings = {
   appName:    localStorage.getItem('wl_appName') || 'WORKLOG',
   logoBase64: localStorage.getItem('wl_logoBase64') || '',
   avatars:    JSON.parse(localStorage.getItem('wl_avatars') || '{}'),
+  lineChannelToken:  localStorage.getItem('wl_lineToken') || '',
+  lineTargetId:      localStorage.getItem('wl_lineTarget') || '',
+  lineNotifyEnabled: localStorage.getItem('wl_lineEnabled') === 'true',
 };
 
 // ── Avatar helpers ──
@@ -721,6 +750,21 @@ function applyAppSettings(settings) {
     localStorage.removeItem('wl_logoBase64');
     document.getElementById('sidebarLogoIcon').innerHTML = '📦';
   }
+  // ── LINE Notification settings ──
+  if (settings.lineChannelToken !== undefined) {
+    appSettings.lineChannelToken = settings.lineChannelToken || '';
+    localStorage.setItem('wl_lineToken', appSettings.lineChannelToken);
+  }
+  if (settings.lineTargetId !== undefined) {
+    appSettings.lineTargetId = settings.lineTargetId || '';
+    localStorage.setItem('wl_lineTarget', appSettings.lineTargetId);
+  }
+  if (settings.lineNotifyEnabled !== undefined) {
+    appSettings.lineNotifyEnabled = (settings.lineNotifyEnabled === 'true' || settings.lineNotifyEnabled === true);
+    localStorage.setItem('wl_lineEnabled', appSettings.lineNotifyEnabled ? 'true' : 'false');
+    lineNotifyEnabled = appSettings.lineNotifyEnabled;
+    renderLineToggle();
+  }
   // รับ avatar_* keys จาก Sheet แล้วเก็บลง appSettings.avatars
   let avatarChanged = false;
   Object.keys(settings).forEach(k => {
@@ -757,6 +801,12 @@ function renderSettingsPage() {
   }
   document.getElementById('settingsPreviewName').textContent = (appSettings.appName || 'WORKLOG').toUpperCase();
   renderAvatarSection();
+  // ── LINE fields ──
+  document.getElementById('settingsLineToken').value = appSettings.lineChannelToken || '';
+  document.getElementById('settingsLineTarget').value = appSettings.lineTargetId || '';
+  lineNotifyEnabled = !!appSettings.lineNotifyEnabled;
+  renderLineToggle();
+  document.getElementById('lineTestResult').style.display = 'none';
 }
 
 // ─── Avatar Management ──────────────────────────────────────────
@@ -866,28 +916,83 @@ function clearLogo() {
   showToast('🗑 ลบโลโก้แล้ว — กด "บันทึก" เพื่อซิงก์');
 }
 
+// ═══════════════ LINE NOTIFICATION (Settings) ═══════════════
+let lineNotifyEnabled = false;
+
+function toggleLineEnabled() {
+  lineNotifyEnabled = !lineNotifyEnabled;
+  renderLineToggle();
+}
+function renderLineToggle() {
+  const tgl = document.getElementById('lineToggle');
+  const dot = document.getElementById('lineToggleDot');
+  if (!tgl || !dot) return;
+  tgl.style.background = lineNotifyEnabled ? 'var(--green)' : 'var(--surface2)';
+  dot.style.transform   = lineNotifyEnabled ? 'translateX(20px)' : 'translateX(0)';
+}
+
+async function testLineNotify() {
+  const token = document.getElementById('settingsLineToken').value.trim();
+  const to    = document.getElementById('settingsLineTarget').value.trim();
+  const resultEl = document.getElementById('lineTestResult');
+  if (!token || !to) {
+    resultEl.style.display = 'block';
+    resultEl.style.background = '#fef2f2'; resultEl.style.color = 'var(--red)'; resultEl.style.borderColor = 'var(--red)';
+    resultEl.textContent = '⚠ กรุณากรอก Channel Access Token และ Target ID ก่อนทดสอบ';
+    return;
+  }
+  const btn = document.getElementById('btnTestLine');
+  btn.disabled = true; btn.textContent = '⏳ กำลังส่ง...';
+  try {
+    const res = await fetch(GAS_URL, {
+      method: 'POST', headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: 'testLine', token, to }), redirect: 'follow'
+    });
+    const data = await res.json();
+    resultEl.style.display = 'block';
+    if (data.ok) {
+      resultEl.style.background = '#f0fdf4'; resultEl.style.color = 'var(--green)'; resultEl.style.borderColor = 'var(--green)';
+      resultEl.textContent = '✅ ส่งสำเร็จ! ตรวจสอบ LINE ของผู้รับ';
+    } else {
+      resultEl.style.background = '#fef2f2'; resultEl.style.color = 'var(--red)'; resultEl.style.borderColor = 'var(--red)';
+      resultEl.textContent = '⚠ ส่งไม่สำเร็จ: ' + (data.error || 'unknown error');
+    }
+  } catch (e) {
+    resultEl.style.display = 'block';
+    resultEl.style.background = '#fef2f2'; resultEl.style.color = 'var(--red)'; resultEl.style.borderColor = 'var(--red)';
+    resultEl.textContent = '⚠ เชื่อมต่อล้มเหลว: ' + e.message;
+  }
+  btn.disabled = false; btn.textContent = '📨 ทดสอบส่ง LINE';
+}
+
 async function saveSettings() {
   const name = document.getElementById('settingsAppName').value.trim();
   if (!name) return showToast('⚠ กรุณากรอกชื่อแอป');
   const btn = document.getElementById('btnSaveSettings');
   btn.disabled = true; btn.textContent = '⏳ กำลังบันทึก...';
+  const lineToken  = document.getElementById('settingsLineToken').value.trim();
+  const lineTarget = document.getElementById('settingsLineTarget').value.trim();
   try {
-    // รวม appName + logo + avatar ทั้งหมด
-    const payload = { action: 'saveSettings', appName: name, logoBase64: appSettings.logoBase64 || '' };
+    // รวม appName + logo + avatar + LINE settings ทั้งหมด
+    const payload = {
+      action: 'saveSettings', appName: name, logoBase64: appSettings.logoBase64 || '',
+      lineChannelToken: lineToken, lineTargetId: lineTarget,
+      lineNotifyEnabled: lineNotifyEnabled ? 'true' : 'false',
+    };
     Object.entries(appSettings.avatars || {}).forEach(([u, b64]) => {
       payload['avatar_' + u] = b64 || '';
     });
     const res = await fetch(GAS_URL, { method: 'POST', headers: {'Content-Type': 'text/plain'}, body: JSON.stringify(payload), redirect: 'follow' });
     const data = await res.json();
     if (data.ok) {
-      applyAppSettings({ appName: name, logoBase64: appSettings.logoBase64 });
+      applyAppSettings({ appName: name, logoBase64: appSettings.logoBase64, lineChannelToken: lineToken, lineTargetId: lineTarget, lineNotifyEnabled: lineNotifyEnabled ? 'true' : 'false' });
       showToast('✅ บันทึก Settings สำเร็จ — ซิงก์ไป Sheet แล้ว');
     } else {
-      applyAppSettings({ appName: name, logoBase64: appSettings.logoBase64 });
+      applyAppSettings({ appName: name, logoBase64: appSettings.logoBase64, lineChannelToken: lineToken, lineTargetId: lineTarget, lineNotifyEnabled: lineNotifyEnabled ? 'true' : 'false' });
       showToast('⚠ บันทึกเฉพาะ local — Sheet: ' + (data.error || 'error'));
     }
   } catch(e) {
-    applyAppSettings({ appName: name, logoBase64: appSettings.logoBase64 });
+    applyAppSettings({ appName: name, logoBase64: appSettings.logoBase64, lineChannelToken: lineToken, lineTargetId: lineTarget, lineNotifyEnabled: lineNotifyEnabled ? 'true' : 'false' });
     showToast('⚠ บันทึก local แล้ว แต่ Sheet ไม่ตอบสนอง');
   }
   btn.disabled = false; btn.textContent = '💾 บันทึกการตั้งค่า';
@@ -1387,6 +1492,8 @@ let photos={before:Array(MAX_PHOTOS).fill(null),after:Array(MAX_PHOTOS).fill(nul
 let currentViewUrl='';
 
 applyAppSettings(appSettings);
+lineNotifyEnabled = !!appSettings.lineNotifyEnabled;
+renderLineToggle();
 
 initSlots();renderList();renderSummary();renderAllCustomOptions();syncUserPillsFromConfig();
 fetchFromGAS();
