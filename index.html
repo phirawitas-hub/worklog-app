@@ -401,7 +401,7 @@
             <div id="remarkTags" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
             <div class="combo-wrap">
               <!-- แก้ไข: เพิ่ม autocomplete="off" เพื่อป้องกัน browser เติมค่าเก่ากลับมา -->
-              <input type="text" id="fRemark" placeholder="พิมพ์เพิ่มเติม หรือเลือกจากรายการ..." autocomplete="off">
+              <input type="text" id="fRemark" placeholder="พิมพ์เพิ่มเติม หรือเลือกจากรายการ..." autocomplete="new-password" name="fRemark_x" onfocus="this.removeAttribute('readonly')" readonly>
               <button type="button" class="combo-toggle" onclick="toggleDropdown('remarkDrop')" style="top:8px;">▾</button>
               <div class="combo-dropdown" id="remarkDrop">
                 <div class="combo-option" onclick="addRemarkTag('ตรวจสอบแล้วถูกต้อง')"><span>✅</span>ตรวจสอบแล้วถูกต้อง</div>
@@ -426,7 +426,7 @@
           <div class="field" style="margin-bottom:20px;">
             <label>🔗 แนบลิงก์ Google Sheets / Drive URL</label>
             <div style="display:flex;gap:10px;align-items:center;">
-              <input type="text" id="fGSheetsUrl" placeholder="วาง URL Google Sheets หรือ Drive ที่นี่..." style="flex:1;" autocomplete="off">
+              <input type="text" id="fGSheetsUrl" placeholder="วาง URL Google Sheets หรือ Drive ที่นี่..." style="flex:1;" autocomplete="new-password" name="gsurl_x">
               <button class="btn btn-ghost btn-sm" onclick="addGSheetsLink()" style="flex-shrink:0;white-space:nowrap;">➕ เพิ่ม</button>
             </div>
             <div id="gsheetsLinkList" style="display:flex;flex-direction:column;gap:8px;margin-top:10px;"></div>
@@ -854,18 +854,26 @@ function resetForm(){
   document.getElementById('fStartM').value=nowM;
   document.getElementById('fEndH').value='00';
   document.getElementById('fEndM').value='00';
-  // ล้างค่าทันที
-  ['fWork','fLocation','fItem','fQtyActual','fRemark','fTypeWork'].forEach(id=>{
+  // ล้างค่าทั้งหมดและป้องกัน browser autofill
+  ['fWork','fLocation','fItem','fQtyActual','fRemark','fTypeWork','fGSheetsUrl'].forEach(id=>{
     const el=document.getElementById(id);
-    if(el){el.value='';el.setAttribute('autocomplete','off');}
+    if(!el)return;
+    el.value='';
+    // trick: clone node เพื่อ clear autofill state ที่ browser cache ไว้
+    const clone=el.cloneNode(true);
+    clone.value='';
+    el.parentNode.replaceChild(clone,el);
+    // re-attach event ถ้ามี
+    if(id==='fRemark'){
+      clone.onfocus=function(){this.removeAttribute('readonly');};
+    }
   });
-  // ล้างซ้ำด้วย setTimeout เพื่อ override browser autofill ที่อาจเติมกลับมาหลัง render
   setTimeout(()=>{
-    ['fWork','fLocation','fItem','fQtyActual','fRemark','fTypeWork'].forEach(id=>{
+    ['fWork','fLocation','fItem','fQtyActual','fRemark','fTypeWork','fGSheetsUrl'].forEach(id=>{
       const el=document.getElementById(id);
       if(el)el.value='';
     });
-  },150);
+  },200);
   document.getElementById('hourPreview').style.display='none';
   selectedTypeWorkTags=[];renderTypeWorkTags();
   selectedWorkTags=[];renderWorkTags();
