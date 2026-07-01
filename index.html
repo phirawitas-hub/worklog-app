@@ -400,7 +400,6 @@
             <label>หมายเหตุ / Issue</label>
             <div id="remarkTags" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
             <div class="combo-wrap">
-              <!-- แก้ไข: เพิ่ม autocomplete="off" เพื่อป้องกัน browser เติมค่าเก่ากลับมา -->
               <input type="text" id="fRemark" placeholder="พิมพ์เพิ่มเติม หรือเลือกจากรายการ..." autocomplete="new-password" name="fRemark_x" onfocus="this.removeAttribute('readonly')" readonly>
               <button type="button" class="combo-toggle" onclick="toggleDropdown('remarkDrop')" style="top:8px;">▾</button>
               <div class="combo-dropdown" id="remarkDrop">
@@ -508,7 +507,7 @@
           <input type="text" id="searchInput" placeholder="🔍 ค้นหางาน, ผู้ปฏิบัติ, location..." oninput="renderList()" autocomplete="off">
           <select id="filterUser" onchange="renderList()"><option value="">ทุกคน</option><option>อัด</option><option>กุล</option><option>วิท</option><option>หมี</option><option>อัน</option></select>
           <select id="filterStatus" onchange="renderList()"><option value="">ทุกสถานะ</option><option>Finish</option><option>InProgress</option><option>Pending</option><option>Issue</option></select>
-          <select id="filterTypeWork" onchange="renderList()"><option value="">ทุกประเภทงาน</option><option>Cycle Count</option><option>Replenishment</option><option>Transfer-Putaway</option><option>Audit / Verify</option><option>Report</option><option>5ส / Housekeeping</option><option>Photo / Product Info</option><option>DMG & Disposal</option></select>
+          <select id="filterTypeWork" onchange="renderList()"><option value="">ทุกประเภทงาน</option><option>Cycle Count</option><option>Replenishment</option><option>Transfer-Putaway</option><option>Audit / Verify</option><option>Report</option><option>5 s Cleaning</option><option>Photo / Product Info</option><option>DMG & Disposal</option></select>
         </div>
         <div id="listSummaryBar" style="display:none;background:var(--surface);border:2px solid var(--border);border-radius:var(--radius-sm);padding:12px 18px;margin-bottom:16px;font-size:14px;font-weight:600;gap:20px;flex-wrap:wrap;box-shadow:var(--shadow-sm);"></div>
         <div class="log-list" id="logList"></div>
@@ -706,7 +705,6 @@ document.addEventListener('DOMContentLoaded',()=>{
   const fd=document.getElementById('fileDropArea');
   if(fd){fd.addEventListener('dragover',e=>{e.preventDefault();fd.style.borderColor='var(--accent)';fd.style.background='#eff6ff';});fd.addEventListener('dragleave',()=>{fd.style.borderColor='var(--border2)';fd.style.background='var(--bg)';});fd.addEventListener('drop',e=>{e.preventDefault();fd.style.borderColor='var(--border2)';fd.style.background='var(--bg)';const fakeEv={target:{files:e.dataTransfer.files,value:''}};handleAttachFiles(fakeEv);});}
   document.getElementById('settingsAppName').addEventListener('input',e=>{const v=e.target.value.trim()||'WORKLOG';document.getElementById('settingsPreviewName').textContent=v.toUpperCase();});
-  // ── FIX: ป้องกัน browser autofill ทุก input/textarea ──
   document.querySelectorAll('input[type=text],input[type=number],textarea').forEach(el=>{el.setAttribute('autocomplete','off');});
 });
 
@@ -716,7 +714,53 @@ function getRecorder(){let r=localStorage.getItem('wl_recorder');if(!r){r=prompt
 function saveLocalCache(type){localStorage.setItem(ITEM_CONFIG[type].lsKey,JSON.stringify(sharedCustomItems[type]));}
 function esc(s){return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
 
-async function fetchCustomItems(){try{const res=await fetch(GAS_URL+'?action=getConfig');const data=await res.json();if(data&&typeof data==='object'){Object.keys(ITEM_CONFIG).forEach(k=>{if(Array.isArray(data[k])){const local=sharedCustomItems[k]||[],server=data[k];sharedCustomItems[k]=[...server,...local.filter(x=>!server.includes(x))];localStorage.setItem(ITEM_CONFIG[k].lsKey,JSON.stringify(sharedCustomItems[k]));}}); renderAllCustomOptions();syncUserPillsFromConfig();}}catch(e){}}
+// ══════════════════════════════════════════════════════
+// FIX 2: rebuildFilterDropdowns — sync filters from Config sheet
+// เรียกหลัง fetchCustomItems() โหลดเสร็จ เพื่ออัปเดต
+// dropdown ใน "รายการทั้งหมด" และ "สรุปภาพรวม" ให้ตรงกับ sheet
+// ══════════════════════════════════════════════════════
+function rebuildFilterDropdowns(){
+  // ─── Type Work ────────────────────────────────────────
+  const FIXED_TYPES=['Cycle Count','Replenishment','Transfer-Putaway',
+    'Audit / Verify','Report','5 s Cleaning','Photo / Product Info','DMG & Disposal'];
+  const allTypes=[...new Set([...FIXED_TYPES,...(sharedCustomItems.typeWork||[])])];
+
+  const ftw=document.getElementById('filterTypeWork');
+  if(ftw){
+    const curTW=ftw.value;
+    ftw.innerHTML='<option value="">ทุกประเภทงาน</option>'+
+      allTypes.map(t=>`<option${t===curTW?' selected':''}>${t}</option>`).join('');
+  }
+  const sftw=document.getElementById('summaryFilterType');
+  if(sftw){
+    const curSTW=sftw.value;
+    sftw.innerHTML='<option value="">ทุกประเภท</option>'+
+      allTypes.map(t=>`<option${t===curSTW?' selected':''}>${t}</option>`).join('');
+  }
+
+  // ─── User ─────────────────────────────────────────────
+  const FIXED_USERS=['อัด','กุล','วิท','หมี','อัน'];
+  const allUsers=[...new Set([...FIXED_USERS,...(sharedCustomItems.user||[])])];
+
+  const fu=document.getElementById('filterUser');
+  if(fu){
+    const curU=fu.value;
+    fu.innerHTML='<option value="">ทุกคน</option>'+
+      allUsers.map(u=>`<option${u===curU?' selected':''}>${u}</option>`).join('');
+  }
+  const sfu=document.getElementById('summaryFilterUser');
+  if(sfu){
+    const curSU=sfu.value;
+    sfu.innerHTML='<option value="">ทุกคน</option>'+
+      allUsers.map(u=>`<option${u===curSU?' selected':''}>${u}</option>`).join('');
+  }
+}
+
+async function fetchCustomItems(){try{const res=await fetch(GAS_URL+'?action=getConfig');const data=await res.json();if(data&&typeof data==='object'){Object.keys(ITEM_CONFIG).forEach(k=>{if(Array.isArray(data[k])){const local=sharedCustomItems[k]||[],server=data[k];sharedCustomItems[k]=[...server,...local.filter(x=>!server.includes(x))];localStorage.setItem(ITEM_CONFIG[k].lsKey,JSON.stringify(sharedCustomItems[k]));}}); renderAllCustomOptions();syncUserPillsFromConfig();
+  // FIX 2: อัปเดต filter dropdowns หลังโหลด Config จาก sheet
+  rebuildFilterDropdowns();
+}}catch(e){}}
+
 async function pushConfigItem(type,item,recorder,remove=false){if(!GAS_URL)return;try{await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'saveConfig',type,item,recorder,remove})});}catch(e){}}
 function syncUserPillsFromConfig(){const picker=document.getElementById('userPicker'),addBtn=picker.querySelector('.add-user-btn');const fixed=['อัด','กุล','วิท','หมี','อัน'];(sharedCustomItems.user||[]).forEach(name=>{if(fixed.includes(name)||picker.querySelector('[data-user="'+name+'"]'))return;const pill=document.createElement('div');pill.className='user-pill unsel';pill.dataset.user=name;pill.textContent=name;pill.style.cssText='background:#f1f5f9;color:var(--text);';pill.onclick=()=>toggleUser(name);picker.insertBefore(pill,addBtn);});}
 function addUserPillExt(name){syncUserPillsFromConfig();toggleUser(name);}
@@ -727,8 +771,8 @@ let activeCustomType=null;
 function openCustomModal(type){document.querySelectorAll('.combo-dropdown.open').forEach(d=>d.classList.remove('open'));activeCustomType=type;document.getElementById('customModalTitle').textContent=ITEM_CONFIG[type]?.label||'จัดการรายการ';renderCustomModalBody();document.getElementById('customModalOverlay').classList.add('open');}
 function renderCustomModalBody(){const items=sharedCustomItems[activeCustomType]||[],recorder=localStorage.getItem('wl_recorder')||'?';document.getElementById('customModalBody').innerHTML=`<div style="font-size:12px;color:var(--text3);margin-bottom:12px;padding:8px 12px;background:var(--bg);border-radius:8px;border:1px solid var(--border2);display:flex;align-items:center;gap:8px;"><span>👤 Recorder: <strong>${recorder}</strong></span><button onclick="changeRecorder()" style="background:none;border:1px solid var(--border2);border-radius:6px;padding:2px 8px;font-size:11px;cursor:pointer;margin-left:auto;">เปลี่ยน</button></div><div class="custom-add-row"><input type="text" id="customNewInput" placeholder="พิมพ์รายการใหม่..." onkeydown="if(event.key==='Enter')addCustomItem()" autocomplete="off"><button class="btn btn-primary btn-sm" onclick="addCustomItem()">➕ เพิ่ม</button></div><div style="font-size:13px;font-weight:600;color:var(--text3);margin-bottom:10px;">รายการที่เพิ่มแล้ว (${items.length})</div><div class="custom-item-list">${items.length===0?'<div style="text-align:center;padding:24px;color:var(--text3);">ยังไม่มีรายการ</div>':items.map((item,i)=>`<div class="custom-item-row"><span>${item}</span><button onclick="removeCustomItem(${i},'${esc(item)}')">✕ ลบ</button></div>`).join('')}</div><div style="margin-top:20px;text-align:right;"><button class="btn btn-ghost btn-sm" onclick="closeCustomModalBtn()">ปิด</button></div>`;setTimeout(()=>document.getElementById('customNewInput')?.focus(),100);}
 function changeRecorder(){const r=prompt('ใส่ชื่อ Recorder ใหม่:');if(r&&r.trim()){localStorage.setItem('wl_recorder',r.trim());renderCustomModalBody();}}
-async function addCustomItem(){const input=document.getElementById('customNewInput'),val=input?.value?.trim();if(!val)return showToast('⚠ กรุณาพิมพ์ชื่อรายการ');if((sharedCustomItems[activeCustomType]||[]).includes(val))return showToast('⚠ มีรายการนี้อยู่แล้ว');const recorder=getRecorder();if(!sharedCustomItems[activeCustomType])sharedCustomItems[activeCustomType]=[];sharedCustomItems[activeCustomType].unshift(val);input.value='';saveLocalCache(activeCustomType);await pushConfigItem(activeCustomType,val,recorder,false);renderCustomModalBody();renderAllCustomOptions();if(activeCustomType==='user'){syncUserPillsFromConfig();toggleUser(val);}if(activeCustomType==='work')addWorkTag(val);if(activeCustomType==='typeWork')addTypeWorkTag(val);if(activeCustomType==='remark')addRemarkTag(val);showToast('✅ เพิ่ม "'+val+'" แล้ว');}
-async function removeCustomItem(idx,itemVal){sharedCustomItems[activeCustomType].splice(idx,1);saveLocalCache(activeCustomType);await pushConfigItem(activeCustomType,itemVal,'',true);renderCustomModalBody();renderAllCustomOptions();if(activeCustomType==='user')syncUserPillsFromConfig();showToast('🗑 ลบรายการแล้ว');}
+async function addCustomItem(){const input=document.getElementById('customNewInput'),val=input?.value?.trim();if(!val)return showToast('⚠ กรุณาพิมพ์ชื่อรายการ');if((sharedCustomItems[activeCustomType]||[]).includes(val))return showToast('⚠ มีรายการนี้อยู่แล้ว');const recorder=getRecorder();if(!sharedCustomItems[activeCustomType])sharedCustomItems[activeCustomType]=[];sharedCustomItems[activeCustomType].unshift(val);input.value='';saveLocalCache(activeCustomType);await pushConfigItem(activeCustomType,val,recorder,false);renderCustomModalBody();renderAllCustomOptions();if(activeCustomType==='user'){syncUserPillsFromConfig();toggleUser(val);}if(activeCustomType==='work')addWorkTag(val);if(activeCustomType==='typeWork'){addTypeWorkTag(val);rebuildFilterDropdowns();}if(activeCustomType==='remark')addRemarkTag(val);if(activeCustomType==='user')rebuildFilterDropdowns();showToast('✅ เพิ่ม "'+val+'" แล้ว');}
+async function removeCustomItem(idx,itemVal){sharedCustomItems[activeCustomType].splice(idx,1);saveLocalCache(activeCustomType);await pushConfigItem(activeCustomType,itemVal,'',true);renderCustomModalBody();renderAllCustomOptions();if(activeCustomType==='user'){syncUserPillsFromConfig();rebuildFilterDropdowns();}if(activeCustomType==='typeWork')rebuildFilterDropdowns();showToast('🗑 ลบรายการแล้ว');}
 function closeCustomModalBtn(){document.getElementById('customModalOverlay').classList.remove('open');activeCustomType=null;}
 
 function parseHHMM(str){if(!str)return null;const p=String(str).replace(/\s*(AM|PM)/i,'').trim().split(':');if(p.length<2)return null;const h=parseInt(p[0],10),m=parseInt(p[1],10);return isNaN(h)||isNaN(m)?null:h*60+m;}
@@ -839,13 +883,42 @@ function removeSlotPhoto(sec,idx){photos[sec].splice(idx,1);photos[sec].push(nul
 function setSaveUI(icon,title,desc,errorMsg,showProgress){errorMsg=errorMsg||null;showProgress=showProgress||false;const spinner=document.getElementById('saveSpinner'),btnWrap=document.getElementById('saveBtnWrap'),details=document.getElementById('saveDetails'),progress=document.getElementById('saveProgress');document.getElementById('saveTitle').textContent=title;document.getElementById('saveDesc').textContent=desc;if(icon==='⏳'){spinner.textContent='⏳';spinner.style.animation='spin 1s linear infinite';btnWrap.style.display='none';}else{spinner.textContent=icon;spinner.style.animation='none';btnWrap.style.display='block';}if(errorMsg){details.textContent=errorMsg;details.style.display='block';}else details.style.display='none';progress.style.display=showProgress?'block':'none';if(showProgress)document.getElementById('saveProgressBar').style.width='0%';document.getElementById('saveOverlay').classList.add('open');}
 function closeSaveOverlay(){document.getElementById('saveOverlay').classList.remove('open');}
 
-async function saveLog(){if(!validateForm())return;const date=document.getElementById('fDate').value,start=getTimeVal('fStart'),end=getTimeVal('fEnd'),work=getWorkValue(),hours=calcHours(start,end);const isEdit=editingId!==null,id=isEdit?editingId:nextId++;setSaveUI('⏳','กำลังประมวลผล...','กำลังเตรียมข้อมูล');const{before:uploadedBefore,after:uploadedAfter}=await uploadAllPendingPhotos(id);photos.before=[...uploadedBefore,...Array(MAX_PHOTOS-uploadedBefore.length).fill(null)];photos.after=[...uploadedAfter,...Array(MAX_PHOTOS-uploadedAfter.length).fill(null)];const log={id,user:Array.from(selectedUsers).join(', '),date,start,end,hours,work,location:document.getElementById('fLocation').value||'0',item:document.getElementById('fItem').value||'0',qtyActual:Number(document.getElementById('fQtyActual').value)||0,status:currentStatus,typeWork:getTypeWorkValue(),remark:getRemarkValue(),photosBefore:uploadedBefore,photosAfter:uploadedAfter,attachments:'',_fromSheet:false};setSaveUI('⏳','กำลังบันทึก...','บันทึกข้อมูลลงในแอป');if(isEdit){const idx=logs.findIndex(l=>l.id===id);if(idx>=0)logs[idx]=log;else logs.unshift(log);}else logs.unshift(log);saveLogsLocal();setSaveUI('⏳','กำลังส่งข้อมูล...','กำลังอัปโหลดไฟล์แนบ...');await uploadAllAttachments();log.attachments=getAttachmentSummary();setSaveUI('⏳','กำลังส่งข้อมูล...','กำลังบันทึกลง Google Sheets...');const res=await pushToGAS(log,isEdit?'update':'save');const driveCount=uploadedBefore.filter(isDrivePhoto).length+uploadedAfter.filter(isDrivePhoto).length;const totalCount=uploadedBefore.length+uploadedAfter.length;if(res.ok){setSaveUI('✅',isEdit?'แก้ไขสำเร็จ!':'บันทึกสำเร็จ!',totalCount>0?'รูปภาพ '+driveCount+'/'+totalCount+' รูปอยู่ใน Google Drive ✓':'บันทึกสำเร็จ');document.getElementById('saveBtnWrap').style.display='none';editingId=null;document.getElementById('editModeIndicator').classList.remove('visible');document.getElementById('btnCancelEdit').style.display='none';document.getElementById('btnSave').textContent='💾 บันทึกงาน';setTimeout(()=>{closeSaveOverlay();resetForm();switchPage('list');},1500);}else{setSaveUI('⚠️',isEdit?'แก้ไขใน App แล้ว':'บันทึกใน App แล้ว','บันทึกลงแอปเรียบร้อย แต่เชื่อมต่อ Google Sheet พลาด',res.error);const btn=document.querySelector('#saveBtnWrap button');btn.textContent='รับทราบ';btn.onclick=function(){closeSaveOverlay();resetForm();switchPage('list');editingId=null;document.getElementById('editModeIndicator').classList.remove('visible');document.getElementById('btnCancelEdit').style.display='none';document.getElementById('btnSave').textContent='💾 บันทึกงาน';};}}
+// ══════════════════════════════════════════════════════
+// FIX 1: saveLog — ไม่เด้งไปหน้ารายการหลังบันทึก
+// อยู่หน้าบันทึกงานเดิม แค่ล้างฟอร์มและแสดง toast
+// ══════════════════════════════════════════════════════
+async function saveLog(){if(!validateForm())return;const date=document.getElementById('fDate').value,start=getTimeVal('fStart'),end=getTimeVal('fEnd'),work=getWorkValue(),hours=calcHours(start,end);const isEdit=editingId!==null,id=isEdit?editingId:nextId++;setSaveUI('⏳','กำลังประมวลผล...','กำลังเตรียมข้อมูล');const{before:uploadedBefore,after:uploadedAfter}=await uploadAllPendingPhotos(id);photos.before=[...uploadedBefore,...Array(MAX_PHOTOS-uploadedBefore.length).fill(null)];photos.after=[...uploadedAfter,...Array(MAX_PHOTOS-uploadedAfter.length).fill(null)];const log={id,user:Array.from(selectedUsers).join(', '),date,start,end,hours,work,location:document.getElementById('fLocation').value||'0',item:document.getElementById('fItem').value||'0',qtyActual:Number(document.getElementById('fQtyActual').value)||0,status:currentStatus,typeWork:getTypeWorkValue(),remark:getRemarkValue(),photosBefore:uploadedBefore,photosAfter:uploadedAfter,attachments:'',_fromSheet:false};setSaveUI('⏳','กำลังบันทึก...','บันทึกข้อมูลลงในแอป');if(isEdit){const idx=logs.findIndex(l=>l.id===id);if(idx>=0)logs[idx]=log;else logs.unshift(log);}else logs.unshift(log);saveLogsLocal();setSaveUI('⏳','กำลังส่งข้อมูล...','กำลังอัปโหลดไฟล์แนบ...');await uploadAllAttachments();log.attachments=getAttachmentSummary();setSaveUI('⏳','กำลังส่งข้อมูล...','กำลังบันทึกลง Google Sheets...');const res=await pushToGAS(log,isEdit?'update':'save');const driveCount=uploadedBefore.filter(isDrivePhoto).length+uploadedAfter.filter(isDrivePhoto).length;const totalCount=uploadedBefore.length+uploadedAfter.length;
+  if(res.ok){
+    // FIX 1: ปิด modal แล้วอยู่หน้าเดิม (ไม่ switchPage ไปหน้า list)
+    closeSaveOverlay();
+    editingId=null;
+    document.getElementById('editModeIndicator').classList.remove('visible');
+    document.getElementById('btnCancelEdit').style.display='none';
+    document.getElementById('btnSave').textContent='💾 บันทึกงาน';
+    document.getElementById('topbarTitle').innerHTML=PAGE_TITLES['add'];
+    resetForm();
+    showToast(isEdit?'✅ แก้ไขสำเร็จ! พร้อมบันทึกรายการถัดไป':'✅ บันทึกสำเร็จ! พร้อมบันทึกรายการถัดไป');
+  }else{
+    // FIX 1: กรณี sheet พลาด — ปิด modal แล้วอยู่หน้าเดิมเช่นกัน
+    setSaveUI('⚠️',isEdit?'แก้ไขใน App แล้ว':'บันทึกใน App แล้ว','บันทึกลงแอปเรียบร้อย แต่เชื่อมต่อ Google Sheet พลาด',res.error);
+    const btn=document.querySelector('#saveBtnWrap button');
+    btn.textContent='รับทราบ';
+    btn.onclick=function(){
+      closeSaveOverlay();
+      editingId=null;
+      document.getElementById('editModeIndicator').classList.remove('visible');
+      document.getElementById('btnCancelEdit').style.display='none';
+      document.getElementById('btnSave').textContent='💾 บันทึกงาน';
+      document.getElementById('topbarTitle').innerHTML=PAGE_TITLES['add'];
+      resetForm();
+    };
+  }
+}
 
 function startEdit(id){const l=logs.find(x=>x.id===id);if(!l)return;closeModalBtn();editingId=id;switchPage('add');setTimeout(()=>{document.getElementById('fDate').value=l.date||todayStr;buildTimeSelects();setTimeVal('fStart',l.start||'');setTimeVal('fEnd',l.end||'');onTimeChange();selectedUsers=new Set((l.user||'').split(',').map(u=>u.trim()).filter(Boolean));renderUserPicker();selectedWorkTags=l.work?[l.work]:[];renderWorkTags();document.getElementById('fWork').value='';selectedTypeWorkTags=(l.typeWork||'').split(',').map(s=>s.trim()).filter(Boolean);renderTypeWorkTags();selectedRemarkTags=[];document.getElementById('fRemark').value=l.remark||'';document.getElementById('fItem').value=l.item||'';document.getElementById('fLocation').value=l.location||'';document.getElementById('fQtyActual').value=l.qtyActual||'';selectStatus(l.status||'Finish');photos={before:Array(MAX_PHOTOS).fill(null),after:Array(MAX_PHOTOS).fill(null)};(l.photosBefore||[]).forEach((p,i)=>{if(i<MAX_PHOTOS&&p)photos.before[i]=p;});(l.photosAfter||[]).forEach((p,i)=>{if(i<MAX_PHOTOS&&p)photos.after[i]=p;});initSlots();attachedLinks=[];if(l.attachments){l.attachments.split('\n').filter(Boolean).forEach(item=>{const parts=item.split('|');const name=parts[0]||item;const url=parts[1]||'';const type=name.toLowerCase().includes('sheet')||url.includes('docs.google')?'gsheets':'file';attachedLinks.push({type,name,url,viewUrl:url,uploaded:true});});}renderAttachedLinks();setCollapsibleOpen('attachPanel',!!l.attachments);setCollapsibleOpen('photoPanel',(l.photosBefore||[]).filter(Boolean).length>0||(l.photosAfter||[]).filter(Boolean).length>0);document.getElementById('editModeIndicator').classList.add('visible');document.getElementById('editIdLabel').textContent=id;document.getElementById('btnCancelEdit').style.display='inline-flex';document.getElementById('btnSave').textContent='💾 บันทึกการแก้ไข';document.getElementById('topbarTitle').innerHTML='✏️ แก้ไขรายการ #'+id;clearAllErrors();document.getElementById('page-add').scrollIntoView({behavior:'smooth',block:'start'});},100);}
 
 function cancelEdit(){editingId=null;resetForm();document.getElementById('editModeIndicator').classList.remove('visible');document.getElementById('btnCancelEdit').style.display='none';document.getElementById('btnSave').textContent='💾 บันทึกงาน';document.getElementById('topbarTitle').innerHTML=PAGE_TITLES['add'];showToast('↩ ยกเลิกการแก้ไขแล้ว');}
 
-// ═══════════════ FIX: resetForm — ล้าง fRemark และ field อื่นด้วย setTimeout ═══════════════
 function resetForm(){
   editingId=null;
   document.getElementById('fDate').value=todayStr;
@@ -854,16 +927,13 @@ function resetForm(){
   document.getElementById('fStartM').value=nowM;
   document.getElementById('fEndH').value='00';
   document.getElementById('fEndM').value='00';
-  // ล้างค่าทั้งหมดและป้องกัน browser autofill
   ['fWork','fLocation','fItem','fQtyActual','fRemark','fTypeWork','fGSheetsUrl'].forEach(id=>{
     const el=document.getElementById(id);
     if(!el)return;
     el.value='';
-    // trick: clone node เพื่อ clear autofill state ที่ browser cache ไว้
     const clone=el.cloneNode(true);
     clone.value='';
     el.parentNode.replaceChild(clone,el);
-    // re-attach event ถ้ามี
     if(id==='fRemark'){
       clone.onfocus=function(){this.removeAttribute('readonly');};
     }
@@ -888,7 +958,7 @@ function resetForm(){
   document.getElementById('btnSave').textContent='💾 บันทึกงาน';
   setUploadStatus(false,'');clearAllErrors();
   attachedLinks=[];renderAttachedLinks();
-  document.getElementById('fGSheetsUrl').value='';
+  const gsUrl=document.getElementById('fGSheetsUrl');if(gsUrl)gsUrl.value='';
   setAttachStatus(false,'');
   setCollapsibleOpen('attachPanel',false);
   setCollapsibleOpen('photoPanel',false);
