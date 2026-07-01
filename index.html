@@ -1240,32 +1240,22 @@ async function generatePptx(){
   const btn=document.getElementById('btnGenPptx');
   const statusEl=document.getElementById('presentStatus');
   btn.disabled=true;btn.textContent='⏳ กำลังสร้าง...';
-  statusEl.style.display='block';statusEl.style.background='#eff6ff';statusEl.style.borderColor='var(--accent)';statusEl.textContent='⏳ กำลังสร้างไฟล์ PowerPoint...';
-
-  try{
-    // สร้าง PPTX ผ่าน GAS
-    const photoItems=filtered.map(l=>({
-      id:l.id,user:l.user,date:l.date,start:l.start,end:l.end,
-      work:l.work,location:l.location,item:l.item,qtyActual:l.qtyActual,
-      status:l.status,typeWork:l.typeWork,remark:l.remark,
-      beforeUrls:(l.photosBefore||[]).filter(p=>p&&p.viewUrl).map(p=>p.viewUrl),
-      afterUrls:(l.photosAfter||[]).filter(p=>p&&p.viewUrl).map(p=>p.viewUrl),
-    }));
-    const res=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},
-      body:JSON.stringify({action:'generatePptxData',typeWork:tw,items:photoItems}),redirect:'follow'});
-    const data=await res.json();
-    if(data.ok&&data.downloadUrl){
-      statusEl.style.background='#f0fdf4';statusEl.style.borderColor='var(--green)';
-      statusEl.innerHTML='✅ สร้างสำเร็จ! <a href="'+data.downloadUrl+'" target="_blank" style="color:var(--accent);font-weight:700;margin-left:8px;">⬇️ ดาวน์โหลด PowerPoint</a>';
-    } else {
-      // fallback: สร้าง PPTX แบบ inline HTML สำหรับ download
+  statusEl.style.display='block';
+  statusEl.style.background='#eff6ff';
+  statusEl.style.borderColor='var(--accent)';
+  statusEl.textContent='⏳ กำลังสร้างสไลด์ '+filtered.length+' รายการ...';
+  // ใช้ setTimeout เพื่อให้ UI แสดง status ก่อนที่ JS จะทำงานหนัก
+  setTimeout(()=>{
+    try{
       buildLocalPptxHtml(filtered,tw);
+    }catch(e){
+      statusEl.style.background='#fef2f2';
+      statusEl.style.borderColor='var(--red)';
+      statusEl.textContent='⚠ เกิดข้อผิดพลาด: '+e.message;
     }
-  } catch(e){
-    // fallback ถ้า GAS ไม่รองรับ: สร้าง report HTML แทน
-    buildLocalPptxHtml(filtered,tw);
-  }
-  btn.disabled=false;btn.textContent='🎞️ สร้าง PowerPoint';
+    btn.disabled=false;
+    btn.textContent='🎞️ สร้าง PowerPoint';
+  },100);
 }
 
 function buildLocalPptxHtml(filtered,tw){
@@ -1377,14 +1367,43 @@ body{font-family:'Prompt',sans-serif;background:#1e293b;}
 <button onclick="window.close()" style="font-family:'Prompt',sans-serif;padding:14px 24px;background:#f1f5f9;color:#0f172a;border:2px solid #cbd5e1;border-radius:30px;font-size:16px;font-weight:700;cursor:pointer;">✕ ปิด</button>
 </div></body></html>`;
 
-  const blob=new Blob([html],{type:'text/html;charset=utf-8'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');a.href=url;a.download='WorkLog_Presentation_'+tw.replace(/[^a-zA-Zก-๙0-9]/g,'_')+'.html';a.click();
-  URL.revokeObjectURL(url);
-  const statusEl=document.getElementById('presentStatus');
-  statusEl.style.display='block';statusEl.style.background='#f0fdf4';statusEl.style.borderColor='var(--green)';
-  statusEl.innerHTML='✅ ดาวน์โหลดสำเร็จ! เปิดไฟล์ .html แล้วกด "Print" เพื่อบันทึกเป็น PDF หรือพรีเซนต์ใน Browser';
-  showToast('✅ สร้าง Presentation สำเร็จ '+filtered.length+' สไลด์');
+  // เปิด new window แทน Blob URL (ทำงานได้ทุก browser ไม่ถูก block)
+  const newWin=window.open('','_blank');
+  if(newWin){
+    newWin.document.write(html);
+    newWin.document.close();
+    const statusEl=document.getElementById('presentStatus');
+    statusEl.style.display='block';
+    statusEl.style.background='#f0fdf4';
+    statusEl.style.borderColor='var(--green)';
+    statusEl.innerHTML='✅ เปิดสไลด์ในแท็บใหม่แล้ว! กด "Print / Save PDF" ในแท็บนั้นเพื่อบันทึก<br><small style="font-weight:400;color:var(--text3);">หากแท็บไม่เปิด ให้ตรวจสอบ pop-up blocker ของ browser</small>';
+    showToast('✅ สร้าง Presentation สำเร็จ '+filtered.length+' สไลด์');
+  } else {
+    // fallback ถ้า popup ถูก block — download เป็นไฟล์แทน
+    try{
+      const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=url;
+      a.download='WorkLog_Presentation_'+tw.replace(/[^a-zA-Zก-๙0-9]/g,'_')+'.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(()=>URL.revokeObjectURL(url),1000);
+      const statusEl=document.getElementById('presentStatus');
+      statusEl.style.display='block';
+      statusEl.style.background='#f0fdf4';
+      statusEl.style.borderColor='var(--green)';
+      statusEl.innerHTML='✅ ดาวน์โหลดไฟล์สำเร็จ! เปิดไฟล์ .html แล้วกด "Print" เพื่อบันทึกเป็น PDF';
+      showToast('✅ สร้าง Presentation สำเร็จ '+filtered.length+' สไลด์');
+    }catch(e2){
+      const statusEl=document.getElementById('presentStatus');
+      statusEl.style.display='block';
+      statusEl.style.background='#fef2f2';
+      statusEl.style.borderColor='var(--red)';
+      statusEl.textContent='⚠ browser block pop-up — กรุณาอนุญาต pop-up แล้วลองใหม่';
+    }
+  }
 }
 
 function showToast(msg){const t=document.getElementById('toast'),ico=t.querySelector('.toast-icon');document.getElementById('toastMsg').textContent=msg;ico.textContent=msg.includes('⚠')?'⚠️':msg.includes('🗑')?'🗑️':msg.includes('☁')||msg.includes('📸')||msg.includes('🖼')?'📸':'✅';t.classList.add('show');if(t._hide)clearTimeout(t._hide);t._hide=setTimeout(()=>t.classList.remove('show'),3000);}
