@@ -290,6 +290,7 @@
       <div class="nav-item active" onclick="switchPage('add')" id="nav-add" title="บันทึกงาน"><span class="nav-icon">✍️</span><span class="nav-label">บันทึกงาน</span></div>
       <div class="nav-item" onclick="switchPage('list')" id="nav-list" title="รายการทั้งหมด"><span class="nav-icon">📋</span><span class="nav-label">รายการทั้งหมด</span></div>
       <div class="nav-item" onclick="switchPage('summary')" id="nav-summary" title="สรุปภาพรวม"><span class="nav-icon">📊</span><span class="nav-label">สรุปภาพรวม</span></div>
+      <div class="nav-item" onclick="switchPage('present')" id="nav-present" title="พรีเซนต์สไลด์"><span class="nav-icon">🎞️</span><span class="nav-label">พรีเซนต์สไลด์</span></div>
       <div class="nav-item" onclick="switchPage('settings')" id="nav-settings" title="ตั้งค่าระบบ"><span class="nav-icon">⚙️</span><span class="nav-label">ตั้งค่าระบบ</span></div>
     </nav>
     <div class="sidebar-footer" style="padding:12px 16px;">
@@ -541,6 +542,59 @@
         <div class="card"><div class="card-title"><div class="card-title-icon">📌</div>สถานะงาน</div><div id="statusChart" style="display:flex;flex-direction:column;gap:14px;"></div></div>
       </div>
 
+      <!-- PRESENT PAGE -->
+      <div class="page" id="page-present">
+        <div class="card">
+          <div class="card-title"><div class="card-title-icon">🎞️</div>สร้าง PowerPoint สไลด์</div>
+          <p style="font-size:14px;color:var(--text3);margin-bottom:24px;">เลือก Type Work และช่วงเวลา — ระบบจะสร้างสไลด์แยกแต่ละงาน พร้อมรูปภาพแนบ</p>
+          <div class="form-grid">
+            <div class="field">
+              <label>🏷 ประเภทงาน (Type Work)</label>
+              <select id="presentTypeWork" style="padding:14px 16px;">
+                <option value="">-- เลือกประเภทงาน --</option>
+                <option>Cycle Count</option>
+                <option>Replenishment</option>
+                <option>Transfer-Putaway</option>
+                <option>Audit / Verify</option>
+                <option>Report</option>
+                <option>5 s Cleaning</option>
+                <option>Photo / Product Info</option>
+                <option>DMG & Disposal</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>👤 ผู้ปฏิบัติงาน</label>
+              <select id="presentUser" style="padding:14px 16px;">
+                <option value="">ทุกคน</option>
+                <option>อัด</option><option>กุล</option><option>วิท</option><option>หมี</option><option>อัน</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-top:20px;">
+            <label style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:8px;display:block;">🗓 ช่วงเวลา</label>
+            <div class="quick-filter-chips" style="margin-bottom:14px;">
+              <button class="qchip active" onclick="setPresentQuickDate('today',this)">วันนี้</button>
+              <button class="qchip" onclick="setPresentQuickDate('week',this)">อาทิตย์นี้</button>
+              <button class="qchip" onclick="setPresentQuickDate('month',this)">เดือนนี้</button>
+              <button class="qchip" onclick="setPresentQuickDate('all',this)">ทั้งหมด</button>
+              <button class="qchip" onclick="setPresentQuickDate('custom',this)">กำหนดเอง</button>
+            </div>
+            <div id="presentCustomDateRange" style="display:none;" class="date-range-inputs">
+              <input type="date" id="presentDateFrom"><span class="date-sep">–</span><input type="date" id="presentDateTo">
+            </div>
+          </div>
+          <div id="presentPreview" style="margin-top:24px;padding:16px;background:var(--bg);border:2px solid var(--border2);border-radius:var(--radius-sm);display:none;">
+            <div style="font-size:14px;font-weight:700;margin-bottom:8px;">📋 ตัวอย่างข้อมูลที่จะสร้างสไลด์</div>
+            <div id="presentPreviewBody" style="font-size:13px;color:var(--text2);"></div>
+          </div>
+          <div class="form-actions" style="margin-top:24px;">
+            <button class="btn btn-ghost" onclick="previewPresent()">👁 ดูตัวอย่าง</button>
+            <button class="btn btn-primary" onclick="generatePptx()" id="btnGenPptx">🎞️ สร้าง PowerPoint</button>
+          </div>
+          <div id="presentStatus" style="display:none;margin-top:16px;padding:14px 18px;border-radius:var(--radius-sm);border:2px solid var(--border);font-size:14px;font-weight:600;"></div>
+        </div>
+      </div>
+
       <!-- SETTINGS PAGE -->
       <div class="page" id="page-settings">
         <div class="card">
@@ -595,6 +649,27 @@
               </label>
             </div>
             <div id="lineTestResult" style="margin-top:12px;font-size:13px;font-weight:600;display:none;padding:10px 14px;border-radius:8px;border:2px solid var(--border2);"></div>
+          </div>
+          <!-- DISCORD SETTINGS -->
+          <div class="settings-section">
+            <div class="settings-section-title">🎮 แจ้งเตือน Discord (Webhook)</div>
+            <p style="font-size:13px;color:var(--text3);margin-bottom:16px;">ส่ง Embed message ไปยัง Discord Channel ทุกครั้งที่มีการบันทึก/แก้ไขงาน</p>
+            <div class="form-grid">
+              <div class="field span2">
+                <label>Webhook URL</label>
+                <input type="text" id="settingsDiscordWebhook" placeholder="https://discord.com/api/webhooks/..." autocomplete="off">
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:16px;margin-top:18px;flex-wrap:wrap;">
+              <button class="btn btn-ghost btn-sm" onclick="testDiscordNotify()" id="btnTestDiscord">🎮 ทดสอบส่ง Discord</button>
+              <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;font-weight:600;user-select:none;">
+                <span class="line-toggle" id="discordToggle" onclick="toggleDiscordEnabled()" style="position:relative;width:46px;height:26px;background:var(--surface2);border:2px solid var(--border);border-radius:20px;display:inline-block;transition:background 0.2s;flex-shrink:0;">
+                  <span id="discordToggleDot" style="position:absolute;top:1px;left:1px;width:18px;height:18px;background:var(--surface);border:2px solid var(--border);border-radius:50%;transition:transform 0.2s;"></span>
+                </span>
+                <span onclick="toggleDiscordEnabled()">แจ้งเตือน Discord เมื่อมีการบันทึกงานใหม่</span>
+              </label>
+            </div>
+            <div id="discordTestResult" style="margin-top:12px;font-size:13px;font-weight:600;display:none;padding:10px 14px;border-radius:8px;border:2px solid var(--border2);"></div>
           </div>
           <div class="form-actions" style="border-top:2px dashed var(--border2);padding-top:24px;">
             <button class="btn btn-ghost" onclick="loadSettings()">↩ โหลดจาก Sheet ใหม่</button>
@@ -669,17 +744,17 @@ function toggleSidebar(){const sb=document.getElementById('sidebar'),toggle=docu
 function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebarOverlay').classList.remove('open');sidebarOpen=false;}
 window.addEventListener('resize',()=>{const sb=document.getElementById('sidebar'),toggle=document.getElementById('sidebarToggle'),cw=document.getElementById('contentWrap');if(window.innerWidth>768){sb.classList.remove('open');document.getElementById('sidebarOverlay').classList.remove('open');cw.classList.toggle('full',sb.classList.contains('collapsed'));toggle.classList.toggle('sidebar-hidden',sb.classList.contains('collapsed'));}else{sb.classList.remove('collapsed');cw.classList.remove('full');toggle.classList.remove('sidebar-hidden');toggle.textContent='☰';toggle.title='เปิดเมนู';}});
 
-const PAGE_TITLES={add:'✍️ บันทึกงาน',list:'📋 รายการทั้งหมด',summary:'📊 สรุปภาพรวม',settings:'⚙️ ตั้งค่าระบบ'};
+const PAGE_TITLES={add:'✍️ บันทึกงาน',list:'📋 รายการทั้งหมด',summary:'📊 สรุปภาพรวม',present:'🎞️ พรีเซนต์สไลด์',settings:'⚙️ ตั้งค่าระบบ'};
 let logs=[],nextId=1,currentStatus='',selectedUsers=new Set(),editingId=null,listDateMode='all',summaryDateMode='all';
 
-let appSettings={appName:localStorage.getItem('wl_appName')||'WORKLOG',logoBase64:localStorage.getItem('wl_logoBase64')||'',avatars:JSON.parse(localStorage.getItem('wl_avatars')||'{}'),lineChannelToken:localStorage.getItem('wl_lineToken')||'',lineTargetId:localStorage.getItem('wl_lineTarget')||'',lineNotifyEnabled:localStorage.getItem('wl_lineEnabled')==='true',};
+let appSettings={appName:localStorage.getItem('wl_appName')||'WORKLOG',logoBase64:localStorage.getItem('wl_logoBase64')||'',avatars:JSON.parse(localStorage.getItem('wl_avatars')||'{}'),lineChannelToken:localStorage.getItem('wl_lineToken')||'',lineTargetId:localStorage.getItem('wl_lineTarget')||'',lineNotifyEnabled:localStorage.getItem('wl_lineEnabled')==='true',discordWebhook:localStorage.getItem('wl_discordWebhook')||'',discordNotifyEnabled:localStorage.getItem('wl_discordEnabled')==='true',};
 
 const USER_COLORS={'อัด':{bg:'#bae6fd',tc:'#0369a1'},'กุล':{bg:'#a7f3d0',tc:'#047857'},'วิท':{bg:'#fde68a',tc:'#b45309'},'หมี':{bg:'#ddd6fe',tc:'#6d28d9'},'อัน':{bg:'#fecaca',tc:'#b91c1c'},};
 function getUserAvatarHtml(username,size){size=size||48;const b64=(appSettings.avatars||{})[username];const r=size<=32?'50%':'14px';const fs=Math.max(11,Math.round(size*0.33));if(b64){return`<img src="${b64}" style="width:${size}px;height:${size}px;border-radius:${r};object-fit:cover;border:2px solid var(--border);box-shadow:2px 2px 0px var(--border);flex-shrink:0;">`;}const c=USER_COLORS[username]||{bg:'#f1f5f9',tc:'var(--text)'};return`<div style="width:${size}px;height:${size}px;border-radius:${r};background:${c.bg};color:${c.tc};border:2px solid var(--border);box-shadow:2px 2px 0px var(--border);display:flex;align-items:center;justify-content:center;font-size:${fs}px;font-weight:700;flex-shrink:0;">${(username||'??').slice(0,2)}</div>`;}
 
 function applyAppSettings(settings){if(settings.appName){appSettings.appName=settings.appName;localStorage.setItem('wl_appName',settings.appName);document.getElementById('sidebarAppName').textContent=settings.appName.toUpperCase();document.getElementById('appTitle').textContent=settings.appName+' — Inventory Team';}if(settings.logoBase64){appSettings.logoBase64=settings.logoBase64;localStorage.setItem('wl_logoBase64',settings.logoBase64);const icon=document.getElementById('sidebarLogoIcon');icon.innerHTML='<img src="'+settings.logoBase64+'" alt="logo">';}else if(settings.logoBase64===''){appSettings.logoBase64='';localStorage.removeItem('wl_logoBase64');document.getElementById('sidebarLogoIcon').innerHTML='📦';}if(settings.lineChannelToken!==undefined){appSettings.lineChannelToken=settings.lineChannelToken||'';localStorage.setItem('wl_lineToken',appSettings.lineChannelToken);}if(settings.lineTargetId!==undefined){appSettings.lineTargetId=settings.lineTargetId||'';localStorage.setItem('wl_lineTarget',appSettings.lineTargetId);}if(settings.lineNotifyEnabled!==undefined){appSettings.lineNotifyEnabled=(settings.lineNotifyEnabled==='true'||settings.lineNotifyEnabled===true);localStorage.setItem('wl_lineEnabled',appSettings.lineNotifyEnabled?'true':'false');lineNotifyEnabled=appSettings.lineNotifyEnabled;renderLineToggle();}let avatarChanged=false;Object.keys(settings).forEach(k=>{if(!k.startsWith('avatar_'))return;const username=k.substring(7);if(settings[k]){appSettings.avatars[username]=settings[k];}else{delete appSettings.avatars[username];}avatarChanged=true;});if(avatarChanged){localStorage.setItem('wl_avatars',JSON.stringify(appSettings.avatars));renderUserPicker();renderList();}}
 
-function renderSettingsPage(){document.getElementById('settingsAppName').value=appSettings.appName||'';const preview=document.getElementById('logoPreview');const placeholder=document.getElementById('logoPlaceholder');if(appSettings.logoBase64){preview.src=appSettings.logoBase64;preview.style.display='block';placeholder.style.display='none';document.getElementById('settingsPreviewIcon').innerHTML='<img src="'+appSettings.logoBase64+'" style="width:100%;height:100%;object-fit:cover;border-radius:12px;">';}else{preview.style.display='none';placeholder.style.display='flex';document.getElementById('settingsPreviewIcon').innerHTML='📦';}document.getElementById('settingsPreviewName').textContent=(appSettings.appName||'WORKLOG').toUpperCase();renderAvatarSection();document.getElementById('settingsLineToken').value=appSettings.lineChannelToken||'';document.getElementById('settingsLineTarget').value=appSettings.lineTargetId||'';lineNotifyEnabled=!!appSettings.lineNotifyEnabled;renderLineToggle();document.getElementById('lineTestResult').style.display='none';}
+function renderSettingsPage(){document.getElementById('settingsAppName').value=appSettings.appName||'';const preview=document.getElementById('logoPreview');const placeholder=document.getElementById('logoPlaceholder');if(appSettings.logoBase64){preview.src=appSettings.logoBase64;preview.style.display='block';placeholder.style.display='none';document.getElementById('settingsPreviewIcon').innerHTML='<img src="'+appSettings.logoBase64+'" style="width:100%;height:100%;object-fit:cover;border-radius:12px;">';}else{preview.style.display='none';placeholder.style.display='flex';document.getElementById('settingsPreviewIcon').innerHTML='📦';}document.getElementById('settingsPreviewName').textContent=(appSettings.appName||'WORKLOG').toUpperCase();renderAvatarSection();document.getElementById('settingsLineToken').value=appSettings.lineChannelToken||'';document.getElementById('settingsLineTarget').value=appSettings.lineTargetId||'';lineNotifyEnabled=!!appSettings.lineNotifyEnabled;renderLineToggle();document.getElementById('settingsDiscordWebhook').value=appSettings.discordWebhook||'';discordNotifyEnabled=!!appSettings.discordNotifyEnabled;renderDiscordToggle();document.getElementById('lineTestResult').style.display='none';document.getElementById('discordTestResult').style.display='none';}
 
 function getAllUsernames(){const fixed=['อัด','กุล','วิท','หมี','อัน'];const custom=(sharedCustomItems.user||[]).filter(u=>!fixed.includes(u));return[...fixed,...custom];}
 function renderAvatarSection(){const el=document.getElementById('avatarManageList');if(!el)return;const users=getAllUsernames();el.innerHTML=users.map(username=>{const hasPhoto=!!(appSettings.avatars||{})[username];const avatarHtml=getUserAvatarHtml(username,56);return`<div style="display:flex;align-items:center;gap:16px;padding:14px 18px;background:var(--bg);border:2px solid var(--border2);border-radius:var(--radius-sm);"><div id="avatarPreview_${username}" style="flex-shrink:0;">${avatarHtml}</div><div style="flex:1;"><div style="font-size:15px;font-weight:700;">${username}</div><div style="font-size:12px;color:var(--text3);margin-top:2px;">${hasPhoto?'📸 มีรูปโปรไฟล์':'🔤 ใช้ตัวอักษร'}</div></div><div style="display:flex;gap:8px;"><label class="btn btn-ghost btn-sm" style="cursor:pointer;gap:6px;">📷 อัปโหลด<input type="file" accept="image/*" style="display:none" onchange="handleAvatarFileSelect('${username}',event)"></label>${hasPhoto?`<button class="btn btn-ghost btn-sm" onclick="clearUserAvatar('${username}')" style="color:var(--red);">🗑</button>`:''}</div></div>`;}).join('');}
@@ -695,7 +770,11 @@ function renderLineToggle(){const tgl=document.getElementById('lineToggle');cons
 
 async function testLineNotify(){const token=document.getElementById('settingsLineToken').value.trim();const to=document.getElementById('settingsLineTarget').value.trim();const resultEl=document.getElementById('lineTestResult');if(!token||!to){resultEl.style.display='block';resultEl.style.background='#fef2f2';resultEl.style.color='var(--red)';resultEl.style.borderColor='var(--red)';resultEl.textContent='⚠ กรุณากรอก Channel Access Token และ Target ID ก่อนทดสอบ';return;}const btn=document.getElementById('btnTestLine');btn.disabled=true;btn.textContent='⏳ กำลังส่ง...';try{const res=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'testLine',token,to}),redirect:'follow'});const data=await res.json();resultEl.style.display='block';if(data.ok){resultEl.style.background='#f0fdf4';resultEl.style.color='var(--green)';resultEl.style.borderColor='var(--green)';resultEl.textContent='✅ ส่งสำเร็จ! ตรวจสอบ LINE ของผู้รับ';}else{resultEl.style.background='#fef2f2';resultEl.style.color='var(--red)';resultEl.style.borderColor='var(--red)';resultEl.textContent='⚠ ส่งไม่สำเร็จ: '+(data.error||'unknown error');}}catch(e){resultEl.style.display='block';resultEl.style.background='#fef2f2';resultEl.style.color='var(--red)';resultEl.style.borderColor='var(--red)';resultEl.textContent='⚠ เชื่อมต่อล้มเหลว: '+e.message;}btn.disabled=false;btn.textContent='📨 ทดสอบส่ง LINE';}
 
-async function saveSettings(){const name=document.getElementById('settingsAppName').value.trim();if(!name)return showToast('⚠ กรุณากรอกชื่อแอป');const btn=document.getElementById('btnSaveSettings');btn.disabled=true;btn.textContent='⏳ กำลังบันทึก...';const lineToken=document.getElementById('settingsLineToken').value.trim();const lineTarget=document.getElementById('settingsLineTarget').value.trim();try{const payload={action:'saveSettings',appName:name,logoBase64:appSettings.logoBase64||'',lineChannelToken:lineToken,lineTargetId:lineTarget,lineNotifyEnabled:lineNotifyEnabled?'true':'false',};Object.entries(appSettings.avatars||{}).forEach(([u,b64])=>{payload['avatar_'+u]=b64||'';});const res=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload),redirect:'follow'});const data=await res.json();if(data.ok){applyAppSettings({appName:name,logoBase64:appSettings.logoBase64,lineChannelToken:lineToken,lineTargetId:lineTarget,lineNotifyEnabled:lineNotifyEnabled?'true':'false'});showToast('✅ บันทึก Settings สำเร็จ — ซิงก์ไป Sheet แล้ว');}else{applyAppSettings({appName:name,logoBase64:appSettings.logoBase64,lineChannelToken:lineToken,lineTargetId:lineTarget,lineNotifyEnabled:lineNotifyEnabled?'true':'false'});showToast('⚠ บันทึกเฉพาะ local — Sheet: '+(data.error||'error'));}}catch(e){applyAppSettings({appName:name,logoBase64:appSettings.logoBase64,lineChannelToken:lineToken,lineTargetId:lineTarget,lineNotifyEnabled:lineNotifyEnabled?'true':'false'});showToast('⚠ บันทึก local แล้ว แต่ Sheet ไม่ตอบสนอง');}btn.disabled=false;btn.textContent='💾 บันทึกการตั้งค่า';}
+async function saveSettings(){const name=document.getElementById('settingsAppName').value.trim();if(!name)return showToast('⚠ กรุณากรอกชื่อแอป');const btn=document.getElementById('btnSaveSettings');btn.disabled=true;btn.textContent='⏳ กำลังบันทึก...';const lineToken=document.getElementById('settingsLineToken').value.trim();const lineTarget=document.getElementById('settingsLineTarget').value.trim();const discordWebhook=document.getElementById('settingsDiscordWebhook').value.trim();
+// save discord local immediately
+appSettings.discordWebhook=discordWebhook;localStorage.setItem('wl_discordWebhook',discordWebhook);
+appSettings.discordNotifyEnabled=discordNotifyEnabled;localStorage.setItem('wl_discordEnabled',discordNotifyEnabled?'true':'false');
+try{const payload={action:'saveSettings',appName:name,logoBase64:appSettings.logoBase64||'',lineChannelToken:lineToken,lineTargetId:lineTarget,lineNotifyEnabled:lineNotifyEnabled?'true':'false',discordWebhook:discordWebhook,discordNotifyEnabled:discordNotifyEnabled?'true':'false',};Object.entries(appSettings.avatars||{}).forEach(([u,b64])=>{payload['avatar_'+u]=b64||'';});const res=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload),redirect:'follow'});const data=await res.json();if(data.ok){applyAppSettings({appName:name,logoBase64:appSettings.logoBase64,lineChannelToken:lineToken,lineTargetId:lineTarget,lineNotifyEnabled:lineNotifyEnabled?'true':'false'});showToast('✅ บันทึก Settings สำเร็จ — ซิงก์ไป Sheet แล้ว');}else{applyAppSettings({appName:name,logoBase64:appSettings.logoBase64,lineChannelToken:lineToken,lineTargetId:lineTarget,lineNotifyEnabled:lineNotifyEnabled?'true':'false'});showToast('⚠ บันทึกเฉพาะ local — Sheet: '+(data.error||'error'));}}catch(e){applyAppSettings({appName:name,logoBase64:appSettings.logoBase64,lineChannelToken:lineToken,lineTargetId:lineTarget,lineNotifyEnabled:lineNotifyEnabled?'true':'false'});showToast('⚠ บันทึก local แล้ว แต่ Sheet ไม่ตอบสนอง');}btn.disabled=false;btn.textContent='💾 บันทึกการตั้งค่า';}
 
 async function loadSettings(){showToast('⏳ กำลังโหลด Settings จาก Sheet...');try{const res=await fetch(GAS_URL+'?action=getSettings',{redirect:'follow'});const data=await res.json();if(data&&data.appName){applyAppSettings(data);renderSettingsPage();showToast('✅ โหลด Settings จาก Sheet แล้ว');}else{showToast('⚠ ไม่พบ Settings ใน Sheet');}}catch(e){showToast('⚠ โหลดไม่ได้: '+e.message);}}
 
@@ -738,6 +817,13 @@ function rebuildFilterDropdowns(){
       allTypes.map(t=>`<option${t===curSTW?' selected':''}>${t}</option>`).join('');
   }
 
+  const pftw=document.getElementById('presentTypeWork');
+  if(pftw){
+    const curP=pftw.value;
+    pftw.innerHTML='<option value="">-- เลือกประเภทงาน --</option>'+
+      allTypes.map(t=>`<option${t===curP?' selected':''}>${t}</option>`).join('');
+  }
+
   // ─── User ─────────────────────────────────────────────
   const FIXED_USERS=['อัด','กุล','วิท','หมี','อัน'];
   const allUsers=[...new Set([...FIXED_USERS,...(sharedCustomItems.user||[])])];
@@ -753,6 +839,12 @@ function rebuildFilterDropdowns(){
     const curSU=sfu.value;
     sfu.innerHTML='<option value="">ทุกคน</option>'+
       allUsers.map(u=>`<option${u===curSU?' selected':''}>${u}</option>`).join('');
+  }
+  const pfu=document.getElementById('presentUser');
+  if(pfu){
+    const curPU=pfu.value;
+    pfu.innerHTML='<option value="">ทุกคน</option>'+
+      allUsers.map(u=>`<option${u===curPU?' selected':''}>${u}</option>`).join('');
   }
 }
 
@@ -850,6 +942,8 @@ let currentViewUrl='';
 applyAppSettings(appSettings);
 lineNotifyEnabled=!!appSettings.lineNotifyEnabled;
 renderLineToggle();
+discordNotifyEnabled=!!appSettings.discordNotifyEnabled;
+renderDiscordToggle();
 
 initSlots();renderList();renderSummary();renderAllCustomOptions();syncUserPillsFromConfig();
 fetchFromGAS();
@@ -861,7 +955,10 @@ if(_fullImg)_fullImg.onerror=function(){handleFullImgError(this);};
 document.addEventListener('click',e=>{if(!e.target.closest('.combo-wrap')&&!e.target.closest('#customModalOverlay'))document.querySelectorAll('.combo-dropdown.open').forEach(d=>d.classList.remove('open'));});
 function toggleDropdown(id){const el=document.getElementById(id),was=el.classList.contains('open');document.querySelectorAll('.combo-dropdown.open').forEach(d=>d.classList.remove('open'));if(!was)el.classList.add('open');}
 
-function switchPage(name){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(t=>t.classList.remove('active'));document.getElementById('page-'+name).classList.add('active');document.getElementById('nav-'+name).classList.add('active');document.getElementById('topbarTitle').innerHTML=PAGE_TITLES[name]||name;if(window.innerWidth<=768)closeSidebar();if(name==='list'){renderList();fetchFromGAS();}if(name==='summary'){renderSummary();fetchFromGAS();}if(name==='settings'){renderSettingsPage();}if(name!=='add')document.getElementById('editModeIndicator').classList.remove('visible');}
+function switchPage(name){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(t=>t.classList.remove('active'));document.getElementById('page-'+name).classList.add('active');document.getElementById('nav-'+name).classList.add('active');document.getElementById('topbarTitle').innerHTML=PAGE_TITLES[name]||name;if(window.innerWidth<=768)closeSidebar();
+// FIX 1: เด้งไปส่วนหัวเสมอเมื่อเปลี่ยนหน้า
+window.scrollTo({top:0,behavior:'auto'});
+if(name==='list'){renderList();fetchFromGAS();}if(name==='summary'){renderSummary();fetchFromGAS();}if(name==='settings'){renderSettingsPage();}if(name!=='add')document.getElementById('editModeIndicator').classList.remove('visible');}
 function selectStatus(s){currentStatus=s;['Finish','Pending'].forEach(x=>{const c=document.getElementById('chip-'+x);if(c)c.className='chip'+(x===s?' selected-'+x:'');});clearFieldError('field-status');}
 
 function initSlots(){renderSlots('before');renderSlots('after');}
@@ -887,7 +984,10 @@ function closeSaveOverlay(){document.getElementById('saveOverlay').classList.rem
 // FIX 1: saveLog — ไม่เด้งไปหน้ารายการหลังบันทึก
 // อยู่หน้าบันทึกงานเดิม แค่ล้างฟอร์มและแสดง toast
 // ══════════════════════════════════════════════════════
-async function saveLog(){if(!validateForm())return;const date=document.getElementById('fDate').value,start=getTimeVal('fStart'),end=getTimeVal('fEnd'),work=getWorkValue(),hours=calcHours(start,end);const isEdit=editingId!==null,id=isEdit?editingId:nextId++;setSaveUI('⏳','กำลังประมวลผล...','กำลังเตรียมข้อมูล');const{before:uploadedBefore,after:uploadedAfter}=await uploadAllPendingPhotos(id);photos.before=[...uploadedBefore,...Array(MAX_PHOTOS-uploadedBefore.length).fill(null)];photos.after=[...uploadedAfter,...Array(MAX_PHOTOS-uploadedAfter.length).fill(null)];const log={id,user:Array.from(selectedUsers).join(', '),date,start,end,hours,work,location:document.getElementById('fLocation').value||'0',item:document.getElementById('fItem').value||'0',qtyActual:Number(document.getElementById('fQtyActual').value)||0,status:currentStatus,typeWork:getTypeWorkValue(),remark:getRemarkValue(),photosBefore:uploadedBefore,photosAfter:uploadedAfter,attachments:'',_fromSheet:false};setSaveUI('⏳','กำลังบันทึก...','บันทึกข้อมูลลงในแอป');if(isEdit){const idx=logs.findIndex(l=>l.id===id);if(idx>=0)logs[idx]=log;else logs.unshift(log);}else logs.unshift(log);saveLogsLocal();setSaveUI('⏳','กำลังส่งข้อมูล...','กำลังอัปโหลดไฟล์แนบ...');await uploadAllAttachments();log.attachments=getAttachmentSummary();setSaveUI('⏳','กำลังส่งข้อมูล...','กำลังบันทึกลง Google Sheets...');const res=await pushToGAS(log,isEdit?'update':'save');const driveCount=uploadedBefore.filter(isDrivePhoto).length+uploadedAfter.filter(isDrivePhoto).length;const totalCount=uploadedBefore.length+uploadedAfter.length;
+async function saveLog(){if(!validateForm())return;const date=document.getElementById('fDate').value,start=getTimeVal('fStart'),end=getTimeVal('fEnd'),work=getWorkValue(),hours=calcHours(start,end);const isEdit=editingId!==null,id=isEdit?editingId:nextId++;setSaveUI('⏳','กำลังประมวลผล...','กำลังเตรียมข้อมูล');const{before:uploadedBefore,after:uploadedAfter}=await uploadAllPendingPhotos(id);photos.before=[...uploadedBefore,...Array(MAX_PHOTOS-uploadedBefore.length).fill(null)];photos.after=[...uploadedAfter,...Array(MAX_PHOTOS-uploadedAfter.length).fill(null)];const log={id,user:Array.from(selectedUsers).join(', '),date,start,end,hours,work,location:document.getElementById('fLocation').value||'0',item:document.getElementById('fItem').value||'0',qtyActual:Number(document.getElementById('fQtyActual').value)||0,status:currentStatus,typeWork:getTypeWorkValue(),remark:getRemarkValue(),photosBefore:uploadedBefore,photosAfter:uploadedAfter,attachments:'',_fromSheet:false};setSaveUI('⏳','กำลังบันทึก...','บันทึกข้อมูลลงในแอป');if(isEdit){const idx=logs.findIndex(l=>l.id===id);if(idx>=0)logs[idx]=log;else logs.unshift(log);}else logs.unshift(log);saveLogsLocal();setSaveUI('⏳','กำลังส่งข้อมูล...','กำลังอัปโหลดไฟล์แนบ...');await uploadAllAttachments();log.attachments=getAttachmentSummary();setSaveUI('⏳','กำลังส่งข้อมูล...','กำลังบันทึกลง Google Sheets...');const res=await pushToGAS(log,isEdit?'update':'save');
+  // ส่งแจ้งเตือน Discord พร้อมกัน (client-side webhook ไม่ต้องแก้ GAS)
+  sendDiscordNotify(log,isEdit?'update':'save');
+  const driveCount=uploadedBefore.filter(isDrivePhoto).length+uploadedAfter.filter(isDrivePhoto).length;const totalCount=uploadedBefore.length+uploadedAfter.length;
   if(res.ok){
     // FIX 1: ปิด modal แล้วอยู่หน้าเดิม (ไม่ switchPage ไปหน้า list)
     closeSaveOverlay();
@@ -994,6 +1094,219 @@ async function uploadAllAttachments(){const pending=attachedLinks.filter(a=>a.ty
 function removeAttachment(idx){attachedLinks.splice(idx,1);renderAttachedLinks();}
 function renderAttachedLinks(){const gsEl=document.getElementById('gsheetsLinkList');const fileEl=document.getElementById('attachedFileList');if(!gsEl||!fileEl)return;const fmtSize=b=>b>1048576?(b/1048576).toFixed(1)+' MB':b>1024?(b/1024).toFixed(0)+' KB':b+' B';const links=attachedLinks.filter(a=>a.type==='gsheets');const files=attachedLinks.filter(a=>a.type==='file');gsEl.innerHTML=links.map(a=>{const idx=attachedLinks.indexOf(a);return`<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg);border:2px solid var(--border2);border-radius:var(--radius-sm);"><span style="font-size:18px;">📊</span><a href="${a.url}" target="_blank" style="flex:1;font-size:13px;font-weight:600;color:var(--accent);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${a.name}</a><button onclick="removeAttachment(${idx})" style="background:var(--red);color:white;border:none;border-radius:6px;padding:3px 8px;font-size:11px;font-weight:700;cursor:pointer;">✕</button></div>`;}).join('');fileEl.innerHTML=files.map(a=>{const idx=attachedLinks.indexOf(a);const ext=a.name.split('.').pop().toLowerCase();const icon=ext==='xlsx'||ext==='xls'?'📗':ext==='csv'?'📋':ext==='pdf'?'📕':ext==='doc'||ext==='docx'?'📘':'📄';const badge=a.uploaded?`<span style="font-size:10px;background:#dcfce7;color:#166534;border:1px solid #86efac;border-radius:6px;padding:1px 6px;font-weight:700;">☁ Drive</span>`:`<span style="font-size:10px;background:#fef9c3;color:#854d0e;border:1px solid #fde047;border-radius:6px;padding:1px 6px;font-weight:700;">⏳ รอ</span>`;return`<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg);border:2px solid var(--border2);border-radius:var(--radius-sm);"><span style="font-size:20px;">${icon}</span><div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${a.name}</div><div style="display:flex;align-items:center;gap:8px;margin-top:3px;">${a.size?'<span style="font-size:11px;color:var(--text3);">'+fmtSize(a.size)+'</span>':''}${badge}${a.viewUrl?'<a href="'+a.viewUrl+'" target="_blank" style="font-size:11px;color:var(--accent);font-weight:600;">เปิด ↗</a>':''}</div></div><button onclick="removeAttachment(${idx})" style="background:var(--red);color:white;border:none;border-radius:6px;padding:3px 8px;font-size:11px;font-weight:700;cursor:pointer;">✕</button></div>`;}).join('');}
 function getAttachmentSummary(){return attachedLinks.filter(a=>a.viewUrl).map(a=>a.name+'|'+a.viewUrl).join('\n');}
+
+// ══════════════════════════════════════════════════════
+// DISCORD NOTIFY — client-side webhook (ไม่ต้องแก้ GAS)
+// ══════════════════════════════════════════════════════
+let discordNotifyEnabled=false;
+function toggleDiscordEnabled(){discordNotifyEnabled=!discordNotifyEnabled;renderDiscordToggle();}
+function renderDiscordToggle(){const tgl=document.getElementById('discordToggle');const dot=document.getElementById('discordToggleDot');if(!tgl||!dot)return;tgl.style.background=discordNotifyEnabled?'var(--accent2)':'var(--surface2)';dot.style.transform=discordNotifyEnabled?'translateX(20px)':'translateX(0)';}
+
+async function sendDiscordNotify(log,action){
+  const webhook=(appSettings.discordWebhook||'').trim();
+  if(!webhook||!discordNotifyEnabled)return;
+  const label=action==='update'?'✏️ แก้ไขงาน':'📝 บันทึกงานใหม่';
+  const statusColor={Finish:0x2dd4bf,Pending:0xfbbf24,InProgress:0x3b82f6,Issue:0xf87171}[log.status]||0x94a3b8;
+  const payload={embeds:[{color:statusColor,title:label+' — WorkLog',fields:[{name:'👤 ผู้ปฏิบัติงาน',value:log.user||'-',inline:true},{name:'📌 สถานะ',value:log.status||'-',inline:true},{name:'🕒 เวลา',value:(log.start||'-')+' – '+(log.end||'-'),inline:true},{name:'🏷 ประเภทงาน',value:log.typeWork||'-',inline:true},{name:'📍 Location',value:String(log.location||'-'),inline:true},{name:'📦 จำนวน',value:String(log.qtyActual||0),inline:true},{name:'📋 รายละเอียด',value:(log.work||'-').substring(0,200),inline:false},],footer:{text:'WorkLog Inventory System'},timestamp:new Date().toISOString()}]};
+  if(log.remark){payload.embeds[0].fields.push({name:'⚠️ หมายเหตุ',value:log.remark,inline:false});}
+  try{await fetch(webhook,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});}catch(e){}
+}
+
+async function testDiscordNotify(){
+  const webhook=document.getElementById('settingsDiscordWebhook').value.trim();
+  const resultEl=document.getElementById('discordTestResult');
+  if(!webhook||!webhook.startsWith('https://discord.com/api/webhooks/')){resultEl.style.display='block';resultEl.style.background='#fef2f2';resultEl.style.color='var(--red)';resultEl.style.borderColor='var(--red)';resultEl.textContent='⚠ กรุณากรอก Webhook URL ที่ถูกต้อง (https://discord.com/api/webhooks/...)';return;}
+  const btn=document.getElementById('btnTestDiscord');btn.disabled=true;btn.textContent='⏳ กำลังส่ง...';
+  try{const res=await fetch(webhook,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({embeds:[{color:0x2dd4bf,title:'✅ ทดสอบแจ้งเตือน WorkLog',description:'การเชื่อมต่อ Discord Webhook สำเร็จ!',timestamp:new Date().toISOString(),footer:{text:'WorkLog Inventory System'}}]})});
+  resultEl.style.display='block';if(res.ok){resultEl.style.background='#f0fdf4';resultEl.style.color='var(--green)';resultEl.style.borderColor='var(--green)';resultEl.textContent='✅ ส่งสำเร็จ! ตรวจสอบ Discord Channel';}else{resultEl.style.background='#fef2f2';resultEl.style.color='var(--red)';resultEl.style.borderColor='var(--red)';resultEl.textContent='⚠ ส่งไม่สำเร็จ: HTTP '+res.status;}}catch(e){resultEl.style.display='block';resultEl.style.background='#fef2f2';resultEl.style.color='var(--red)';resultEl.style.borderColor='var(--red)';resultEl.textContent='⚠ เชื่อมต่อล้มเหลว: '+e.message;}
+  btn.disabled=false;btn.textContent='🎮 ทดสอบส่ง Discord';
+}
+
+// ══════════════════════════════════════════════════════
+// PRESENT PAGE — date filter + PPTX generation
+// ══════════════════════════════════════════════════════
+let presentDateMode='today';
+function setPresentQuickDate(mode,btn){
+  presentDateMode=mode;
+  document.querySelectorAll('.qchip[onclick*="setPresentQuickDate"]').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  document.getElementById('presentCustomDateRange').style.display=(mode==='custom')?'flex':'none';
+}
+
+function getPresentFiltered(){
+  const tw=document.getElementById('presentTypeWork').value;
+  const u=document.getElementById('presentUser').value;
+  let filtered=filterByDate(logs,presentDateMode,'presentDateFrom','presentDateTo');
+  if(tw)filtered=filtered.filter(l=>String(l.typeWork||'').includes(tw));
+  if(u)filtered=filtered.filter(l=>String(l.user||'').includes(u));
+  return filtered;
+}
+
+function previewPresent(){
+  const filtered=getPresentFiltered();
+  const pv=document.getElementById('presentPreview');
+  const pvBody=document.getElementById('presentPreviewBody');
+  pv.style.display='block';
+  if(!filtered.length){pvBody.innerHTML='<span style="color:var(--red);">ไม่พบรายการที่ตรงกับเงื่อนไข</span>';return;}
+  const tw=document.getElementById('presentTypeWork').value||'(ทุกประเภท)';
+  pvBody.innerHTML=`พบ <strong>${filtered.length} รายการ</strong> | ประเภท: <strong>${tw}</strong><br>`+
+    filtered.slice(0,5).map(l=>`• ${l.date} | ${l.user} | ${(l.work||'').substring(0,60)}...`).join('<br>')+
+    (filtered.length>5?`<br><em>...และอีก ${filtered.length-5} รายการ</em>`:'');
+}
+
+async function generatePptx(){
+  const filtered=getPresentFiltered();
+  if(!filtered.length)return showToast('⚠ ไม่พบรายการที่ตรงกับเงื่อนไข');
+  const tw=document.getElementById('presentTypeWork').value||'WorkLog';
+  const btn=document.getElementById('btnGenPptx');
+  const statusEl=document.getElementById('presentStatus');
+  btn.disabled=true;btn.textContent='⏳ กำลังสร้าง...';
+  statusEl.style.display='block';statusEl.style.background='#eff6ff';statusEl.style.borderColor='var(--accent)';statusEl.textContent='⏳ กำลังสร้างไฟล์ PowerPoint...';
+
+  try{
+    // สร้าง PPTX ผ่าน GAS
+    const photoItems=filtered.map(l=>({
+      id:l.id,user:l.user,date:l.date,start:l.start,end:l.end,
+      work:l.work,location:l.location,item:l.item,qtyActual:l.qtyActual,
+      status:l.status,typeWork:l.typeWork,remark:l.remark,
+      beforeUrls:(l.photosBefore||[]).filter(p=>p&&p.viewUrl).map(p=>p.viewUrl),
+      afterUrls:(l.photosAfter||[]).filter(p=>p&&p.viewUrl).map(p=>p.viewUrl),
+    }));
+    const res=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify({action:'generatePptxData',typeWork:tw,items:photoItems}),redirect:'follow'});
+    const data=await res.json();
+    if(data.ok&&data.downloadUrl){
+      statusEl.style.background='#f0fdf4';statusEl.style.borderColor='var(--green)';
+      statusEl.innerHTML='✅ สร้างสำเร็จ! <a href="'+data.downloadUrl+'" target="_blank" style="color:var(--accent);font-weight:700;margin-left:8px;">⬇️ ดาวน์โหลด PowerPoint</a>';
+    } else {
+      // fallback: สร้าง PPTX แบบ inline HTML สำหรับ download
+      buildLocalPptxHtml(filtered,tw);
+    }
+  } catch(e){
+    // fallback ถ้า GAS ไม่รองรับ: สร้าง report HTML แทน
+    buildLocalPptxHtml(filtered,tw);
+  }
+  btn.disabled=false;btn.textContent='🎞️ สร้าง PowerPoint';
+}
+
+function buildLocalPptxHtml(filtered,tw){
+  // สร้าง HTML Presentation ที่ดาวน์โหลดได้และ print เป็น PDF ได้
+  const today=new Date().toLocaleDateString('th-TH',{day:'2-digit',month:'long',year:'numeric'});
+  let slides='';
+
+  // Slide 0: Cover
+  slides+=`<div class="slide cover-slide">
+    <div class="cover-content">
+      <div class="cover-icon">📦</div>
+      <h1>${tw}</h1>
+      <p class="cover-sub">รายงานสรุปงาน — ${filtered.length} รายการ</p>
+      <p class="cover-date">${today}</p>
+    </div>
+  </div>`;
+
+  // Summary slide
+  const totalH=filtered.reduce((s,l)=>s+(l.start&&l.end?calcHours(l.start,l.end):(parseFloat(l.hours)||0)),0);
+  const fin=filtered.filter(l=>l.status==='Finish').length;
+  const users=[...new Set(filtered.flatMap(l=>(l.user||'').split(',').map(u=>u.trim()).filter(Boolean)))];
+  slides+=`<div class="slide summary-slide">
+    <div class="slide-header"><span class="slide-num">สรุปภาพรวม</span></div>
+    <div class="stat-row">
+      <div class="stat-box blue"><div class="stat-n">${filtered.length}</div><div class="stat-l">รายการทั้งหมด</div></div>
+      <div class="stat-box green"><div class="stat-n">${fmtH(totalH)}</div><div class="stat-l">ชั่วโมงรวม</div></div>
+      <div class="stat-box amber"><div class="stat-n">${fin}</div><div class="stat-l">Finish</div></div>
+      <div class="stat-box purple"><div class="stat-n">${filtered.length-fin}</div><div class="stat-l">Pending/อื่นๆ</div></div>
+    </div>
+    <div class="users-row">👥 ผู้ปฏิบัติงาน: <strong>${users.join(', ')}</strong></div>
+  </div>`;
+
+  // Per-item slides
+  filtered.forEach((l,idx)=>{
+    const lh=(l.start&&l.end)?calcHours(l.start,l.end):(parseFloat(l.hours)||0);
+    let ds=l.date;
+    try{const d=new Date(l.date+'T00:00:00');if(!isNaN(d))ds=d.toLocaleDateString('th-TH',{weekday:'short',day:'2-digit',month:'short'});}catch(e){}
+    const statusColor={Finish:'#2dd4bf',Pending:'#fbbf24',InProgress:'#3b82f6',Issue:'#f87171'}[l.status]||'#94a3b8';
+    const allPhotos=[...(l.photosBefore||[]),...(l.photosAfter||[])].filter(Boolean);
+    const photosHtml=allPhotos.filter(p=>p&&p.thumbUrl).slice(0,6).map(p=>
+      `<a href="${p.viewUrl||p.thumbUrl}" target="_blank"><img src="${p.thumbUrl}" class="slide-photo" onerror="this.style.display='none'"></a>`
+    ).join('');
+    slides+=`<div class="slide item-slide">
+      <div class="slide-header">
+        <span class="slide-num">#${idx+1}</span>
+        <span class="item-badge" style="background:${statusColor}">${l.status}</span>
+      </div>
+      <div class="item-main">
+        <div class="item-left">
+          <div class="item-user">👤 ${l.user||'-'}</div>
+          <div class="item-date">📅 ${ds} &nbsp; 🕒 ${l.start||'--'}–${l.end||'--'} &nbsp; ⏱ ${fmtH(lh)}h</div>
+          <div class="item-work">${(l.work||'-')}</div>
+          <div class="item-meta">
+            ${l.typeWork?`<span class="meta-tag purple">🏷 ${l.typeWork}</span>`:''}
+            ${l.location&&l.location!=='-'&&l.location!=='0'?`<span class="meta-tag">📍 ${l.location}</span>`:''}
+            ${l.item&&l.item!=='0'?`<span class="meta-tag">📦 Item: ${l.item}</span>`:''}
+            ${l.qtyActual>0?`<span class="meta-tag">🔢 จำนวน: ${Number(l.qtyActual).toLocaleString()}</span>`:''}
+          </div>
+          ${l.remark?`<div class="item-remark">⚠️ ${l.remark}</div>`:''}
+        </div>
+        ${photosHtml?`<div class="item-photos">${photosHtml}</div>`:''}
+      </div>
+    </div>`;
+  });
+
+  const html=`<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8">
+<title>Presentation — ${tw}</title>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Prompt',sans-serif;background:#1e293b;}
+.slide{width:297mm;min-height:167mm;background:#fff;margin:0 auto 12px;page-break-after:always;display:flex;flex-direction:column;overflow:hidden;position:relative;}
+.cover-slide{background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 60%,#0891b2 100%);justify-content:center;align-items:center;}
+.cover-content{text-align:center;color:white;padding:40px;}
+.cover-icon{font-size:72px;margin-bottom:20px;}
+.cover-content h1{font-size:48px;font-weight:800;margin-bottom:12px;letter-spacing:-1px;}
+.cover-sub{font-size:22px;opacity:0.85;margin-bottom:8px;}
+.cover-date{font-size:16px;opacity:0.6;margin-top:16px;}
+.summary-slide{background:#f8fafc;padding:40px 48px;}
+.slide-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;padding-bottom:16px;border-bottom:3px solid #e2e8f0;}
+.slide-num{font-size:13px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.08em;}
+.item-badge{font-size:12px;font-weight:700;padding:4px 14px;border-radius:20px;color:#0f172a;}
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:24px;}
+.stat-box{border-radius:16px;padding:24px 20px;text-align:center;}
+.stat-box.blue{background:#eff6ff;}
+.stat-box.green{background:#f0fdf4;}
+.stat-box.amber{background:#fffbeb;}
+.stat-box.purple{background:#f5f3ff;}
+.stat-n{font-size:40px;font-weight:800;color:#0f172a;font-family:monospace;}
+.stat-l{font-size:13px;font-weight:600;color:#64748b;margin-top:6px;}
+.users-row{font-size:15px;color:#475569;margin-top:8px;}
+.item-slide{padding:32px 40px;}
+.item-main{display:grid;grid-template-columns:1fr auto;gap:24px;flex:1;}
+.item-left{display:flex;flex-direction:column;gap:12px;}
+.item-user{font-size:22px;font-weight:700;color:#0f172a;}
+.item-date{font-size:14px;color:#64748b;font-weight:600;}
+.item-work{font-size:15px;color:#1e293b;line-height:1.7;padding:16px;background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0;flex:1;}
+.item-meta{display:flex;flex-wrap:wrap;gap:8px;}
+.meta-tag{font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;}
+.meta-tag.purple{background:#f5f3ff;color:#6d28d9;}
+.item-remark{font-size:13px;font-weight:600;color:#b91c1c;padding:8px 14px;background:#fef2f2;border-radius:8px;border:1px solid #fecaca;}
+.item-photos{display:grid;grid-template-columns:repeat(2,100px);gap:8px;align-content:start;}
+.slide-photo{width:100px;height:100px;object-fit:cover;border-radius:10px;border:2px solid #e2e8f0;display:block;}
+@media print{body{background:white;} .slide{margin:0;page-break-after:always;box-shadow:none;}}
+@media screen{.slide{box-shadow:0 4px 20px rgba(0,0,0,0.15);border-radius:8px;}body{padding:24px;}}
+</style></head><body>${slides}
+<div style="text-align:center;margin-top:20px;padding:20px;">
+<button onclick="window.print()" style="font-family:'Prompt',sans-serif;padding:14px 32px;background:#3b82f6;color:white;border:none;border-radius:30px;font-size:16px;font-weight:700;cursor:pointer;margin-right:12px;">🖨 Print / Save PDF</button>
+<button onclick="window.close()" style="font-family:'Prompt',sans-serif;padding:14px 24px;background:#f1f5f9;color:#0f172a;border:2px solid #cbd5e1;border-radius:30px;font-size:16px;font-weight:700;cursor:pointer;">✕ ปิด</button>
+</div></body></html>`;
+
+  const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='WorkLog_Presentation_'+tw.replace(/[^a-zA-Zก-๙0-9]/g,'_')+'.html';a.click();
+  URL.revokeObjectURL(url);
+  const statusEl=document.getElementById('presentStatus');
+  statusEl.style.display='block';statusEl.style.background='#f0fdf4';statusEl.style.borderColor='var(--green)';
+  statusEl.innerHTML='✅ ดาวน์โหลดสำเร็จ! เปิดไฟล์ .html แล้วกด "Print" เพื่อบันทึกเป็น PDF หรือพรีเซนต์ใน Browser';
+  showToast('✅ สร้าง Presentation สำเร็จ '+filtered.length+' สไลด์');
+}
 
 function showToast(msg){const t=document.getElementById('toast'),ico=t.querySelector('.toast-icon');document.getElementById('toastMsg').textContent=msg;ico.textContent=msg.includes('⚠')?'⚠️':msg.includes('🗑')?'🗑️':msg.includes('☁')||msg.includes('📸')||msg.includes('🖼')?'📸':'✅';t.classList.add('show');if(t._hide)clearTimeout(t._hide);t._hide=setTimeout(()=>t.classList.remove('show'),3000);}
 </script>
